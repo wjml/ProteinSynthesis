@@ -1,0 +1,165 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono&display=swap');
+
+:root {
+    --headerSize: 0%;
+    --footerSize: 5%;
+    --sidebarSize: 250px;
+    --colorDetails: rgb(38, 166, 154);
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+}
+
+header {
+    display: none;
+    border-block-end: 1px solid lightgrey;
+    background: rgb(55, 71, 79);
+    height: var(--headerSize);
+}
+
+footer {
+    display: flex;
+    color: lightgray;
+    background: black;
+    height: var(--footerSize);
+}
+
+footer span {
+    margin: auto;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+}
+
+nav {
+    background: rgb(38, 50, 56);
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+nav #logo {
+    background: rgba(0, 0, 0, 0.3);
+    width: 100%;
+}
+
+nav #logo img {
+    align-self: center;
+    margin: 3%;
+}
+
+.main {
+    display: flex;
+    flex-direction: row;
+    height: calc(100% - var(--footerSize) - var(--headerSize));
+}
+
+.sidebar {
+    color: white;
+    width: var(--sidebarSize);
+    text-align: initial;
+    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    border-top: 1px solid lightgrey;
+}
+
+.sidebar .collapsible {
+    background: rgba(0, 0, 0, 0.3);
+    height: 0;
+    opacity: 0;
+    transition: 0.3s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.empty {
+    flex: 0.333;
+    transition: 0.3s;
+}
+
+.empty.active {
+    flex: 0;
+    transition: 0.3s;
+}
+
+.sidebar .collapsible.active {
+    flex: .533;
+    opacity: 1;
+    transition: 0.3s;
+}
+
+.sidebar .header-title {
+    margin-top: 1%;
+    flex: 0.05;
+    cursor: default;
+}
+
+.sidebar .header-title span {
+    font-size: 0.9em;
+    margin: auto 5%;
+}
+
+.sidebar .button i {
+    margin: 0 15px 0 30px;
+}
+
+.sidebar .button:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.sidebar .button {
+    font-weight: 900;
+    flex: 0.15;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: .25s ease-out;
+}
+
+.sidebar .button#app,
+.sidebar .header-title#about {
+    border-top: 1px solid lightgrey;
+}
+
+.sidebar .button#app:after {
+    content: '\23F5';
+    color: white;
+    position: absolute;
+    margin-left: calc(var(--sidebarSize) - 30px);
+}
+
+.sidebar .button.active#app:after {
+    content: '\23F7';
+}
+
+.sidebar .button#app span {
+    margin: auto;
+}
+
+.sidebar .collapsible .header-title {
+    flex: 0.15;
+}
+
+.sidebar .collapsible .button {
+    flex: 0.30;
+}
+
+.button.active,
+.button.active:hover {
+    background: var(--colorDetails);
+    transition: .25s ease-in;
+}

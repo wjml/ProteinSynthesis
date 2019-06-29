@@ -1,0 +1,182 @@
+.content.app {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+}
+
+.sequence {
+    overflow: hidden;
+    display: flex;
+    flex: 0.7;
+    flex-direction: column;
+    width: 90%;
+    background: white;
+    padding: 2%;
+    margin: auto;
+    border: 2px solid var(--colorDetails);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+
+.sequence.to-mutate {
+    flex: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: .4s;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+}
+
+.sequence.active {
+    flex: 0.55;
+    transition: .4s;
+    width: 95%;
+    padding: 1%;
+    margin: 1% 0;
+}
+
+.sequence.active .label {
+    flex: 0.3;
+    margin-top: .5%;
+}
+
+.sequence.to-mutate.active {
+    flex: 0.45;
+    opacity: 1;
+    margin: 1% 0 0 0;
+}
+
+.sequence .label {
+    flex: 0.5;
+    margin-top: 2%;
+}
+
+
+.sequence .sequenceChar {
+    font-family: 'Roboto Mono', monospace;
+    text-align: center;
+    border: none;
+    font-size: 30px;
+    width: 33.3px;
+    outline: none;
+}
+
+.sequence.to-mutate .sequenceChar {
+    font-size: 25px;
+}
+
+.sequence.to-mutate .abbreviated-name {
+    flex: 0.8;
+    font-size: 25px;
+}
+
+.sequence .textbox-rna,
+.sequence .output-aminoacids,
+.sequence .textbox-rna .sequenceChar,
+.sequence.to-mutate .textbox-dna,
+.sequence.to-mutate .textbox-dna .sequenceChar {
+    background: rgb(240, 240, 240)
+}
+
+.sequence.to-mutate,
+.sequence .textbox-rna,
+.sequence.to-mutate {
+    pointer-events: none;
+}
+
+.sequence .output-aminoacids {
+    pointer-events: all;
+}
+
+.sequence.to-mutate .output-aminoacids {
+    overflow: hidden;
+}
+
+.sequence .sequenceChar.codon-end {
+    text-align: start;
+}
+
+.sequence .sequenceChar.codon-start {
+    text-align: end;
+}
+
+
+.sequence .textbox-dna,
+.sequence .textbox-rna,
+.sequence .output-aminoacids {
+    flex: 1;
+    border: 1px solid gray;
+    display: flex;
+    overflow: hidden;
+}
+
+.sequence .output-aminoacids {
+    flex: 5;
+    overflow-x: auto
+}
+
+.sequence .textbox-dna #blank-space {
+    flex-grow: 1;
+    cursor: text;
+}
+
+.aminoacid {
+    display: flex;
+    border: .5px solid gray;
+    flex-direction: column;
+    min-width: 100px;
+    transition: .4s
+}
+
+.mutated {
+    color: red;
+}
+
+.aminoacid.not-availlable {
+    border: none;
+    border-bottom: 1px solid gray;
+}
+
+.aminoacid.not-availlable .abbreviated-name,
+.aminoacid.not-availlable .molecule,
+.aminoacid.not-availlable .full-name {
+    visibility: hidden;
+}
+
+
+.aminoacid .abbreviated-name {
+    flex: 1;
+    font-size: 28px;
+    font-family: 'Roboto Mono', monospace;
+    text-align: center;
+    border-bottom: 1px solid gray;
+}
+
+.aminoacid .abbreviated-name {
+    content: "text"
+}
+
+.aminoacid .molecule {
+    flex: 3.5;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    margin: 1%;
+}
+
+.sequence.to-mutate .aminoacid .molecule {
+    margin: 2%;
+}
+
+.aminoacid .full-name {
+    flex: .5;
+    font-size: 14px;
+    text-align: center;
+    color: var(--colorDetails);
+}
+
+.aminoacid.mutated .full-name {
+    color: red;
+}

@@ -1,0 +1,108 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" button="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" button="ie=edge">
+    <link rel="stylesheet" href="assets/style/fixed-elements.min.css">
+    <link rel="stylesheet" href="assets/style/pages.min.css">
+    <link rel="stylesheet" href="assets/style/app.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+        integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+    <title>Protein Synthesis</title>
+</head>
+
+<body>
+    <header></header>
+    <div class="main">
+        <nav>
+            <div id="logo">
+                <img src="assets/images/Logo.svg" alt="Logo Protein Synthesis">
+            </div>
+            <ul class="sidebar">
+                <li class="header-title" id="access-to-information">
+                    <span>ACESSO À INFORMAÇÃO</span>
+                </li>
+                <li class="button active" id="dna">
+                    <i class="fas fa-dna"></i> DNA
+                </li>
+                <li class="button" id="rna">
+                    <i class="fas fa-dna"></i> RNA
+                </li>
+                <li class="button" id="aminoacids">
+                    <i class="fas fa-dna"></i> Proteínas
+                </li>
+                <li class="button" id="app">
+                    <span>SIMULADOR</span>
+                </li>
+                <ul class="collapsible">
+                    <li class="header-title" id="mutation">
+                        <span>MUTAÇÃO</span>
+                    </li>
+                    <li class="button" id="add">
+                        <i class="fas fa-plus-circle"></i> Adicionar
+                    </li>
+                    <li class="button" id="delete">
+                        <i class="fas fa-minus-circle"></i> Deletar
+                    </li>
+                    <li class="button" id="replace">
+                        <i class="fas fa-sync-alt"></i> Substituir
+                    </li>
+                </ul>
+                <li class="header-title" id="about">
+                    <span>SOBRE</span>
+                </li>
+                <li class="button" id="versions">
+                    <i class="fas fa-info-circle"></i> Versões
+                </li>
+                <li class="button" id="tutorial">
+                    <i class="fas fa-question-circle"></i> Tutorial
+                </li>
+                <li class="empty"></li>
+            </ul>
+        </nav>
+        <div id="visible-page">
+            <div class="content dna in-construction active">
+            </div>
+            <div class="content rna in-construction">
+            </div>
+            <div class="content aminoacids in-construction">
+            </div>
+            <div class="content app">
+                <div class="sequence">
+                    <div class="label">DNA</div>
+                    <div class="textbox-dna">
+                        <span id="blank-space"></span>
+                    </div>
+                    <div class="label">RNAm</div>
+                    <div class="textbox-rna"></div>
+                    <div class="label">Aminoácidos</div>
+                    <div class="output-aminoacids"></div>
+                </div>
+                <div class="sequence to-mutate">
+                    <div class="label">DNA</div>
+                    <div class="textbox-dna"></div>
+                    <div class="label">RNAm</div>
+                    <div class="textbox-rna"></div>
+                    <div class="label">Aminoácidos</div>
+                    <div class="output-aminoacids"></div>
+                </div>
+            </div>
+            <div class="content versions in-construction">
+            </div>
+            <div class="content tutorial in-construction">
+            </div>
+        </div>
+    </div>
+    </div>
+    <footer>
+        <span>© 2019 Protein Synthesis.</span>
+    </footer>
+
+
+</body>
+<script src="assets/js/dom.min.js"></script>
+<script src="assets/js/script.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+
+</html>
