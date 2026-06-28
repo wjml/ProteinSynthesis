@@ -2,82 +2,135 @@
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
+    gap: 1.5rem;
 }
 
 .sequence {
     overflow: hidden;
     display: flex;
-    flex: 0.7;
+    flex: 0 0 auto;
     flex-direction: column;
     width: 90%;
     background: white;
     padding: 2%;
     margin: auto;
     border: 2px solid var(--colorDetails);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
 }
 
-
 .sequence.to-mutate {
-    flex: 0;
+    flex: 0 0 auto;
+    height: 0;
     margin: 0;
     padding: 0;
     opacity: 0;
     overflow: hidden;
-    transition: .4s;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.6);
     border: none;
 }
 
 .sequence.active {
-    flex: 0.55;
-    transition: .4s;
+    flex: 0 0 auto;
     width: 95%;
-    padding: 1%;
-    margin: 1% 0;
+    padding: 1.5%;
+    margin: 0;
 }
 
 .sequence.active .label {
-    flex: 0.3;
+    flex: 0 0 auto;
     margin-top: .5%;
 }
 
 .sequence.to-mutate.active {
-    flex: 0.45;
+    flex: 0 0 auto;
+    height: auto;
     opacity: 1;
-    margin: 1% 0 0 0;
+    margin: 0;
+    padding: 1.5%;
+    border: 2px dashed #cbd5e1;
 }
 
 .sequence .label {
-    flex: 0.5;
-    margin-top: 2%;
+    flex: none;
+    margin-top: 1.5%;
+    font-weight: 700;
+    color: #475569;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-
+/* Sequence Nucleotide Character Inputs */
 .sequence .sequenceChar {
     font-family: 'Roboto Mono', monospace;
     text-align: center;
-    border: none;
-    font-size: 30px;
-    width: 33.3px;
+    border: 1px solid #cbd5e1 !important;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
     outline: none;
+    margin: 2px 0;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.15s ease;
+    box-sizing: border-box;
 }
 
-.sequence.to-mutate .sequenceChar {
-    font-size: 25px;
+.sequence .sequenceChar:focus {
+    border-color: var(--colorDetails) !important;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
 }
 
-.sequence.to-mutate .abbreviated-name {
-    flex: 0.8;
-    font-size: 25px;
+/* Codon Triplet Grouping Spacing — 8 px gap aligns with amino acid cards */
+.sequence .sequenceChar.codon-end {
+    margin-right: 8px !important;
 }
 
+/* Background for read-only segments */
 .sequence .textbox-rna,
 .sequence .output-aminoacids,
 .sequence .textbox-rna .sequenceChar,
 .sequence.to-mutate .textbox-dna,
 .sequence.to-mutate .textbox-dna .sequenceChar {
-    background: rgb(240, 240, 240)
+    background: #f8fafc;
+}
+
+/* Base specific text coloring */
+.sequence .sequenceChar.base-A {
+    color: #1e88e5;
+    font-weight: bold;
+}
+
+.sequence .sequenceChar.base-T {
+    color: #f57c00;
+    font-weight: bold;
+}
+
+.sequence .sequenceChar.base-C {
+    color: #43a047;
+    font-weight: bold;
+}
+
+.sequence .sequenceChar.base-G {
+    color: #e53935;
+    font-weight: bold;
+}
+
+.sequence .sequenceChar.base-U {
+    color: #8e24aa;
+    font-weight: bold;
+}
+
+/* Mutated bases highlighting */
+.sequence .sequenceChar.mutated {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
 }
 
 .sequence.to-mutate,
@@ -94,49 +147,145 @@
     overflow: hidden;
 }
 
-.sequence .sequenceChar.codon-end {
-    text-align: start;
-}
-
-.sequence .sequenceChar.codon-start {
-    text-align: end;
-}
-
-
+/* Flexbox is used for DNA/RNA rows so that margin-right on .codon-end
+   creates a real visual gap between codon triplets. CSS Grid tracks
+   ignore item margins, which caused the spacing to be invisible. */
 .sequence .textbox-dna,
-.sequence .textbox-rna,
-.sequence .output-aminoacids {
-    flex: 1;
-    border: 1px solid gray;
+.sequence .textbox-rna {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow-x: auto;
+    padding: 6px;
+    min-height: 54px;
+}
+
+/* RNA row needs position context + top room for floating codon labels */
+.sequence .textbox-rna {
+    position: relative;
+    padding-top: 24px;
+    min-height: 70px;
+    align-items: flex-end;
+    /* scrollbar hidden — driven by DNA row via JS */
+    overflow-x: hidden;
+}
+
+/* ── Codon role labels (INÍCIO / PARADA) ─────────────────────────────── */
+.codon-label {
+    position: absolute;
+    top: 4px;
+    height: 16px;
+    width: 120px;
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    line-height: 16px;
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
     overflow: hidden;
 }
 
+.codon-label-start {
+    background: rgba(2, 132, 199, 0.10);
+    color: #0369a1;
+    border: 1px solid rgba(2, 132, 199, 0.28);
+}
+
+.codon-label-stop {
+    background: rgba(220, 38, 38, 0.08);
+    color: #b91c1c;
+    border: 1px solid rgba(220, 38, 38, 0.22);
+}
+
+/* Ensure inputs don't grow/shrink inside the flex row */
+.sequence .textbox-dna .sequenceChar,
+.sequence .textbox-rna .sequenceChar {
+    flex: 0 0 auto;
+}
+
+/* Amino acid grid: 120px = 3 × 40px (one codon), gap: 8px matches codon-end margin */
 .sequence .output-aminoacids {
-    flex: 5;
-    overflow-x: auto
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 120px;
+    gap: 8px;
+    justify-content: start;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    /* scrollbar hidden — driven by DNA row via JS */
+    overflow-x: hidden;
+    /* padding-right is larger than left to compensate for the trailing
+       codon-end margin (8 px) present in DNA/RNA rows but absent in the
+       grid (gap only between items, not after the last one):
+       left=6px, right=6+8=14px  → scrollWidth matches DNA/RNA */
+    padding: 6px 14px 6px 6px;
+    min-height: 176px;
 }
 
-.sequence .textbox-dna #blank-space {
-    flex-grow: 1;
+.textbox-dna {
+    position: relative;
+}
+
+/*
+ * blank-space is an invisible DOM anchor used only for insertBefore().
+ * Setting it to zero size removes it from the flex layout, so the
+ * scrollWidth of textbox-dna equals that of textbox-rna.
+ * Clicks anywhere in the container are handled by the JS container
+ * click listener added in script.js.
+ */
+.textbox-dna #blank-space {
+    flex: 0 0 0;
+    width: 0;
+    min-width: 0;
+    height: 0;
+    overflow: hidden;
     cursor: text;
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
 }
 
+/* Aminoacid Molecule Cards */
 .aminoacid {
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    height: 160px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     display: flex;
-    border: .5px solid gray;
     flex-direction: column;
-    min-width: 100px;
-    transition: .4s
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px;
+    box-sizing: border-box;
 }
 
-.mutated {
-    color: red;
+.aminoacid:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+}
+
+.aminoacid.mutated {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
 }
 
 .aminoacid.not-availlable {
-    border: none;
-    border-bottom: 1px solid gray;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
 }
 
 .aminoacid.not-availlable .abbreviated-name,
@@ -145,38 +294,297 @@
     visibility: hidden;
 }
 
-
 .aminoacid .abbreviated-name {
-    flex: 1;
-    font-size: 28px;
+    flex: 0.8;
+    font-size: 1.15rem;
+    font-weight: 700;
     font-family: 'Roboto Mono', monospace;
     text-align: center;
-    border-bottom: 1px solid gray;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 2px 0;
+    color: #334155;
+    width: 100%;
 }
 
-.aminoacid .abbreviated-name {
-    content: "text"
+.aminoacid.mutated .abbreviated-name {
+    color: #ef4444;
+    border-bottom-color: #fee2e2;
 }
 
 .aminoacid .molecule {
-    flex: 3.5;
+    flex: 3;
+    width: 100%;
+    height: auto;
+    max-height: 100px;
+    margin: 4px auto;
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    margin: 1%;
 }
 
 .sequence.to-mutate .aminoacid .molecule {
-    margin: 2%;
+    margin: 4px;
 }
 
 .aminoacid .full-name {
-    flex: .5;
-    font-size: 14px;
+    flex: 0.8;
+    font-size: 0.75rem;
+    font-weight: 600;
     text-align: center;
     color: var(--colorDetails);
+    padding-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 }
 
 .aminoacid.mutated .full-name {
-    color: red;
+    color: #ef4444;
+}
+
+/* Mutation Analysis Panel Styling */
+.mutation-panel {
+    width: 90%;
+    margin: 1.5rem auto 0 auto;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.sequence.active~.mutation-panel {
+    width: 95%;
+}
+
+.mutation-panel h3 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mutation-panel h3 i {
+    color: var(--colorDetails);
+}
+
+.mutation-analysis-result {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    min-height: 60px;
+    box-sizing: border-box;
+}
+
+.no-mutation-msg {
+    color: #64748b;
+    font-style: italic;
+    font-size: 0.95rem;
+}
+
+.mutation-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.mutation-type-badge {
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Mutation Badge Colors */
+.mutation-type-badge.silent {
+    background-color: #0ea5e9;
+}
+
+/* Blue */
+.mutation-type-badge.missense {
+    background-color: #f59e0b;
+}
+
+/* Orange */
+.mutation-type-badge.nonsense {
+    background-color: #ef4444;
+}
+
+/* Red */
+.mutation-type-badge.frameshift {
+    background-color: #8b5cf6;
+}
+
+/* Purple */
+
+.mutation-description {
+    margin: 0;
+    color: #475569;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Simulator Controls Styling */
+.simulator-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    margin: 0.5rem auto 1.5rem auto;
+    background: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.sequence.active~.simulator-controls {
+    width: 95%;
+}
+
+.counters {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.counter-item {
+    font-size: 0.95rem;
+    color: #475569;
+}
+
+.counter-item strong {
+    color: var(--colorDetails);
+    font-size: 1.25rem;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-control {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-control:hover {
+    background-color: #cbd5e1;
+    color: #1e293b;
+}
+
+#btn-clear:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.base-input-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.button-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.btn-base {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: white;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-base:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-base.base-A {
+    background-color: #1e88e5;
+}
+
+.btn-base.base-T {
+    background-color: #f57c00;
+}
+
+.btn-base.base-C {
+    background-color: #43a047;
+}
+
+.btn-base.base-G {
+    background-color: #e53935;
+}
+
+/* Presentation Mode overrides for Simulator */
+body.presentation-mode .sequence .sequenceChar {
+    width: 48px;
+    height: 48px;
+    font-size: 28px;
+}
+
+/* textbox-dna/rna are flexbox — no grid-auto-columns needed here */
+body.presentation-mode .sequence .textbox-dna,
+body.presentation-mode .sequence .textbox-rna {
+    min-height: 62px;
+}
+
+/* Amino acid width = 3 × 48px = 144px to align with larger codon inputs */
+body.presentation-mode .sequence .output-aminoacids {
+    grid-auto-columns: 144px;
+    gap: 8px;
+    min-height: 210px;
+}
+
+body.presentation-mode .aminoacid {
+    width: 144px;
+    min-width: 144px;
+    max-width: 144px;
+    height: 195px;
+}
+
+body.presentation-mode .aminoacid .molecule {
+    max-height: 130px;
+}
+
+body.presentation-mode .aminoacid .abbreviated-name {
+    font-size: 1.3rem;
+}
+
+body.presentation-mode .aminoacid .full-name {
+    font-size: 0.85rem;
 }

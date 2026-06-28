@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" button="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" button="ie=edge">
-    <link rel="stylesheet" href="assets/style/fixed-elements.min.css">
-    <link rel="stylesheet" href="assets/style/pages.min.css">
-    <link rel="stylesheet" href="assets/style/app.min.css">
+    <link rel="stylesheet" href="assets/style/fixed-elements.css">
+    <link rel="stylesheet" href="assets/style/pages.css">
+    <link rel="stylesheet" href="assets/style/app.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
         integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
     <title>Protein Synthesis</title>
@@ -27,13 +27,19 @@
                     <i class="fas fa-dna"></i> DNA
                 </li>
                 <li class="button" id="rna">
-                    <i class="fas fa-dna"></i> RNA
+                    <i class="fas fa-code-branch"></i> RNA
                 </li>
                 <li class="button" id="aminoacids">
-                    <i class="fas fa-dna"></i> Proteínas
+                    <i class="fas fa-cubes"></i> Proteínas
+                </li>
+                <li class="button" id="codon-table">
+                    <i class="fas fa-table"></i> Tabela de Códons
                 </li>
                 <li class="button" id="app">
-                    <span>SIMULADOR</span>
+                    <div class="menu-label-group">
+                        <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
+                        <span class="sub-label">Laboratório Virtual</span>
+                    </div>
                 </li>
                 <ul class="collapsible">
                     <li class="header-title" id="mutation">
@@ -58,17 +64,327 @@
                 <li class="button" id="tutorial">
                     <i class="fas fa-question-circle"></i> Tutorial
                 </li>
+                <li class="sidebar-toggle" id="toggle-professor">
+                    <i class="fas fa-chalkboard-teacher"></i> <span>🎯 Modo Professor</span>
+                </li>
                 <li class="empty"></li>
             </ul>
         </nav>
         <div id="visible-page">
-            <div class="content dna in-construction active">
+            <div class="content dna active">
+                <div class="page-header">
+                    <h2>Ácido Desoxirribonucleico (DNA)</h2>
+                    <p>O DNA é a molécula que carrega as instruções genéticas de todos os seres vivos.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-microscope"></i> Estrutura</h3>
+                        <p>O DNA é composto por duas fitas dispostas em uma <strong>Dupla Hélice</strong>. A estrutura
+                            externa de cada fita é feita de açúcares (desoxirribose) e grupos fosfato.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-atom"></i> Bases Nitrogenadas</h3>
+                        <p>A informação genética é codificada pelas quatro bases nitrogenadas:</p>
+                        <ul class="base-list">
+                            <li><span class="base-badge base-a">A</span> <strong>Adenina</strong></li>
+                            <li><span class="base-badge base-t">T</span> <strong>Timina</strong></li>
+                            <li><span class="base-badge base-c">C</span> <strong>Citosina</strong></li>
+                            <li><span class="base-badge base-g">G</span> <strong>Guanina</strong></li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-link"></i> Pareamento de Bases</h3>
+                        <p>As duas fitas de DNA se unem por meio de ligações de hidrogênio seguindo a regra de
+                            pareamento específico:</p>
+                        <p class="pairing-rule"><strong>A ⇄ T</strong><br><strong>C ⇄ G</strong></p>
+                    </div>
+                    <div class="info-card helix-card">
+                        <h3><i class="fas fa-circle-notch fa-spin"></i> Dupla Hélice 3D</h3>
+                        <div class="helix-animation-container">
+                            <div class="dna-helix">
+                                <div class="base-pair" style="--i: 0;">
+                                    <div class="dot base-a"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-t"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 1;">
+                                    <div class="dot base-c"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-g"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 2;">
+                                    <div class="dot base-g"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-c"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 3;">
+                                    <div class="dot base-t"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-a"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 4;">
+                                    <div class="dot base-a"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-t"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 5;">
+                                    <div class="dot base-c"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-g"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 6;">
+                                    <div class="dot base-g"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-c"></div>
+                                </div>
+                                <div class="base-pair" style="--i: 7;">
+                                    <div class="dot base-t"></div>
+                                    <div class="line"></div>
+                                    <div class="dot base-a"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="content rna in-construction">
+            <div class="content rna">
+                <div class="page-header">
+                    <h2>Ácido Ribonucleico (RNA)</h2>
+                    <p>O RNA desempenha o papel crucial de traduzir a informação genética do DNA em proteínas
+                        funcionais.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-copy"></i> Transcrição</h3>
+                        <p>No processo de transcrição, uma enzima chamada RNA Polimerase lê a fita de DNA modelo para
+                            produzir uma molécula de <strong>RNA Mensageiro (RNAm)</strong>.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-exchange-alt"></i> Diferenças Chave</h3>
+                        <p>Diferente do DNA, o RNA:</p>
+                        <ul class="base-list">
+                            <li>É composto por uma <strong>fita simples</strong>.</li>
+                            <li>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</li>
+                            <li>Substitui a Timina (T) pela <span class="base-badge base-u">U</span>
+                                <strong>Uracila</strong>.
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-link"></i> Pareamento DNA ➜ RNA</h3>
+                        <p>Durante a síntese do RNAm, o pareamento das bases ocorre da seguinte forma:</p>
+                        <p class="pairing-rule"><strong>A ➜ U</strong> | <strong>T ➜ A</strong><br><strong>C ➜
+                                G</strong> | <strong>G ➜ C</strong></p>
+                    </div>
+                    <div class="info-card transcription-card">
+                        <h3><i class="fas fa-cogs"></i> Etapas da Transcrição</h3>
+                        <div class="transcription-steps-container">
+                            <div class="transcription-step">
+                                <span class="step-badge">1</span>
+                                <div class="step-text">
+                                    <strong>Reconhecimento:</strong> A RNA Polimerase reconhece o promotor do DNA e
+                                    inicia a abertura da dupla hélice.
+                                </div>
+                            </div>
+                            <div class="transcription-step">
+                                <span class="step-badge">2</span>
+                                <div class="step-text">
+                                    <strong>Elongação:</strong> A enzima caminha pela fita molde, emparelhando bases e
+                                    estendendo o RNAm de 5' para 3'.
+                                </div>
+                            </div>
+                            <div class="transcription-step">
+                                <span class="step-badge">3</span>
+                                <div class="step-text">
+                                    <strong>Terminação:</strong> Ao encontrar a sequência de término, a transcrição para
+                                    e o RNAm maduro é liberado.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="content aminoacids in-construction">
+            <div class="content aminoacids">
+                <div class="page-header">
+                    <h2>Proteínas e Tradução</h2>
+                    <p>As proteínas são macromoléculas essenciais formadas por cadeias de aminoácidos.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-language"></i> Códons</h3>
+                        <p>A fita de RNAm é lida em grupos de 3 bases consecutivas chamados <strong>códons</strong>.
+                            Cada códon codifica um aminoácido específico.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-play-circle"></i> Início e Parada</h3>
+                        <p>O processo começa sempre no códon de iniciação <strong>AUG (Metionina)</strong>. O término
+                            ocorre quando o ribossomo encontra um códon de parada (<strong>UAA, UAG ou UGA</strong>),
+                            liberando a fita de proteína.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-dna"></i> Tabela de Códons</h3>
+                        <p>Existem 64 códons possíveis para 20 aminoácidos, caracterizando o código genético como
+                            <strong>degenerado ou redundante</strong> (múltiplos códons codificam o mesmo aminoácido).
+                        </p>
+                    </div>
+                    <div class="info-card table-card">
+                        <h3><i class="fas fa-list-ol"></i> Tabela dos 20 Aminoácidos</h3>
+                        <div class="table-wrapper">
+                            <table class="amino-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>3L</th>
+                                        <th>1L</th>
+                                        <th>Propriedade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Alanina</td>
+                                        <td>ALA</td>
+                                        <td>A</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Arginina</td>
+                                        <td>ARG</td>
+                                        <td>R</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Asparagina</td>
+                                        <td>ASN</td>
+                                        <td>N</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ácido Aspártico</td>
+                                        <td>ASP</td>
+                                        <td>D</td>
+                                        <td>Ácido</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cisteína</td>
+                                        <td>CYS</td>
+                                        <td>C</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Glutamina</td>
+                                        <td>GLN</td>
+                                        <td>Q</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ácido Glutâmico</td>
+                                        <td>GLU</td>
+                                        <td>E</td>
+                                        <td>Ácido</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Glicina</td>
+                                        <td>GLY</td>
+                                        <td>G</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Histidina</td>
+                                        <td>HIS</td>
+                                        <td>H</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Isoleucina</td>
+                                        <td>ILE</td>
+                                        <td>I</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Leucina</td>
+                                        <td>LEU</td>
+                                        <td>L</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lisina</td>
+                                        <td>LYS</td>
+                                        <td>K</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Metionina</td>
+                                        <td>MET</td>
+                                        <td>M</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fenilalanina</td>
+                                        <td>PHE</td>
+                                        <td>F</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prolina</td>
+                                        <td>PRO</td>
+                                        <td>P</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Serina</td>
+                                        <td>SER</td>
+                                        <td>S</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Treonina</td>
+                                        <td>THR</td>
+                                        <td>T</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Triptofano</td>
+                                        <td>TRP</td>
+                                        <td>W</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tirosina</td>
+                                        <td>TYR</td>
+                                        <td>Y</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Valina</td>
+                                        <td>VAL</td>
+                                        <td>V</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="content app">
+                <div class="simulator-controls">
+                    <div class="counters">
+                        <span class="counter-item">Códons: <strong id="codon-counter">0</strong></span>
+                        <span class="counter-item">Aminoácidos: <strong id="aminoacid-counter">0</strong></span>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
+                        <button id="btn-random" class="btn-control"><i class="fas fa-random"></i> Sequência
+                            aleatória</button>
+                    </div>
+                    <div class="base-input-buttons">
+                        <span class="button-label">Inserir Base:</span>
+                        <button class="btn-base base-A" onclick="insertBase('A')">A</button>
+                        <button class="btn-base base-T" onclick="insertBase('T')">T</button>
+                        <button class="btn-base base-C" onclick="insertBase('C')">C</button>
+                        <button class="btn-base base-G" onclick="insertBase('G')">G</button>
+                    </div>
+                </div>
                 <div class="sequence">
                     <div class="label">DNA</div>
                     <div class="textbox-dna">
@@ -76,7 +392,7 @@
                     </div>
                     <div class="label">RNAm</div>
                     <div class="textbox-rna"></div>
-                    <div class="label">Aminoácidos</div>
+                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
                     <div class="output-aminoacids"></div>
                 </div>
                 <div class="sequence to-mutate">
@@ -84,25 +400,407 @@
                     <div class="textbox-dna"></div>
                     <div class="label">RNAm</div>
                     <div class="textbox-rna"></div>
-                    <div class="label">Aminoácidos</div>
+                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
                     <div class="output-aminoacids"></div>
                 </div>
+                <div class="mutation-panel">
+                    <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
+                    <div class="mutation-analysis-result">
+                        <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação no menu
+                            lateral para começar.</span>
+                        <div class="mutation-details" style="display: none;">
+                            <span class="mutation-type-badge">Silenciosa</span>
+                            <p class="mutation-description">Ocorreu uma alteração em uma base, mas a sequência de
+                                aminoácidos resultante permanece idêntica.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="content versions in-construction">
+            <div class="content versions">
+                <div class="page-header">
+                    <h2>Histórico de Versões</h2>
+                    <p>A evolução do projeto Protein Synthesis ao longo do tempo.</p>
+                </div>
+                <div class="version-timeline">
+                    <div class="version-card">
+                        <h3>v2.0 <span class="version-date">Junho, 2026</span></h3>
+                        <span class="badge-active">Atual</span>
+                        <ul>
+                            <li><strong>Análise de Mutações:</strong> Classificação em tempo real (Silenciosa, Missense,
+                                Nonsense, Frameshift).</li>
+                            <li><strong>Interface Premium:</strong> Tema científico moderno, cores personalizadas por
+                                base nitrogenada, responsividade melhorada e micro-transições.</li>
+                            <li><strong>Didática Completa:</strong> Conclusão das páginas educativas de DNA, RNA e
+                                Proteínas.</li>
+                            <li><strong>Refatorações Técnicas:</strong> Correção de bug no controle global de eventos e
+                                comparação de arrays.</li>
+                        </ul>
+                    </div>
+                    <div class="version-card">
+                        <h3>v1.1 <span class="version-date">Maio, 2019</span></h3>
+                        <ul>
+                            <li><strong>Módulos de Mutação:</strong> Adicionados botões para Adicionar, Deletar e
+                                Substituir bases.</li>
+                            <li><strong>Detecção de Diferenças:</strong> Marcação em vermelho para bases e aminoácidos
+                                alterados na fita mutada.</li>
+                        </ul>
+                    </div>
+                    <div class="version-card">
+                        <h3>v1.0 <span class="version-date">Março, 2019</span></h3>
+                        <ul>
+                            <li><strong>Estrutura Básica:</strong> Transcrição e tradução em tempo real de DNA para RNAm
+                                e proteína.</li>
+                            <li><strong>Imagens Moleculares:</strong> Exibição gráfica das fórmulas 2D dos aminoácidos
+                                traduzidos.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="content tutorial in-construction">
+            <div class="content tutorial">
+                <div class="page-header">
+                    <h2>Tutorial do Simulador</h2>
+                    <p>Aprenda a interagir e simular mutações no laboratório virtual.</p>
+                </div>
+                <div class="tutorial-steps">
+                    <div class="step-card">
+                        <div class="step-num">1</div>
+                        <div class="step-body">
+                            <h3>Inserindo Sequências</h3>
+                            <p>Clique no espaço em branco na fita superior de DNA no **Simulador** e digite as bases
+                                <strong>A</strong>, <strong>T</strong>, <strong>C</strong> ou <strong>G</strong>. O
+                                pareamento com a fita complementar de DNA e a transcrição para RNAm ocorrerão em tempo
+                                real.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">2</div>
+                        <div class="step-body">
+                            <h3>Visualizando a Tradução</h3>
+                            <p>À medida que a fita de RNAm é formada, o simulador agrupa as bases em códons e traduz
+                                para seus aminoácidos correspondentes, exibindo o nome e a estrutura molecular 2D.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-num">3</div>
+                        <div class="step-body">
+                            <h3>Simulando Mutações</h3>
+                            <p>Utilize os controles de mutação na barra lateral:</p>
+                            <ul>
+                                <li><strong>Adicionar:</strong> Insira novas bases no meio da fita.</li>
+                                <li><strong>Deletar:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
+                                <li><strong>Substituir:</strong> Substitua uma base por outra na mesma posição.</li>
+                            </ul>
+                            <p>A fita inferior mutada se abrirá para comparar os resultados de forma gráfica e apontar a
+                                mutação em vermelho.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content codon-table">
+                <div class="page-header">
+                    <h2>Tabela de Códons (RNAm)</h2>
+                    <p>Clique em qualquer códon para preencher automaticamente o simulador. As cores agrupam os
+                        aminoácidos por propriedades químicas.</p>
+                </div>
+                <div class="codon-table-responsive">
+                    <table class="codon-matrix">
+                        <thead>
+                            <tr>
+                                <th>1ª Base</th>
+                                <th>2ª Base: U</th>
+                                <th>2ª Base: C</th>
+                                <th>2ª Base: A</th>
+                                <th>2ª Base: G</th>
+                                <th>3ª Base</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Row 1: U -->
+                            <tr>
+                                <td class="first-base-cell">U</td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="UUU"><span
+                                                class="codon-name">UUU</span> <span class="codon-aa">Phe</span></div>
+                                        <div class="codon-item base-apolar" data-codon="UUC"><span
+                                                class="codon-name">UUC</span> <span class="codon-aa">Phe</span></div>
+                                        <div class="codon-item base-apolar" data-codon="UUA"><span
+                                                class="codon-name">UUA</span> <span class="codon-aa">Leu</span></div>
+                                        <div class="codon-item base-apolar" data-codon="UUG"><span
+                                                class="codon-name">UUG</span> <span class="codon-aa">Leu</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="UCU"><span
+                                                class="codon-name">UCU</span> <span class="codon-aa">Ser</span></div>
+                                        <div class="codon-item base-polar" data-codon="UCC"><span
+                                                class="codon-name">UCC</span> <span class="codon-aa">Ser</span></div>
+                                        <div class="codon-item base-polar" data-codon="UCA"><span
+                                                class="codon-name">UCA</span> <span class="codon-aa">Ser</span></div>
+                                        <div class="codon-item base-polar" data-codon="UCG"><span
+                                                class="codon-name">UCG</span> <span class="codon-aa">Ser</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="UAU"><span
+                                                class="codon-name">UAU</span> <span class="codon-aa">Tyr</span></div>
+                                        <div class="codon-item base-polar" data-codon="UAC"><span
+                                                class="codon-name">UAC</span> <span class="codon-aa">Tyr</span></div>
+                                        <div class="codon-item codon-stop" data-codon="UAA"><span
+                                                class="codon-name">UAA</span> <span class="codon-aa">STOP</span></div>
+                                        <div class="codon-item codon-stop" data-codon="UAG"><span
+                                                class="codon-name">UAG</span> <span class="codon-aa">STOP</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="UGU"><span
+                                                class="codon-name">UGU</span> <span class="codon-aa">Cys</span></div>
+                                        <div class="codon-item base-polar" data-codon="UGC"><span
+                                                class="codon-name">UGC</span> <span class="codon-aa">Cys</span></div>
+                                        <div class="codon-item codon-stop" data-codon="UGA"><span
+                                                class="codon-name">UGA</span> <span class="codon-aa">STOP</span></div>
+                                        <div class="codon-item base-apolar" data-codon="UGG"><span
+                                                class="codon-name">UGG</span> <span class="codon-aa">Trp</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="third-base-list">
+                                        <div>U</div>
+                                        <div>C</div>
+                                        <div>A</div>
+                                        <div>G</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Row 2: C -->
+                            <tr>
+                                <td class="first-base-cell">C</td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="CUU"><span
+                                                class="codon-name">CUU</span> <span class="codon-aa">Leu</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CUC"><span
+                                                class="codon-name">CUC</span> <span class="codon-aa">Leu</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CUA"><span
+                                                class="codon-name">CUA</span> <span class="codon-aa">Leu</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CUG"><span
+                                                class="codon-name">CUG</span> <span class="codon-aa">Leu</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="CCU"><span
+                                                class="codon-name">CCU</span> <span class="codon-aa">Pro</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CCC"><span
+                                                class="codon-name">CCC</span> <span class="codon-aa">Pro</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CCA"><span
+                                                class="codon-name">CCA</span> <span class="codon-aa">Pro</span></div>
+                                        <div class="codon-item base-apolar" data-codon="CCG"><span
+                                                class="codon-name">CCG</span> <span class="codon-aa">Pro</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-basic" data-codon="CAU"><span
+                                                class="codon-name">CAU</span> <span class="codon-aa">His</span></div>
+                                        <div class="codon-item base-basic" data-codon="CAC"><span
+                                                class="codon-name">CAC</span> <span class="codon-aa">His</span></div>
+                                        <div class="codon-item base-polar" data-codon="CAA"><span
+                                                class="codon-name">CAA</span> <span class="codon-aa">Gln</span></div>
+                                        <div class="codon-item base-polar" data-codon="CAG"><span
+                                                class="codon-name">CAG</span> <span class="codon-aa">Gln</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-basic" data-codon="CGU"><span
+                                                class="codon-name">CGU</span> <span class="codon-aa">Arg</span></div>
+                                        <div class="codon-item base-basic" data-codon="CGC"><span
+                                                class="codon-name">CGC</span> <span class="codon-aa">Arg</span></div>
+                                        <div class="codon-item base-basic" data-codon="CGA"><span
+                                                class="codon-name">CGA</span> <span class="codon-aa">Arg</span></div>
+                                        <div class="codon-item base-basic" data-codon="CGG"><span
+                                                class="codon-name">CGG</span> <span class="codon-aa">Arg</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="third-base-list">
+                                        <div>U</div>
+                                        <div>C</div>
+                                        <div>A</div>
+                                        <div>G</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Row 3: A -->
+                            <tr>
+                                <td class="first-base-cell">A</td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="AUU"><span
+                                                class="codon-name">AUU</span> <span class="codon-aa">Ile</span></div>
+                                        <div class="codon-item base-apolar" data-codon="AUC"><span
+                                                class="codon-name">AUC</span> <span class="codon-aa">Ile</span></div>
+                                        <div class="codon-item base-apolar" data-codon="AUA"><span
+                                                class="codon-name">AUA</span> <span class="codon-aa">Ile</span></div>
+                                        <div class="codon-item codon-start" data-codon="AUG"><span
+                                                class="codon-name">AUG</span> <span
+                                                class="codon-aa font-bold">Met</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="ACU"><span
+                                                class="codon-name">ACU</span> <span class="codon-aa">Thr</span></div>
+                                        <div class="codon-item base-polar" data-codon="ACC"><span
+                                                class="codon-name">ACC</span> <span class="codon-aa">Thr</span></div>
+                                        <div class="codon-item base-polar" data-codon="ACA"><span
+                                                class="codon-name">ACA</span> <span class="codon-aa">Thr</span></div>
+                                        <div class="codon-item base-polar" data-codon="ACG"><span
+                                                class="codon-name">ACG</span> <span class="codon-aa">Thr</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="AAU"><span
+                                                class="codon-name">AAU</span> <span class="codon-aa">Asn</span></div>
+                                        <div class="codon-item base-polar" data-codon="AAC"><span
+                                                class="codon-name">AAC</span> <span class="codon-aa">Asn</span></div>
+                                        <div class="codon-item base-basic" data-codon="AAA"><span
+                                                class="codon-name">AAA</span> <span class="codon-aa">Lys</span></div>
+                                        <div class="codon-item base-basic" data-codon="AAG"><span
+                                                class="codon-name">AAG</span> <span class="codon-aa">Lys</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-polar" data-codon="AGU"><span
+                                                class="codon-name">AGU</span> <span class="codon-aa">Ser</span></div>
+                                        <div class="codon-item base-polar" data-codon="AGC"><span
+                                                class="codon-name">AGC</span> <span class="codon-aa">Ser</span></div>
+                                        <div class="codon-item base-basic" data-codon="AGA"><span
+                                                class="codon-name">AGA</span> <span class="codon-aa">Arg</span></div>
+                                        <div class="codon-item base-basic" data-codon="AGG"><span
+                                                class="codon-name">AGG</span> <span class="codon-aa">Arg</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="third-base-list">
+                                        <div>U</div>
+                                        <div>C</div>
+                                        <div>A</div>
+                                        <div>G</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Row 4: G -->
+                            <tr>
+                                <td class="first-base-cell">G</td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="GUU"><span
+                                                class="codon-name">GUU</span> <span class="codon-aa">Val</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GUC"><span
+                                                class="codon-name">GUC</span> <span class="codon-aa">Val</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GUA"><span
+                                                class="codon-name">GUA</span> <span class="codon-aa">Val</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GUG"><span
+                                                class="codon-name">GUG</span> <span class="codon-aa">Val</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="GCU"><span
+                                                class="codon-name">GCU</span> <span class="codon-aa">Ala</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GCC"><span
+                                                class="codon-name">GCC</span> <span class="codon-aa">Ala</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GCA"><span
+                                                class="codon-name">GCA</span> <span class="codon-aa">Ala</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GCG"><span
+                                                class="codon-name">GCG</span> <span class="codon-aa">Ala</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-acid" data-codon="GAU"><span
+                                                class="codon-name">GAU</span> <span class="codon-aa">Asp</span></div>
+                                        <div class="codon-item base-acid" data-codon="GAC"><span
+                                                class="codon-name">GAC</span> <span class="codon-aa">Asp</span></div>
+                                        <div class="codon-item base-acid" data-codon="GAA"><span
+                                                class="codon-name">GAA</span> <span class="codon-aa">Glu</span></div>
+                                        <div class="codon-item base-acid" data-codon="GAG"><span
+                                                class="codon-name">GAG</span> <span class="codon-aa">Glu</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="codon-cell-group">
+                                        <div class="codon-item base-apolar" data-codon="GGU"><span
+                                                class="codon-name">GGU</span> <span class="codon-aa">Gly</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GGC"><span
+                                                class="codon-name">GGC</span> <span class="codon-aa">Gly</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GGA"><span
+                                                class="codon-name">GGA</span> <span class="codon-aa">Gly</span></div>
+                                        <div class="codon-item base-apolar" data-codon="GGG"><span
+                                                class="codon-name">GGG</span> <span class="codon-aa">Gly</span></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="third-base-list">
+                                        <div>U</div>
+                                        <div>C</div>
+                                        <div>A</div>
+                                        <div>G</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
     </div>
+
+    <!-- Drawer de detalhes do aminoácido -->
+    <div id="aminoacid-details-drawer" class="aminoacid-drawer">
+        <button class="drawer-close-btn">&times;</button>
+        <div class="drawer-content">
+            <h3 id="drawer-title">Nome do Aminoácido</h3>
+            <div class="drawer-img-container">
+                <div id="drawer-img" class="molecule"></div>
+            </div>
+            <div class="drawer-info-group">
+                <div class="info-label">Abreviaturas:</div>
+                <div class="info-value" id="drawer-abbrevs">-</div>
+            </div>
+            <div class="drawer-info-group">
+                <div class="info-label">Códons:</div>
+                <div class="info-value" id="drawer-codons">-</div>
+            </div>
+            <div class="drawer-info-group">
+                <div class="info-label">Tipo:</div>
+                <div class="info-value" id="drawer-type">-</div>
+            </div>
+            <div class="drawer-info-group">
+                <div class="info-label">Função Biológica:</div>
+                <div class="info-value" id="drawer-function">-</div>
+            </div>
+        </div>
+    </div>
+
     <footer>
-        <span>© 2019 Protein Synthesis.</span>
+        <span>© 2026 Willian J M Lourenço</span>
     </footer>
 
 
 </body>
-<script src="assets/js/dom.min.js"></script>
-<script src="assets/js/script.min.js"></script>
+<script src="assets/js/dom.js"></script>
+<script src="assets/js/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 
 </html>

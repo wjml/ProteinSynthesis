@@ -21,11 +21,6 @@ buttons.forEach(function (button) {
             document.getElementsByClassName("empty")[0].classList.remove("active")
             document.getElementsByClassName("sequence")[0].classList.remove("active")
             document.getElementsByClassName("sequence")[1].classList.remove("active")
-            Array.from(document.getElementsByClassName("sequenceChar")).forEach(function (sequenceitem) {
-                sequenceitem.parentNode.removeChild(sequenceitem)
-            })
-            document.getElementsByClassName("output-aminoacids")[0].innerHTML = ""
-
         }
         this.classList.add("active")
 
@@ -42,10 +37,22 @@ function cloneSequencePrimary() {
                 sequenceChar.classList.remove("mutated")
             })
         }
-        document.getElementsByClassName("sequence")[1].appendChild(child.cloneNode(true))
+        // Skip cloning the blank-space element to avoid extra empty input
+        if (!child.id || child.id !== 'blank-space') {
+            document.getElementsByClassName("sequence")[1].appendChild(child.cloneNode(true));
+        }
     })
 }
 function setVisiblePage(id) {
     document.getElementById("visible-page").getElementsByClassName("active")[0].classList.remove("active")
     document.getElementById("visible-page").getElementsByClassName(id)[0].classList.add("active")
+}
+
+// Lógica do Modo Professor
+var toggleProfessor = document.getElementById("toggle-professor");
+if (toggleProfessor) {
+    toggleProfessor.addEventListener("click", function () {
+        document.body.classList.toggle("presentation-mode");
+        this.classList.toggle("active");
+    });
 }

@@ -1,7 +1,7 @@
 #visible-page {
 	width: calc(100% - var(--sidebarSize));
 	height: 100%;
-	background: rgb(240, 240, 240);
+	background: #f4f6f9;
 }
 
 .content {
@@ -9,8 +9,9 @@
 	visibility: hidden;
 	width: 0;
 	height: 0;
-	transition: opacity 0.6s;
+	transition: opacity 0.4s ease-in-out;
 	overflow: hidden;
+	box-sizing: border-box;
 }
 
 .content.active {
@@ -18,11 +19,574 @@
 	visibility: visible;
 	width: 100%;
 	height: 100%;
+	padding: 2.5rem;
+	overflow-y: auto;
 }
 
-.in-construction {
-	background-image: url(../images/page_under_construction.png);
+/* Page Header */
+.page-header {
+	margin-bottom: 2rem;
+	border-bottom: 2px solid #e0e6ed;
+	padding-bottom: 1rem;
+}
+
+.page-header h2 {
+	margin: 0 0 0.5rem 0;
+	color: #2c3e50;
+	font-size: 2.2rem;
+	font-weight: 700;
+}
+
+.page-header p {
+	margin: 0;
+	color: #7f8c8d;
+	font-size: 1.1rem;
+}
+
+/* Educational Grid Layout */
+.educational-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+/* Info Cards */
+.info-card {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 1.5rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	border: 1px solid #eef2f5;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.info-card h3 {
+	margin: 0 0 1rem 0;
+	color: var(--colorDetails);
+	font-size: 1.3rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.info-card p {
+	color: #55606d;
+	line-height: 1.6;
+	font-size: 0.95rem;
+	margin: 0 0 1rem 0;
+}
+
+/* Nitrogenous Bases List & Badges */
+.base-list {
+	padding: 0;
+	list-style: none;
+	margin: 0;
+}
+
+.base-list li {
+	display: flex;
+	align-items: center;
+	gap: 0.8rem;
+	margin-bottom: 0.6rem;
+	color: #2c3e50;
+}
+
+.base-badge {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	font-weight: bold;
+	color: white;
+	font-family: 'Roboto Mono', monospace;
+	font-size: 0.9rem;
+}
+
+.base-badge.base-a { background-color: #1e88e5; } /* Adenine - Blue */
+.base-badge.base-t { background-color: #f57c00; } /* Thymine - Orange */
+.base-badge.base-c { background-color: #43a047; } /* Cytosine - Green */
+.base-badge.base-g { background-color: #e53935; } /* Guanine - Red */
+.base-badge.base-u { background-color: #8e24aa; } /* Uracil - Purple */
+
+/* Rules Panel */
+.pairing-rule {
+	background: #f7f9fb;
+	padding: 0.8rem;
+	border-left: 4px solid var(--colorDetails);
+	border-radius: 0 8px 8px 0;
+	font-family: 'Roboto Mono', monospace;
+	font-size: 1.1rem;
+	color: #2c3e50;
+	margin: 0.5rem 0;
+	line-height: 1.5;
+}
+
+/* Version Timeline */
+.version-timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	position: relative;
+	padding-left: 1rem;
+}
+
+.version-card {
+	background: white;
+	border-radius: 12px;
+	padding: 1.5rem;
+	border: 1px solid #eef2f5;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	position: relative;
+}
+
+.version-card h3 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1.3rem;
+	color: #2c3e50;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.version-date {
+	font-size: 0.9rem;
+	color: #95a5a6;
+	font-weight: normal;
+}
+
+.badge-active {
+	background-color: var(--colorDetails);
+	color: white;
+	font-size: 0.75rem;
+	padding: 0.2rem 0.6rem;
+	border-radius: 20px;
+	font-weight: bold;
+	display: inline-block;
+	margin-bottom: 0.8rem;
+}
+
+.version-card ul {
+	margin: 0;
+	padding-left: 1.2rem;
+	color: #55606d;
+	line-height: 1.7;
+}
+
+.version-card li {
+	margin-bottom: 0.4rem;
+}
+
+/* Tutorial Steps */
+.tutorial-steps {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+.step-card {
+	display: flex;
+	gap: 1.5rem;
+	background: white;
+	border-radius: 12px;
+	padding: 1.5rem;
+	border: 1px solid #eef2f5;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.step-num {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-width: 45px;
+	height: 45px;
+	border-radius: 50%;
+	background-color: var(--colorDetails);
+	color: white;
+	font-size: 1.4rem;
+	font-weight: bold;
+}
+
+.step-body h3 {
+	margin: 0 0 0.5rem 0;
+	color: #2c3e50;
+	font-size: 1.2rem;
+}
+
+.step-body p {
+	margin: 0 0 0.5rem 0;
+	color: #55606d;
+	line-height: 1.6;
+}
+
+.step-body ul {
+	padding-left: 1.2rem;
+	color: #55606d;
+	margin: 0.5rem 0;
+	line-height: 1.6;
+}
+
+/* DNA Helix Animation */
+.helix-animation-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 140px;
+	margin-top: 15px;
+	overflow: hidden;
+}
+.dna-helix {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 0;
+}
+.base-pair {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 150px;
+	height: 10px;
+	position: relative;
+}
+.base-pair .dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	position: absolute;
+	animation: rotateStrand 2.4s infinite ease-in-out;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.base-pair .dot.base-a { background-color: #1e88e5; }
+.base-pair .dot.base-t { background-color: #f57c00; }
+.base-pair .dot.base-c { background-color: #43a047; }
+.base-pair .dot.base-g { background-color: #e53935; }
+
+.base-pair .dot:first-child {
+	left: 0;
+	animation-delay: calc(var(--i) * -0.22s);
+}
+.base-pair .dot:last-child {
+	right: 0;
+	animation-delay: calc(var(--i) * -0.22s - 1.2s);
+}
+.base-pair .line {
+	height: 2px;
+	background: #cbd5e1;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	top: 5px;
+	z-index: -1;
+	transform: scaleX(0);
+	animation: scaleLine 2.4s infinite ease-in-out;
+	animation-delay: calc(var(--i) * -0.22s);
+	transform-origin: center;
+}
+@keyframes rotateStrand {
+	0%, 100% {
+		transform: translateX(0) scale(1.1);
+		z-index: 2;
+	}
+	25% {
+		transform: translateX(69px) scale(0.85);
+	}
+	50% {
+		transform: translateX(138px) scale(1.1);
+		z-index: -1;
+	}
+	75% {
+		transform: translateX(69px) scale(1.35);
+	}
+}
+@keyframes scaleLine {
+	0%, 50%, 100% {
+		transform: scaleX(1);
+	}
+	25%, 75% {
+		transform: scaleX(0);
+	}
+}
+
+/* Transcription Steps Diagram */
+.transcription-steps-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-top: 10px;
+}
+.transcription-step {
+	display: flex;
+	align-items: flex-start;
+	gap: 15px;
+	background: #f8fafc;
+	border-radius: 8px;
+	padding: 10px 12px;
+	border-left: 4px solid var(--colorDetails);
+}
+.transcription-step .step-badge {
+	background-color: var(--colorDetails);
+	color: white;
+	font-weight: bold;
+	font-size: 0.9rem;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+.transcription-step .step-text {
+	font-size: 0.9rem;
+	line-height: 1.4;
+	color: #475569;
+}
+
+/* Amino Acids Table */
+.table-wrapper {
+	max-height: 280px;
+	overflow-y: auto;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	background: #f8fafc;
+	margin-top: 10px;
+}
+.amino-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+}
+.amino-table th, .amino-table td {
+	padding: 8px 12px;
+	text-align: left;
+	border-bottom: 1px solid #e2e8f0;
+}
+.amino-table th {
+	background-color: #cbd5e1;
+	color: #1e293b;
+	font-weight: 600;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+.amino-table tr:hover {
+	background-color: #f1f5f9;
+}
+.amino-table td:last-child {
+	font-weight: 500;
+}
+
+/* Codon Table Page */
+.content.codon-table {
+	display: block;
+}
+.codon-table-responsive {
+	width: 100%;
+	overflow-x: auto;
+	background: white;
+	border-radius: 12px;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	padding: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+.codon-matrix {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: center;
+	font-size: 0.85rem;
+}
+.codon-matrix th, .codon-matrix td {
+	border: 1px solid #e2e8f0;
+	padding: 8px;
+}
+.codon-matrix th {
+	background-color: #f1f5f9;
+	font-weight: 700;
+	color: #334155;
+}
+.codon-cell-group {
+	display: grid;
+	grid-template-rows: repeat(4, 1fr);
+	gap: 4px;
+}
+.codon-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-family: 'Roboto Mono', monospace;
+	font-weight: 600;
+}
+.codon-item:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	filter: brightness(0.95);
+}
+.codon-name {
+	color: #1e293b;
+}
+.codon-aa {
+	font-size: 0.75rem;
+	font-weight: bold;
+}
+/* Group by properties colors */
+.codon-item.base-apolar {
+	background-color: #fef3c7; /* Amber 100 */
+	border-left: 3px solid #d97706; /* Amber 600 */
+	color: #92400e;
+}
+.codon-item.base-polar {
+	background-color: #dbeafe; /* Blue 100 */
+	border-left: 3px solid #2563eb; /* Blue 600 */
+	color: #1e40af;
+}
+.codon-item.base-basic {
+	background-color: #d1fae5; /* Emerald 100 */
+	border-left: 3px solid #059669; /* Emerald 600 */
+	color: #065f46;
+}
+.codon-item.base-acid {
+	background-color: #fee2e2; /* Red 100 */
+	border-left: 3px solid #dc2626; /* Red 600 */
+	color: #991b1b;
+}
+.codon-item.codon-start {
+	background-color: #e0f2fe; /* Sky 100 */
+	border-left: 3px solid #0284c7; /* Sky 600 */
+	color: #0369a1;
+	box-shadow: 0 0 4px rgba(2, 132, 199, 0.4);
+}
+.codon-item.codon-stop {
+	background-color: #f3e8ff; /* Purple 100 */
+	border-left: 3px solid #9333ea; /* Purple 600 */
+	color: #6b21a8;
+}
+.first-base-cell {
+	font-weight: bold;
+	font-size: 1.5rem;
+	color: var(--colorDetails);
+	background: #f8fafc;
+}
+.third-base-list {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	height: 100%;
+	font-weight: bold;
+	color: #475569;
+	min-height: 110px;
+}
+.third-base-list div {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-bottom: 1px solid #f1f5f9;
+}
+.third-base-list div:last-child {
+	border-bottom: none;
+}
+
+/* Aminoacid Drawer Details */
+.aminoacid-drawer {
+	position: fixed;
+	top: 0;
+	right: -360px;
+	width: 360px;
+	height: 100%;
+	background-color: white;
+	box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+	z-index: 1050;
+	transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	display: flex;
+	flex-direction: column;
+	padding: 2rem;
+	box-sizing: border-box;
+}
+.aminoacid-drawer.open {
+	right: 0;
+}
+.drawer-close-btn {
+	position: absolute;
+	top: 15px;
+	right: 20px;
+	background: none;
+	border: none;
+	font-size: 2rem;
+	cursor: pointer;
+	color: #94a3b8;
+	line-height: 1;
+	transition: color 0.15s ease;
+}
+.drawer-close-btn:hover {
+	color: #ef4444;
+}
+.drawer-content {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	height: 100%;
+	overflow-y: auto;
+	margin-top: 1rem;
+}
+.drawer-content h3 {
+	margin: 0;
+	color: #1e293b;
+	font-size: 1.6rem;
+	font-weight: 700;
+	border-bottom: 2px solid #e2e8f0;
+	padding-bottom: 8px;
+}
+.drawer-img-container {
+	width: 100%;
+	height: 180px;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	background: #f8fafc;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+}
+.drawer-img-container .molecule {
+	width: 100%;
+	height: 100%;
 	background-repeat: no-repeat;
 	background-position: center;
-	background-size: 40%;
+	background-size: contain;
+}
+.drawer-info-group {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.drawer-info-group .info-label {
+	font-weight: 700;
+	color: #64748b;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.drawer-info-group .info-value {
+	font-size: 0.95rem;
+	color: #334155;
+	line-height: 1.5;
+}
+#drawer-codons {
+	font-family: 'Roboto Mono', monospace;
+	font-weight: 600;
+	color: var(--colorDetails);
 }
