@@ -7,6 +7,7 @@ var textboxDna = document.getElementsByClassName("textbox-dna"),
     addButton = document.getElementById("add"),
     deleteButton = document.getElementById("delete"),
     replaceButton = document.getElementById("replace");
+    mutationWindow = document.getElementsByClassName("sequence to-mutate")
 
 // Shared handler: creates first input or focuses the last existing one
 function activateDnaInput() {
@@ -445,7 +446,7 @@ function treatSequence() {
         }
     }
 
-    // Treat second fita if active (to ensure dynamic edits or cloning are aligned)
+    // Treat second fita if @ (to ensure dynamic edits or cloning are aligned)
     let secondDna = textboxDna[1].getElementsByClassName("sequenceChar");
     let secondRna = textboxRna[1].getElementsByClassName("sequenceChar");
     for (let i = 0; i < secondDna.length; i++) {
@@ -685,6 +686,13 @@ window.insertBase = insertBase; // Expose globally for HTML onclicks
 
 // Clear all inputs
 function clearSequence() {
+    // Reset mutation mode
+    addButton.classList.remove("active");
+    deleteButton.classList.remove("active");
+    replaceButton.classList.remove("active");
+    mutationWindow[0].classList.remove("active");
+
+    // Clear all sequence inputs
     var chars = Array.from(textboxDna[0].getElementsByClassName("sequenceChar"));
     chars.forEach(function (char) {
         textboxDna[0].removeChild(char);
@@ -954,43 +962,43 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
     
-    // Close drawer when mouse leaves it
-    var drawer = document.getElementById("aminoacid-details-drawer");
-    if (drawer) {
-        drawer.addEventListener("mouseleave", function () {
-            if (!this.classList.contains("clicked-open")) {
-                this.classList.remove("open");
-            }
-        });
-    }
+   //Close drawer when mouse leaves it 
+   var drawer = document.getElementById("aminoacid-details-drawer"); 
+   if (drawer) { 
+        drawer.addEventListener("mouseleave", function () { 
+            if (!this.classList.contains("clicked-open")){ 
+                this.classList.remove("open"); 
+            } 
+        }); 
+    } 
     
     // Interactive Codon Table clicks
-    document.querySelectorAll(".codon-item").forEach(function (item) {
-        item.addEventListener("click", function () {
-            var codon = this.getAttribute("data-codon");
-            if (codon) {
-                // Translate mRNA codon bases to template DNA bases
-                // A -> T, U -> A, C -> G, G -> C
-                var dnaCodon = "";
-                for (var i = 0; i < codon.length; i++) {
-                    var rnaBase = codon[i];
-                    if (rnaBase === "A") dnaCodon += "T";
-                    else if (rnaBase === "U") dnaCodon += "A";
-                    else if (rnaBase === "C") dnaCodon += "G";
-                    else if (rnaBase === "G") dnaCodon += "C";
-                }
-                
-                // Switch tab to app
-                var appBtn = document.getElementById("app");
-                if (appBtn) {
-                    appBtn.click();
-                }
-                
-                // Insert the three DNA bases sequentially
-                for (var j = 0; j < dnaCodon.length; j++) {
-                    insertBase(dnaCodon[j]);
-                }
+document.querySelectorAll(".codon-item").forEach(function (item) {
+    item.addEventListener("click", function () {
+        var codon = this.getAttribute("data-codon");
+        if (codon) {
+            // Translate mRNA codon bases to template DNA bases
+            // A -> T, U -> A, C -> G, G -> C
+            var dnaCodon = "";
+            for (var i = 0; i < codon.length; i++) {
+                var rnaBase = codon[i];
+                if (rnaBase === "A") dnaCodon += "T";
+                else if (rnaBase === "U") dnaCodon += "A";
+                else if (rnaBase === "C") dnaCodon += "G";
+                else if (rnaBase === "G") dnaCodon += "C";
             }
-        });
+            
+            // Switch tab to app
+            var appBtn = document.getElementById("app");
+            if (appBtn) {
+                appBtn.click();
+            }
+            
+            // Insert the three DNA bases sequentially
+            for (var j = 0; j < dnaCodon.length; j++) {
+                insertBase(dnaCodon[j]);
+            }
+        }
     });
+});
 });
