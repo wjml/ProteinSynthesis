@@ -9,8 +9,120 @@
     <link rel="stylesheet" href="assets/style/app.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
         integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-    <link rel="icon" href="/assets/icon-beta.png" type="image/png">
     <title>Protein Synthesis</title>
+    <style>
+        /* ===== Exportar / Importar Sequência — Modal ===== */
+        /* Paleta neutra autocontida; ajuste as cores abaixo para casar com
+           as variáveis de assets/style/app.css caso queira integração total. */
+        .seq-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 10, 16, 0.72);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .seq-modal {
+            position: relative;
+            width: min(440px, 90vw);
+            max-height: 85vh;
+            overflow-y: auto;
+            background: #161b24;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            color: #e6e9ef;
+            font-family: inherit;
+        }
+
+        .seq-modal h3 {
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+
+        .seq-modal-desc {
+            margin: 0 0 16px;
+            font-size: 0.85rem;
+            color: #9aa3b2;
+            line-height: 1.5;
+        }
+
+        .seq-modal-label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #7d8696;
+            margin: 14px 0 6px;
+        }
+
+        .seq-modal-textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: #0d1117;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #e6e9ef;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.03em;
+            padding: 10px 12px;
+            resize: vertical;
+        }
+
+        .seq-modal-textarea:focus {
+            outline: none;
+            border-color: #00c2ff;
+        }
+
+        .seq-modal-action {
+            margin-top: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .seq-modal-feedback {
+            display: block;
+            min-height: 1.2em;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            color: #4ade80;
+        }
+
+        .seq-modal-feedback.error {
+            color: #f87171;
+        }
+
+        .seq-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #9aa3b2;
+            font-size: 1.4rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .seq-modal-close:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 480px) {
+            .seq-modal {
+                padding: 18px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -22,7 +134,7 @@
             </div>
             <ul class="sidebar">
                 <li class="header-title" id="access-to-information">
-                    <span>Informações Educacionais</span>
+                    <span>ACESSO À INFORMAÇÃO</span>
                 </li>
                 <li class="button active" id="dna">
                     <i class="fas fa-dna"></i> DNA
@@ -47,17 +159,17 @@
                         <span>MUTAÇÃO</span>
                     </li>
                     <li class="button" id="add">
-                        <i class="fas fa-plus-circle"></i> Adição
+                        <i class="fas fa-plus-circle"></i> Adicionar
                     </li>
                     <li class="button" id="delete">
-                        <i class="fas fa-minus-circle"></i> Deleção
+                        <i class="fas fa-minus-circle"></i> Deletar
                     </li>
                     <li class="button" id="replace">
-                        <i class="fas fa-sync-alt"></i> Substituição
+                        <i class="fas fa-sync-alt"></i> Substituir
                     </li>
                 </ul>
                 <li class="header-title" id="about">
-                    <span>Sobre o Aplicativo</span>
+                    <span>SOBRE</span>
                 </li>
                 <li class="button" id="versions">
                     <i class="fas fa-info-circle"></i> Versões
@@ -164,9 +276,11 @@
                         <h3><i class="fas fa-exchange-alt"></i> Diferenças Chave</h3>
                         <p>Diferente do DNA, o RNA:</p>
                         <ul class="base-list">
-                            <li><span>É composto por uma <strong>fita simples</strong>.</span></li>
-                            <li><span>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</span></li>
-                            <li><span>Substitui a Timina (T) pela <span class="base-badge base-u">U</span> <strong>Uracila</strong>.</span></li>
+                            <li>É composto por uma <strong>fita simples</strong>.</li>
+                            <li>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</li>
+                            <li>Substitui a Timina (T) pela <span class="base-badge base-u">U</span>
+                                <strong>Uracila</strong>.
+                            </li>
                         </ul>
                     </div>
                     <div class="info-card">
@@ -375,6 +489,10 @@
                         <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
                         <button id="btn-random" class="btn-control"><i class="fas fa-random"></i> Sequência
                             aleatória</button>
+                        <button id="btn-export" class="btn-control"><i class="fas fa-file-export"></i>
+                            Exportar</button>
+                        <button id="btn-import" class="btn-control"><i class="fas fa-file-import"></i>
+                            Importar</button>
                     </div>
                     <div class="base-input-buttons">
                         <span class="button-label">Inserir Base:</span>
@@ -389,18 +507,9 @@
                     <div class="textbox-dna">
                         <span id="blank-space"></span>
                     </div>
-                    <div class="label">RNAm
-                        <div class="process-box" id="transcription">
-                        <span>↓ TRANSCRIÇÃO </span>
-                       </div>
-                    </div>
-                    
+                    <div class="label">RNAm</div>
                     <div class="textbox-rna"></div>
-                    <div class="label">Estrutura Primária do Peptídeo (Sequência de Aminoácidos)
-                        <div class="process-box" id="translation">
-                        <span>↓ TRADUÇÃO </span>
-                       </div>
-                    </div>
+                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
                     <div class="output-aminoacids"></div>
                 </div>
                 <div class="sequence to-mutate">
@@ -408,10 +517,10 @@
                     <div class="textbox-dna"></div>
                     <div class="label">RNAm</div>
                     <div class="textbox-rna"></div>
-                    <div class="label">Estrutura Primária do Peptídeo (Sequência de Aminoácidos)</div>
+                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
                     <div class="output-aminoacids"></div>
                 </div>
-                <div class="mutation-panel" style="display: none;"> 
+                <div class="mutation-panel">
                     <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
                     <div class="mutation-analysis-result">
                         <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação no menu
@@ -431,7 +540,7 @@
                 </div>
                 <div class="version-timeline">
                     <div class="version-card">
-                        <h3>v0.3 <span class="version-date">Junho, 2026</span></h3>
+                        <h3>v1.0 <span class="version-date">Junho, 2026</span></h3>
                         <span class="badge-active">Atual</span>
                         <ul>
                             <li><strong>Análise de Mutações:</strong> Classificação em tempo real (Silenciosa, Missense,
@@ -495,9 +604,9 @@
                             <h3>Simulando Mutações</h3>
                             <p>Utilize os controles de mutação na barra lateral:</p>
                             <ul>
-                                <li><strong>Adição:</strong> Insira novas bases no meio da fita.</li>
-                                <li><strong>Deleção:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
-                                <li><strong>Substituição:</strong> Substitua uma base por outra na mesma posição.</li>
+                                <li><strong>Adicionar:</strong> Insira novas bases no meio da fita.</li>
+                                <li><strong>Deletar:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
+                                <li><strong>Substituir:</strong> Substitua uma base por outra na mesma posição.</li>
                             </ul>
                             <p>A fita inferior mutada se abrirá para comparar os resultados de forma gráfica e apontar a
                                 mutação em vermelho.</p>
@@ -798,6 +907,44 @@
                 <div class="info-label">Função Biológica:</div>
                 <div class="info-value" id="drawer-function">-</div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Exportar sequência -->
+    <div id="export-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal">
+            <button class="seq-modal-close" id="export-modal-close">&times;</button>
+            <h3><i class="fas fa-file-export"></i> Exportar Sequência</h3>
+            <p class="seq-modal-desc">Copie a sequência de DNA atual ou um link de compartilhamento para distribuir
+                exatamente esta cadeia para a turma.</p>
+
+            <label class="seq-modal-label" for="export-seq-text">Sequência de DNA</label>
+            <textarea id="export-seq-text" class="seq-modal-textarea" rows="3" readonly></textarea>
+            <button id="export-copy-seq" class="btn-control seq-modal-action"><i class="fas fa-copy"></i> Copiar
+                sequência</button>
+
+            <label class="seq-modal-label" for="export-seq-link">Link de compartilhamento</label>
+            <textarea id="export-seq-link" class="seq-modal-textarea" rows="2" readonly></textarea>
+            <button id="export-copy-link" class="btn-control seq-modal-action"><i class="fas fa-link"></i> Copiar
+                link</button>
+
+            <span id="export-feedback" class="seq-modal-feedback"></span>
+        </div>
+    </div>
+
+    <!-- Modal: Importar sequência -->
+    <div id="import-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal">
+            <button class="seq-modal-close" id="import-modal-close">&times;</button>
+            <h3><i class="fas fa-file-import"></i> Importar Sequência</h3>
+            <p class="seq-modal-desc">Cole uma sequência de DNA (bases A, T, C, G) para carregá-la no simulador. A
+                sequência atual será substituída.</p>
+
+            <textarea id="import-seq-input" class="seq-modal-textarea" rows="3"
+                placeholder="Ex: TACGGGATTACTGTTTAATTAATT"></textarea>
+            <span id="import-feedback" class="seq-modal-feedback"></span>
+            <button id="import-load-btn" class="btn-control seq-modal-action"><i class="fas fa-upload"></i> Carregar
+                sequência</button>
         </div>
     </div>
 

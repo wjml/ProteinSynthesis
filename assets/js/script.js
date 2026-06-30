@@ -245,6 +245,16 @@
     }
   }
 
+  /**
+   * Exibe uma notificação informativa não-bloqueante (ex: sequência carregada via link).
+   * Silenciosa se o SweetAlert ainda não estiver disponível, para não interromper a carga da página.
+   */
+  function showInfo(title, text) {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({ type: 'success', title, text, timer: 2800, showConfirmButton: false });
+    }
+  }
+
   // ─── Criação de elementos DOM ─────────────────────────────────────────────────
 
   /** Cria e retorna um novo input sequenceChar com os event listeners vinculados. */
@@ -852,6 +862,169 @@
     treatSequence();
   }
 
+  // ─── Exportação / Importação de sequência ────────────────────────────────────
+
+  /**
+   * Remove espaços, vírgulas e outros separadores comuns de uma string colada,
+   * e isola apenas as bases válidas (A, T, C, G). Sinaliza se algum caractere
+   * desconhecido (não-base, não-separador) foi descartado.
+   */
+  function sanitizeDnaInput(raw) {
+    const upper = String(raw || '').toUpperCase();
+    let clean = '';
+    let hadInvalid = false;
+
+    for (const ch of upper) {
+      if (VALID_BASES.has(ch)) {
+        clean += ch;
+      } else if (!/[\s,;|\-_/\\]/.test(ch)) {
+        hadInvalid = true;
+      }
+    }
+
+    return { clean, hadInvalid };
+  }
+
+  /**
+   * Carrega uma sequência de DNA já validada no simulador, substituindo a sequência atual.
+   * Reaproveita a mesma estratégia de inserção em lote de randomSequence(): insere todos
+   * os inputs primeiro e só então dispara translate()/treatSequence() uma única vez.
+   */
+  function loadSequenceFromString(dnaSeq) {
+    clearSequence();
+
+    let lastDnaInput = null;
+    for (const base of dnaSeq) {
+      lastDnaInput = newSequenceChar(base);
+      textboxDna[0].insertBefore(lastDnaInput, blankSpace);
+      textboxRna[0].appendChild(newSequenceChar(transcribe(base)));
+    }
+    if (lastDnaInput) lastDnaInput.focus();
+
+    translate();
+    treatSequence();
+  }
+
+  /** Preenche e abre o modal de exportação com a sequência atual e um link de compartilhamento. */
+  function openExportModal() {
+    const modal    = document.getElementById('export-modal');
+    const seqText  = document.getElementById('export-seq-text');
+    const linkText = document.getElementById('export-seq-link');
+    const feedback = document.getElementById('export-feedback');
+    if (!modal || !seqText || !linkText) return;
+
+    const dnaSeq = readSequence(dnaSequenceChars);
+    seqText.value = dnaSeq;
+
+    const url = new URL(window.location.href);
+    url.search = '';
+    if (dnaSeq) url.searchParams.set('seq', dnaSeq);
+    linkText.value = url.toString();
+
+    if (feedback) {
+      feedback.textContent = dnaSeq ? '' : 'A sequência está vazia — insira bases no simulador antes de exportar.';
+      feedback.classList.toggle('error', !dnaSeq);
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  /**
+   * Copia o conteúdo de um textarea para a área de transferência, com feedback visual.
+   * Usa a Clipboard API moderna com fallback para document.execCommand em navegadores antigos.
+   */
+  function copyTextareaContent(textareaId, feedbackEl, successMsg) {
+    const el = document.getElementById(textareaId);
+    if (!el || !el.value) return;
+
+    const reportResult = (ok) => {
+      if (!feedbackEl) return;
+      feedbackEl.textContent = ok
+        ? successMsg
+        : 'Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.';
+      feedbackEl.classList.toggle('error', !ok);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(el.value).then(() => reportResult(true)).catch(() => reportResult(false));
+    } else {
+      el.select();
+      try {
+        document.execCommand('copy');
+        reportResult(true);
+      } catch (e) {
+        reportResult(false);
+      }
+    }
+  }
+
+  /** Limpa e abre o modal de importação, pronto para receber uma nova sequência colada. */
+  function openImportModal() {
+    const modal    = document.getElementById('import-modal');
+    const input    = document.getElementById('import-seq-input');
+    const feedback = document.getElementById('import-feedback');
+    if (!modal) return;
+
+    if (input) input.value = '';
+    if (feedback) {
+      feedback.textContent = '';
+      feedback.classList.remove('error');
+    }
+
+    modal.style.display = 'flex';
+    if (input) input.focus();
+  }
+
+  /** Valida o texto colado no modal de importação e, se houver bases válidas, carrega a sequência. */
+  function handleImportSubmit() {
+    const modal    = document.getElementById('import-modal');
+    const input    = document.getElementById('import-seq-input');
+    const feedback = document.getElementById('import-feedback');
+    if (!input) return;
+
+    const { clean, hadInvalid } = sanitizeDnaInput(input.value);
+
+    if (!clean) {
+      if (feedback) {
+        feedback.textContent = 'Digite ao menos uma base válida (A, T, C ou G).';
+        feedback.classList.add('error');
+      }
+      return;
+    }
+
+    loadSequenceFromString(clean);
+
+    if (feedback) {
+      feedback.classList.remove('error');
+      feedback.textContent = hadInvalid
+        ? `Sequência carregada (${clean.length} bases). Caracteres inválidos foram ignorados.`
+        : `Sequência carregada com sucesso (${clean.length} bases).`;
+    }
+
+    // Fecha o modal após um curto intervalo para que o aluno veja a confirmação
+    setTimeout(() => { if (modal) modal.style.display = 'none'; }, hadInvalid ? 1800 : 900);
+  }
+
+  /**
+   * Verifica se a URL atual contém uma sequência compartilhada (?seq=...) e,
+   * em caso positivo, navega para o simulador e a carrega automaticamente.
+   * Permite que professores distribuam desafios prontos por link.
+   */
+  function loadSequenceFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('seq');
+    if (!raw) return;
+
+    const { clean } = sanitizeDnaInput(raw);
+    if (!clean) return;
+
+    const appBtn = document.getElementById('app');
+    if (appBtn) appBtn.click();
+
+    loadSequenceFromString(clean);
+    showInfo('Sequência carregada!', 'Uma sequência de DNA foi importada automaticamente via link compartilhado.');
+  }
+
   // ─── Vinculação de eventos ────────────────────────────────────────────────────
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
@@ -881,8 +1054,60 @@
     // Controles do simulador
     const btnClear  = document.getElementById('btn-clear');
     const btnRandom = document.getElementById('btn-random');
+    const btnExport = document.getElementById('btn-export');
+    const btnImport = document.getElementById('btn-import');
     if (btnClear)  btnClear.addEventListener('click', clearSequence);
     if (btnRandom) btnRandom.addEventListener('click', randomSequence);
+    if (btnExport) btnExport.addEventListener('click', openExportModal);
+    if (btnImport) btnImport.addEventListener('click', openImportModal);
+
+    // Modais de exportar/importar sequência
+    const exportModal = document.getElementById('export-modal');
+    const importModal = document.getElementById('import-modal');
+    const exportCloseBtn = document.getElementById('export-modal-close');
+    const importCloseBtn = document.getElementById('import-modal-close');
+    const exportCopySeqBtn  = document.getElementById('export-copy-seq');
+    const exportCopyLinkBtn = document.getElementById('export-copy-link');
+    const importLoadBtn  = document.getElementById('import-load-btn');
+    const importSeqInput = document.getElementById('import-seq-input');
+
+    const closeModal = (modal) => { if (modal) modal.style.display = 'none'; };
+
+    if (exportCloseBtn) exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
+    if (importCloseBtn) importCloseBtn.addEventListener('click', () => closeModal(importModal));
+
+    // Fecha ao clicar fora da caixa (no overlay escurecido)
+    [exportModal, importModal].forEach((modal) => {
+      if (!modal) return;
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal(modal);
+      });
+    });
+
+    // Fecha ambos os modais com a tecla Esc
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeModal(exportModal);
+        closeModal(importModal);
+      }
+    });
+
+    if (exportCopySeqBtn) {
+      exportCopySeqBtn.addEventListener('click', () =>
+        copyTextareaContent('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
+    }
+    if (exportCopyLinkBtn) {
+      exportCopyLinkBtn.addEventListener('click', () =>
+        copyTextareaContent('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
+    }
+
+    if (importLoadBtn) importLoadBtn.addEventListener('click', handleImportSubmit);
+    if (importSeqInput) {
+      // Atalho Ctrl/Cmd+Enter para carregar sem precisar clicar no botão
+      importSeqInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) handleImportSubmit();
+      });
+    }
 
     // Botão de fechar o drawer
     const closeBtn = document.querySelector('.drawer-close-btn');
@@ -912,6 +1137,9 @@
         for (const base of dnaBases) insertBase(base);
       });
     });
+
+    // Carrega automaticamente uma sequência compartilhada via link (?seq=...), se presente
+    loadSequenceFromUrl();
   });
 
   // ─── Exportações globais ──────────────────────────────────────────────────────
