@@ -64,20 +64,22 @@
 
 .process-box{
     margin-left: auto;
-    margin-right:5px; 
+    margin-right:7px; 
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 4px;
     border-radius: 4px;
     font-size: 0.75rem;
+    background-color: #14b8a630;
+    color: #14b8a6;
 }
 
-.process-box#transcription{
+.process-box #transcription{
     background-color: #f3e8ff;
     color: #6b21a8;
 }
-.process-box#translation{
+.process-box #translation{
     background-color: #fef3c7;
     color: #92400e;
 }
