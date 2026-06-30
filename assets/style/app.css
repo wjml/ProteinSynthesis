@@ -40,7 +40,6 @@
 
 .sequence.active .label {
     flex: 0 0 auto;
-    margin-top: .5%;
 }
 
 .sequence.to-mutate.active {
@@ -54,7 +53,6 @@
 
 .sequence .label {
     flex: none;
-    margin-top: 1.5%;
     font-weight: 700;
     color: #475569;
     font-size: 0.85rem;
@@ -62,6 +60,17 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.process-box{
+    margin-left: auto;      /* empurra para a direita */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f3e8ff;
+    color: #6b21a8;
+    padding: 4px;
+    border-radius: 4px;
 }
 
 /* Sequence Nucleotide Character Inputs */
