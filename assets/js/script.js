@@ -571,14 +571,14 @@
   }
 
   /**
-   * Traduz a sequência de RNA atual em aminoácidos e renderiza no DOM.
-   * Usa CODON_TABLE (lookup O(1)) no lugar do switch de 60+ casos.
-   * BUGFIX: a variável `aminoacids` não era declarada no original, tornando-se global.
+   * Traduz a sequência de RNA de uma fita específica em aminoácidos e renderiza no container dado.
+   * Generaliza a lógica usada tanto pela fita ativa (live) quanto pela fita de comparação (baseline),
+   * permitindo reuso em loadDiseaseExample().
    */
-  function translate() {
-    outputAminoacids[0].innerHTML = '';
+  function translateStrand(rnaChars, outputContainer) {
+    outputContainer.innerHTML = '';
 
-    const sequence = readSequence(rnaSequenceChars);
+    const sequence = readSequence(rnaChars);
     let hasStart = false;
 
     for (let i = 0; i < sequence.length; i += 3) {
@@ -589,9 +589,16 @@
       if (aminoacid.abbrevName === 'MET')  hasStart = true;
       if (aminoacid.abbrevName === 'STOP') hasStart = false;
 
-      outputAminoacids[0].appendChild(hasStart ? newAminoacid(aminoacid) : newAminoacid());
+      outputContainer.appendChild(hasStart ? newAminoacid(aminoacid) : newAminoacid());
     }
+  }
 
+  /**
+   * Traduz a fita ativa (live, índice 0) e atualiza os contadores da UI.
+   * BUGFIX: a variável `aminoacids` não era declarada no original, tornando-se global.
+   */
+  function translate() {
+    translateStrand(rnaSequenceChars, outputAminoacids[0]);
     updateCounters();
   }
 
@@ -1025,6 +1032,112 @@
     showInfo('Sequência carregada!', 'Uma sequência de DNA foi importada automaticamente via link compartilhado.');
   }
 
+  // ─── Doenças genéticas reais ─────────────────────────────────────────────────
+
+  /**
+   * Exemplos didáticos de mutações reais bem documentadas na literatura.
+   * As sequências de DNA são versões simplificadas (poucos códons) construídas
+   * para que o códon exato da mutação real apareça na posição correta — a base
+   * trocada/inserida e seu efeito sobre o aminoácido correspondem à mutação
+   * verdadeira, mesmo que o gene completo seja muito mais longo na realidade.
+   *
+   * wildDna  = sequência original (saudável), carregada na fita de comparação (baseline).
+   * mutDna   = sequência com a mutação real, carregada na fita ativa do simulador.
+   */
+  const DISEASE_EXAMPLES = {
+    sickle: {
+      name: 'Anemia Falciforme',
+      gene: 'HBB (Hemoglobina Beta) — códon 6',
+      wildDna: 'TACCTCATT',
+      mutDna:  'TACCACATT',
+    },
+    thalassemia: {
+      name: 'Beta-Talassemia (Códon 39)',
+      gene: 'HBB (Hemoglobina Beta) — códon 39',
+      wildDna: 'TACGTCGTCGTCATT',
+      mutDna:  'TACATCGTCGTCATT',
+    },
+    taysachs: {
+      name: 'Doença de Tay-Sachs',
+      gene: 'HEXA (Hexosaminidase A) — inserção 1278insTATC',
+      wildDna: 'TACCGACGACGAATT',
+      mutDna:  'TACTATCCGACGACGAATT',
+    },
+    silentDemo: {
+      name: 'Mutação Silenciosa (Exemplo Ilustrativo)',
+      gene: 'HBB — variação hipotética no mesmo códon 6',
+      wildDna: 'TACCTCATT',
+      mutDna:  'TACCTTATT',
+    },
+  };
+
+  /**
+   * Esvazia as quatro linhas de sequência (DNA/RNA × fita ativa/baseline) sem alterar
+   * o estado dos botões de mutação. Usado internamente por loadDiseaseExample(), que
+   * precisa de um estado limpo mas quer manter o modo de mutação ativo logo em seguida.
+   */
+  function clearAllStrandsKeepingMode() {
+    clearSequenceChars(textboxDna[0]);
+    clearSequenceChars(textboxRna[0]);
+    clearSequenceChars(textboxDna[1]);
+    clearSequenceChars(textboxRna[1]);
+    outputAminoacids[0].innerHTML = '';
+    if (outputAminoacids[1]) outputAminoacids[1].innerHTML = '';
+  }
+
+  /**
+   * Preenche uma fita (DNA + RNA correspondente) a partir de uma string de bases de DNA.
+   * @param {string} dnaTemplate - sequência de bases A/T/C/G.
+   * @param {HTMLElement} dnaContainer - container onde os inputs de DNA serão inseridos.
+   * @param {HTMLElement} rnaContainer - container onde os inputs de RNA serão inseridos.
+   * @param {Node|null} beforeNode - nó de referência para insertBefore (ex: blankSpace),
+   *        ou null para simplesmente usar appendChild (caso da fita de comparação, que não tem blank-space).
+   */
+  function fillStrand(dnaTemplate, dnaContainer, rnaContainer, beforeNode) {
+    for (const base of dnaTemplate) {
+      const dnaInput = newSequenceChar(base);
+      const rnaInput = newSequenceChar(transcribe(base));
+      if (beforeNode) dnaContainer.insertBefore(dnaInput, beforeNode);
+      else dnaContainer.appendChild(dnaInput);
+      rnaContainer.appendChild(rnaInput);
+    }
+  }
+
+  /**
+   * Carrega um exemplo de doença genética real no simulador: a sequência original
+   * (saudável) vai para a fita de comparação (baseline) e a sequência com a mutação
+   * real vai para a fita ativa, com o modo de mutação já habilitado para que a
+   * análise automática (Missense/Nonsense/Frameshift/Silenciosa) apareça imediatamente.
+   * Exposta globalmente via window.loadDiseaseExample para uso pelos cartões de doença no HTML.
+   */
+  function loadDiseaseExample(key) {
+    const disease = DISEASE_EXAMPLES[key];
+    if (!disease) return;
+
+    // Garante que a navegação está na aba do simulador antes de mexer no DOM dele
+    const appBtn = document.getElementById('app');
+    if (appBtn) appBtn.click();
+
+    clearAllStrandsKeepingMode();
+
+    // As ferramentas de Adicionar/Deletar/Substituir não se aplicam aqui — a mutação já vem pronta
+    addButton.classList.remove('active');
+    deleteButton.classList.remove('active');
+    replaceButton.classList.remove('active');
+
+    // Fita 1 (.to-mutate) = baseline "antes" | Fita 0 (ativa) = versão "depois", com a mutação real
+    fillStrand(disease.wildDna, textboxDna[1], textboxRna[1], null);
+    fillStrand(disease.mutDna,  textboxDna[0], textboxRna[0], blankSpace);
+
+    mutationWindow[0].classList.add('active');
+
+    translate();
+    translateStrand(textboxRna[1].getElementsByClassName('sequenceChar'), outputAminoacids[1]);
+    treatSequence();
+
+    showInfo(disease.name, `Sequência carregada: ${disease.gene}. Veja a análise de mutação abaixo, no Simulador.`);
+  }
+
   // ─── Vinculação de eventos ────────────────────────────────────────────────────
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
@@ -1145,5 +1258,6 @@
   // ─── Exportações globais ──────────────────────────────────────────────────────
   // Expõe apenas o necessário para o HTML; todo o restante permanece encapsulado.
   window.insertBase = insertBase;
+  window.loadDiseaseExample = loadDiseaseExample;
 
 })();

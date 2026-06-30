@@ -122,6 +122,34 @@
                 padding: 18px;
             }
         }
+
+        /* ===== Doenças Genéticas — cards ===== */
+        /* Reaproveita .mutation-type-badge (já definida em app.css) para herdar
+           as mesmas cores usadas no painel de análise de mutação do simulador. */
+        .disease-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .disease-card-header h3 {
+            margin: 0;
+        }
+
+        .disease-gene {
+            font-size: 0.85rem;
+            opacity: 0.75;
+            margin: 0 0 10px;
+        }
+
+        .disease-load-btn {
+            margin-top: 12px;
+            width: 100%;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -147,6 +175,9 @@
                 </li>
                 <li class="button" id="codon-table">
                     <i class="fas fa-table"></i> Tabela de Códons
+                </li>
+                <li class="button" id="diseases">
+                    <i class="fas fa-disease"></i> Doenças Genéticas
                 </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
@@ -507,10 +538,18 @@
                     <div class="textbox-dna">
                         <span id="blank-space"></span>
                     </div>
-                    <div class="label">RNAm</div>
+                    <div class="label">RNAm
+                        <div class="process-box">
+                        <span>↓ TRANSCRIÇÃO </span>
+                       </div>
+                    </div>
+                    
                     <div class="textbox-rna"></div>
-                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
-                    <div class="output-aminoacids"></div>
+                    <div class="label">Estrutura Primária do Peptídeo (Sequência de Aminoácidos)
+                        <div class="process-box">
+                        <span>↓ TRADUÇÃO </span>
+                       </div>
+                    </div><div class="output-aminoacids"></div>
                 </div>
                 <div class="sequence to-mutate">
                     <div class="label">DNA</div>
@@ -877,6 +916,79 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div class="content diseases">
+                <div class="page-header">
+                    <h2>Doenças Genéticas Reais</h2>
+                    <p>Mutações pontuais em genes reais que causam doenças bem documentadas — clique em "Carregar no
+                        Simulador" para ver a sequência original e a mutada lado a lado.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-info-circle"></i> Como funciona</h3>
+                        <p>Cada exemplo abaixo carrega automaticamente a sequência <strong>original (saudável)</strong>
+                            na fita de comparação e a <strong>versão com a mutação real</strong> na fita ativa do
+                            simulador, já com a análise de mutação calculada. As sequências foram simplificadas para
+                            fins didáticos, mas a posição e o tipo da mutação correspondem à alteração real descrita
+                            na literatura científica.</p>
+                    </div>
+                    <div class="info-card disease-card">
+                        <div class="disease-card-header">
+                            <h3><i class="fas fa-tint"></i> Anemia Falciforme</h3>
+                            <span class="mutation-type-badge missense">Sentido Trocado (Missense)</span>
+                        </div>
+                        <p class="disease-gene"><strong>Gene:</strong> HBB (Hemoglobina Beta) — códon 6</p>
+                        <p>Uma única base trocada substitui o ácido glutâmico (hidrofílico) por valina (hidrofóbico)
+                            na cadeia da hemoglobina. Sob baixa concentração de oxigênio, as moléculas alteradas se
+                            agregam em fibras longas, deformando as hemácias no característico formato de foice.</p>
+                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('sickle')">
+                            <i class="fas fa-flask"></i> Carregar no Simulador
+                        </button>
+                    </div>
+                    <div class="info-card disease-card">
+                        <div class="disease-card-header">
+                            <h3><i class="fas fa-lungs"></i> Beta-Talassemia</h3>
+                            <span class="mutation-type-badge nonsense">Sem Sentido (Nonsense)</span>
+                        </div>
+                        <p class="disease-gene"><strong>Gene:</strong> HBB (Hemoglobina Beta) — códon 39</p>
+                        <p>Uma substituição de base transforma um códon de glutamina em um <strong>códon de parada
+                                prematuro</strong>. A tradução é interrompida muito antes do esperado, produzindo uma
+                            beta-globina truncada e não funcional — uma das causas mais comuns de talassemia na bacia
+                            do Mediterrâneo.</p>
+                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('thalassemia')">
+                            <i class="fas fa-flask"></i> Carregar no Simulador
+                        </button>
+                    </div>
+                    <div class="info-card disease-card">
+                        <div class="disease-card-header">
+                            <h3><i class="fas fa-brain"></i> Doença de Tay-Sachs</h3>
+                            <span class="mutation-type-badge frameshift">Deslocamento de Leitura (Frameshift)</span>
+                        </div>
+                        <p class="disease-gene"><strong>Gene:</strong> HEXA (Hexosaminidase A)</p>
+                        <p>A inserção de 4 bases — mutação real conhecida como <strong>1278insTATC</strong> — desloca
+                            toda a janela de leitura a partir do ponto de inserção. A enzima resultante é
+                            completamente diferente e não-funcional, levando ao acúmulo tóxico de gangliosídeos GM2
+                            nos neurônios.</p>
+                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('taysachs')">
+                            <i class="fas fa-flask"></i> Carregar no Simulador
+                        </button>
+                    </div>
+                    <div class="info-card disease-card">
+                        <div class="disease-card-header">
+                            <h3><i class="fas fa-shield-alt"></i> Mutação Silenciosa</h3>
+                            <span class="mutation-type-badge silent">Silenciosa (Sinônima)</span>
+                        </div>
+                        <p class="disease-gene"><strong>Gene:</strong> HBB — variação hipotética, mesmo códon 6</p>
+                        <p>Exemplo ilustrativo: ao contrário da Anemia Falciforme, esta troca atinge a
+                            <strong>terceira posição</strong> do mesmo códon (GAG → GAA). Como o código genético é
+                            degenerado, ambos ainda especificam ácido glutâmico — a proteína permanece idêntica e
+                            nenhuma doença se manifesta. Compare com a Anemia Falciforme para ver como a posição da
+                            mutação faz toda a diferença.</p>
+                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('silentDemo')">
+                            <i class="fas fa-flask"></i> Carregar no Simulador
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
