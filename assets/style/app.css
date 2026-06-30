@@ -63,16 +63,24 @@
 }
 
 .process-box{
-    margin-left: auto;      /* empurra para a direita */
+    margin-left: auto;
+    margin-right:5px; 
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #f3e8ff;
-    color: #6b21a8;
     padding: 4px;
     border-radius: 4px;
+    font-size: 0.75rem;
 }
 
+.process-box#transcription{
+    background-color: #f3e8ff;
+    color: #6b21a8;
+}
+.process-box#translation{
+    background-color: #fef3c7;
+    color: #92400e;
+}
 /* Sequence Nucleotide Character Inputs */
 .sequence .sequenceChar {
     font-family: 'Roboto Mono', monospace;
