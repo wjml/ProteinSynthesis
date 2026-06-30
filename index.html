@@ -1,9 +1,9 @@
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" button="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" button="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="assets/style/fixed-elements.css">
     <link rel="stylesheet" href="assets/style/pages.css">
     <link rel="stylesheet" href="assets/style/app.css">
@@ -22,7 +22,7 @@
             </div>
             <ul class="sidebar">
                 <li class="header-title" id="access-to-information">
-                    <span>ACESSO À INFORMAÇÃO</span>
+                    <span>Informações Educacionais</span>
                 </li>
                 <li class="button active" id="dna">
                     <i class="fas fa-dna"></i> DNA
@@ -50,17 +50,17 @@
                         <span>MUTAÇÃO</span>
                     </li>
                     <li class="button" id="add">
-                        <i class="fas fa-plus-circle"></i> Adicionar
+                        <i class="fas fa-plus-circle"></i> Adição
                     </li>
                     <li class="button" id="delete">
-                        <i class="fas fa-minus-circle"></i> Deletar
+                        <i class="fas fa-minus-circle"></i> Deleção
                     </li>
                     <li class="button" id="replace">
-                        <i class="fas fa-sync-alt"></i> Substituir
+                        <i class="fas fa-sync-alt"></i> Substituição
                     </li>
                 </ul>
                 <li class="header-title" id="about">
-                    <span>SOBRE</span>
+                    <span>Sobre o Aplicativo</span>
                 </li>
                 <li class="button" id="versions">
                     <i class="fas fa-info-circle"></i> Versões
@@ -482,7 +482,7 @@
                         <div class="step-num">1</div>
                         <div class="step-body">
                             <h3>Inserindo Sequências</h3>
-                            <p>Clique no espaço em branco na fita superior de DNA no **Simulador** e digite as bases
+                            <p>Clique no espaço em branco na fita superior de DNA no <strong>Simulador</strong> e digite as bases
                                 <strong>A</strong>, <strong>T</strong>, <strong>C</strong> ou <strong>G</strong>. O
                                 pareamento com a fita complementar de DNA e a transcrição para RNAm ocorrerão em tempo
                                 real.
@@ -532,248 +532,10 @@
                                 <th>3ª Base</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <!-- Row 1: U -->
-                            <tr>
-                                <td class="first-base-cell">U</td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="UUU"><span
-                                                class="codon-name">UUU</span> <span class="codon-aa">Phe</span></div>
-                                        <div class="codon-item base-apolar" data-codon="UUC"><span
-                                                class="codon-name">UUC</span> <span class="codon-aa">Phe</span></div>
-                                        <div class="codon-item base-apolar" data-codon="UUA"><span
-                                                class="codon-name">UUA</span> <span class="codon-aa">Leu</span></div>
-                                        <div class="codon-item base-apolar" data-codon="UUG"><span
-                                                class="codon-name">UUG</span> <span class="codon-aa">Leu</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="UCU"><span
-                                                class="codon-name">UCU</span> <span class="codon-aa">Ser</span></div>
-                                        <div class="codon-item base-polar" data-codon="UCC"><span
-                                                class="codon-name">UCC</span> <span class="codon-aa">Ser</span></div>
-                                        <div class="codon-item base-polar" data-codon="UCA"><span
-                                                class="codon-name">UCA</span> <span class="codon-aa">Ser</span></div>
-                                        <div class="codon-item base-polar" data-codon="UCG"><span
-                                                class="codon-name">UCG</span> <span class="codon-aa">Ser</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="UAU"><span
-                                                class="codon-name">UAU</span> <span class="codon-aa">Tyr</span></div>
-                                        <div class="codon-item base-polar" data-codon="UAC"><span
-                                                class="codon-name">UAC</span> <span class="codon-aa">Tyr</span></div>
-                                        <div class="codon-item codon-stop" data-codon="UAA"><span
-                                                class="codon-name">UAA</span> <span class="codon-aa">STOP</span></div>
-                                        <div class="codon-item codon-stop" data-codon="UAG"><span
-                                                class="codon-name">UAG</span> <span class="codon-aa">STOP</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="UGU"><span
-                                                class="codon-name">UGU</span> <span class="codon-aa">Cys</span></div>
-                                        <div class="codon-item base-polar" data-codon="UGC"><span
-                                                class="codon-name">UGC</span> <span class="codon-aa">Cys</span></div>
-                                        <div class="codon-item codon-stop" data-codon="UGA"><span
-                                                class="codon-name">UGA</span> <span class="codon-aa">STOP</span></div>
-                                        <div class="codon-item base-apolar" data-codon="UGG"><span
-                                                class="codon-name">UGG</span> <span class="codon-aa">Trp</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="third-base-list">
-                                        <div>U</div>
-                                        <div>C</div>
-                                        <div>A</div>
-                                        <div>G</div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 2: C -->
-                            <tr>
-                                <td class="first-base-cell">C</td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="CUU"><span
-                                                class="codon-name">CUU</span> <span class="codon-aa">Leu</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CUC"><span
-                                                class="codon-name">CUC</span> <span class="codon-aa">Leu</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CUA"><span
-                                                class="codon-name">CUA</span> <span class="codon-aa">Leu</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CUG"><span
-                                                class="codon-name">CUG</span> <span class="codon-aa">Leu</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="CCU"><span
-                                                class="codon-name">CCU</span> <span class="codon-aa">Pro</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CCC"><span
-                                                class="codon-name">CCC</span> <span class="codon-aa">Pro</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CCA"><span
-                                                class="codon-name">CCA</span> <span class="codon-aa">Pro</span></div>
-                                        <div class="codon-item base-apolar" data-codon="CCG"><span
-                                                class="codon-name">CCG</span> <span class="codon-aa">Pro</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-basic" data-codon="CAU"><span
-                                                class="codon-name">CAU</span> <span class="codon-aa">His</span></div>
-                                        <div class="codon-item base-basic" data-codon="CAC"><span
-                                                class="codon-name">CAC</span> <span class="codon-aa">His</span></div>
-                                        <div class="codon-item base-polar" data-codon="CAA"><span
-                                                class="codon-name">CAA</span> <span class="codon-aa">Gln</span></div>
-                                        <div class="codon-item base-polar" data-codon="CAG"><span
-                                                class="codon-name">CAG</span> <span class="codon-aa">Gln</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-basic" data-codon="CGU"><span
-                                                class="codon-name">CGU</span> <span class="codon-aa">Arg</span></div>
-                                        <div class="codon-item base-basic" data-codon="CGC"><span
-                                                class="codon-name">CGC</span> <span class="codon-aa">Arg</span></div>
-                                        <div class="codon-item base-basic" data-codon="CGA"><span
-                                                class="codon-name">CGA</span> <span class="codon-aa">Arg</span></div>
-                                        <div class="codon-item base-basic" data-codon="CGG"><span
-                                                class="codon-name">CGG</span> <span class="codon-aa">Arg</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="third-base-list">
-                                        <div>U</div>
-                                        <div>C</div>
-                                        <div>A</div>
-                                        <div>G</div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 3: A -->
-                            <tr>
-                                <td class="first-base-cell">A</td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="AUU"><span
-                                                class="codon-name">AUU</span> <span class="codon-aa">Ile</span></div>
-                                        <div class="codon-item base-apolar" data-codon="AUC"><span
-                                                class="codon-name">AUC</span> <span class="codon-aa">Ile</span></div>
-                                        <div class="codon-item base-apolar" data-codon="AUA"><span
-                                                class="codon-name">AUA</span> <span class="codon-aa">Ile</span></div>
-                                        <div class="codon-item codon-start" data-codon="AUG"><span
-                                                class="codon-name">AUG</span> <span
-                                                class="codon-aa font-bold">Met</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="ACU"><span
-                                                class="codon-name">ACU</span> <span class="codon-aa">Thr</span></div>
-                                        <div class="codon-item base-polar" data-codon="ACC"><span
-                                                class="codon-name">ACC</span> <span class="codon-aa">Thr</span></div>
-                                        <div class="codon-item base-polar" data-codon="ACA"><span
-                                                class="codon-name">ACA</span> <span class="codon-aa">Thr</span></div>
-                                        <div class="codon-item base-polar" data-codon="ACG"><span
-                                                class="codon-name">ACG</span> <span class="codon-aa">Thr</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="AAU"><span
-                                                class="codon-name">AAU</span> <span class="codon-aa">Asn</span></div>
-                                        <div class="codon-item base-polar" data-codon="AAC"><span
-                                                class="codon-name">AAC</span> <span class="codon-aa">Asn</span></div>
-                                        <div class="codon-item base-basic" data-codon="AAA"><span
-                                                class="codon-name">AAA</span> <span class="codon-aa">Lys</span></div>
-                                        <div class="codon-item base-basic" data-codon="AAG"><span
-                                                class="codon-name">AAG</span> <span class="codon-aa">Lys</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-polar" data-codon="AGU"><span
-                                                class="codon-name">AGU</span> <span class="codon-aa">Ser</span></div>
-                                        <div class="codon-item base-polar" data-codon="AGC"><span
-                                                class="codon-name">AGC</span> <span class="codon-aa">Ser</span></div>
-                                        <div class="codon-item base-basic" data-codon="AGA"><span
-                                                class="codon-name">AGA</span> <span class="codon-aa">Arg</span></div>
-                                        <div class="codon-item base-basic" data-codon="AGG"><span
-                                                class="codon-name">AGG</span> <span class="codon-aa">Arg</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="third-base-list">
-                                        <div>U</div>
-                                        <div>C</div>
-                                        <div>A</div>
-                                        <div>G</div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <!-- Row 4: G -->
-                            <tr>
-                                <td class="first-base-cell">G</td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="GUU"><span
-                                                class="codon-name">GUU</span> <span class="codon-aa">Val</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GUC"><span
-                                                class="codon-name">GUC</span> <span class="codon-aa">Val</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GUA"><span
-                                                class="codon-name">GUA</span> <span class="codon-aa">Val</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GUG"><span
-                                                class="codon-name">GUG</span> <span class="codon-aa">Val</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="GCU"><span
-                                                class="codon-name">GCU</span> <span class="codon-aa">Ala</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GCC"><span
-                                                class="codon-name">GCC</span> <span class="codon-aa">Ala</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GCA"><span
-                                                class="codon-name">GCA</span> <span class="codon-aa">Ala</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GCG"><span
-                                                class="codon-name">GCG</span> <span class="codon-aa">Ala</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-acid" data-codon="GAU"><span
-                                                class="codon-name">GAU</span> <span class="codon-aa">Asp</span></div>
-                                        <div class="codon-item base-acid" data-codon="GAC"><span
-                                                class="codon-name">GAC</span> <span class="codon-aa">Asp</span></div>
-                                        <div class="codon-item base-acid" data-codon="GAA"><span
-                                                class="codon-name">GAA</span> <span class="codon-aa">Glu</span></div>
-                                        <div class="codon-item base-acid" data-codon="GAG"><span
-                                                class="codon-name">GAG</span> <span class="codon-aa">Glu</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="codon-cell-group">
-                                        <div class="codon-item base-apolar" data-codon="GGU"><span
-                                                class="codon-name">GGU</span> <span class="codon-aa">Gly</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GGC"><span
-                                                class="codon-name">GGC</span> <span class="codon-aa">Gly</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GGA"><span
-                                                class="codon-name">GGA</span> <span class="codon-aa">Gly</span></div>
-                                        <div class="codon-item base-apolar" data-codon="GGG"><span
-                                                class="codon-name">GGG</span> <span class="codon-aa">Gly</span></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="third-base-list">
-                                        <div>U</div>
-                                        <div>C</div>
-                                        <div>A</div>
-                                        <div>G</div>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody id="codon-matrix-body">
+                            <!-- Gerado dinamicamente por buildCodonTable() em script.js,
+                                 a partir de CODON_TABLE e AMINOACIDS_DB — fonte única de verdade,
+                                 evitando que a tabela visual e a lógica de tradução divirjam. -->
                         </tbody>
                     </table>
                 </div>

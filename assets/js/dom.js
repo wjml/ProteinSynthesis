@@ -8,9 +8,21 @@ buttons.forEach(function (button) {
             button.classList.remove("active")
         })
         if (this.id == "add" || this.id == "delete" || this.id == "replace") {
-            document.getElementsByClassName("sequence")[0].classList.add("active")
-            document.getElementsByClassName("sequence")[1].classList.add("active")
-            cloneSequencePrimary()
+            var sequencePrimary = document.getElementsByClassName("sequence")[0]
+            var sequenceToMutate = document.getElementsByClassName("sequence")[1]
+            // BUGFIX: antes, o snapshot do baseline era refeito a CADA clique em
+            // Adicionar/Deletar/Substituir. Isso fazia o aluno perder a sequência
+            // original ao alternar entre ferramentas no meio de uma mutação, pois
+            // o baseline virava uma cópia do estado já mutado.
+            // Agora só tiramos o snapshot ao ENTRAR no modo mutação (quando a fita
+            // de comparação ainda não estava ativa); trocar de ferramenta dentro do
+            // modo mutação preserva a comparação "antes x depois".
+            var enteringMutationMode = !sequenceToMutate.classList.contains("active")
+            sequencePrimary.classList.add("active")
+            sequenceToMutate.classList.add("active")
+            if (enteringMutationMode) {
+                cloneSequencePrimary()
+            }
         }
         if (this.id == "app" || this.parentNode.classList.contains("collapsible")) {
             document.getElementsByClassName("collapsible")[0].classList.add("active")

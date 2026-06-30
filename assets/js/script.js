@@ -100,12 +100,6 @@
     UGA: { name: 'stop',            abbrevName: 'STOP' },
   };
 
-  /** Constantes de layout para posicionamento dos rótulos de códon (devem refletir o CSS). */
-  const CODON_LABEL = {
-    PADDING_LEFT: 6,   // px — padding-left de .textbox-rna
-    SLOT_WIDTH:   128, // px — 3 × 40px (base) + 8px (codon-end margin)
-  };
-
   /** Mensagens de alerta por modo de mutação. */
   const MUTATION_ALERTS = {
     add:     'A mutação de adição somente permite inserção das letras que representam bases nitrogenadas do DNA: A, T, C e G.',
@@ -257,12 +251,18 @@
 
   // ─── Criação de elementos DOM ─────────────────────────────────────────────────
 
-  /** Cria e retorna um novo input sequenceChar com os event listeners vinculados. */
-  function newSequenceChar(value = '', className = 'sequenceChar') {
+  /**
+   * Cria e retorna um novo input sequenceChar com os event listeners vinculados.
+   * @param {string} value - base inicial (opcional).
+   * @param {string} className - classe CSS do input (default 'sequenceChar').
+   * @param {string} ariaLabel - rótulo acessível para leitores de tela, ex: 'Base de DNA' ou 'Base de RNA mensageiro'.
+   */
+  function newSequenceChar(value = '', className = 'sequenceChar', ariaLabel = 'Base da sequência') {
     const input = document.createElement('input');
     input.className = className;
     input.maxLength = 1;
     input.value = value.toUpperCase();
+    input.setAttribute('aria-label', ariaLabel);
     input.addEventListener('keypress', charInput);
     input.addEventListener('keydown', actsLikeUniqueInput);
     return input;
@@ -310,6 +310,103 @@
     }
 
     return div;
+  }
+
+  // ─── Tabela de códons (gerada dinamicamente) ─────────────────────────────────
+
+  /** Mapeia o tipo químico do aminoácido (AMINOACIDS_DB) para a classe CSS de cor da célula. */
+  function codonCellClass(abbrevName) {
+    if (abbrevName === 'STOP') return 'codon-stop';
+    const data = AMINOACIDS_DB[abbrevName];
+    const type = (data && data.type) || '';
+    if (type.includes('Ácido'))  return 'base-acid';
+    if (type.includes('Básico')) return 'base-basic';
+    if (type.includes('Apolar')) return 'base-apolar';
+    return 'base-polar';
+  }
+
+  /** Formata o nome abreviado do aminoácido para exibição (ex: 'PHE' → 'Phe'; 'STOP' permanece 'STOP'). */
+  function codonDisplayName(abbrevName) {
+    if (abbrevName === 'STOP') return 'STOP';
+    return abbrevName.charAt(0) + abbrevName.slice(1).toLowerCase();
+  }
+
+  /**
+   * Gera a tabela de 64 códons (#codon-matrix-body) inteiramente a partir de
+   * CODON_TABLE e AMINOACIDS_DB, que já são a fonte de verdade usada pelo
+   * simulador para tradução.
+   *
+   * REFATORAÇÃO: antes, essa tabela existia duplicada como ~250 linhas de HTML
+   * estático em index.html, mantidas manualmente em sincronia com CODON_TABLE.
+   * Qualquer correção feita em um lugar e esquecida no outro fazia a tabela
+   * visual divergir silenciosamente da lógica real de tradução. Agora há uma
+   * única fonte de dados.
+   */
+  function buildCodonTable() {
+    const tbody = document.getElementById('codon-matrix-body');
+    if (!tbody) return;
+
+    const BASES = ['U', 'C', 'A', 'G'];
+    tbody.innerHTML = '';
+
+    for (const first of BASES) {
+      const tr = document.createElement('tr');
+
+      const firstCell = document.createElement('td');
+      firstCell.className = 'first-base-cell';
+      firstCell.textContent = first;
+      tr.appendChild(firstCell);
+
+      for (const second of BASES) {
+        const td = document.createElement('td');
+        const group = document.createElement('div');
+        group.className = 'codon-cell-group';
+
+        for (const third of BASES) {
+          const codon = first + second + third;
+          const aminoacid = CODON_TABLE[codon];
+          if (!aminoacid) continue;
+
+          const item = document.createElement('div');
+          item.className = 'codon-item ' + codonCellClass(aminoacid.abbrevName);
+          item.setAttribute('data-codon', codon);
+          item.setAttribute('role', 'button');
+          item.setAttribute('tabindex', '0');
+          item.setAttribute('aria-label',
+            `Códon ${codon}, ${aminoacid.name}. Clique para inserir no simulador.`);
+
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'codon-name';
+          nameSpan.textContent = codon;
+
+          const aaSpan = document.createElement('span');
+          aaSpan.className = 'codon-aa';
+          aaSpan.textContent = codonDisplayName(aminoacid.abbrevName);
+
+          item.appendChild(nameSpan);
+          item.appendChild(document.createTextNode(' '));
+          item.appendChild(aaSpan);
+          group.appendChild(item);
+        }
+
+        td.appendChild(group);
+        tr.appendChild(td);
+      }
+
+      // Coluna de legenda da 3ª base — uma por linha, igual ao layout original
+      const thirdBaseCell = document.createElement('td');
+      const list = document.createElement('div');
+      list.className = 'third-base-list';
+      for (const b of BASES) {
+        const div = document.createElement('div');
+        div.textContent = b;
+        list.appendChild(div);
+      }
+      thirdBaseCell.appendChild(list);
+      tr.appendChild(thirdBaseCell);
+
+      tbody.appendChild(tr);
+    }
   }
 
   // ─── Drawer de detalhes do aminoácido ────────────────────────────────────────
@@ -362,8 +459,8 @@
    */
   function activateDnaInput() {
     if (dnaSequenceChars.length === 0) {
-      const dnaInput = newSequenceChar();
-      const rnaInput = newSequenceChar();
+      const dnaInput = newSequenceChar('', 'sequenceChar', 'Base de DNA');
+      const rnaInput = newSequenceChar('', 'sequenceChar', 'Base de RNA mensageiro');
       textboxDna[0].insertBefore(dnaInput, blankSpace);
       textboxRna[0].appendChild(rnaInput);
       dnaInput.focus();
@@ -386,8 +483,8 @@
 
     if (this.selectionStart === 0) {
       // Inserir antes da posição atual
-      const newDna = newSequenceChar(key);
-      const newRna = newSequenceChar(transcribe(key));
+      const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
+      const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
       textboxDna[0].insertBefore(newDna, this);
       textboxRna[0].insertBefore(newRna, rnaEl);
       newDna.focus();
@@ -405,15 +502,15 @@
         if (nextDna && nextDna.value !== '') {
           textboxDna[0].removeChild(nextDna);
           if (nextRna) textboxRna[0].removeChild(nextRna);
-          const newDna = newSequenceChar(key);
-          const newRna = newSequenceChar(transcribe(key));
+          const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
+          const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
           textboxDna[0].insertBefore(newDna, this.nextElementSibling);
           textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
           newDna.focus();
         }
       } else {
-        const newDna = newSequenceChar(key);
-        const newRna = newSequenceChar(transcribe(key));
+        const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
+        const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
         textboxDna[0].insertBefore(newDna, this.nextElementSibling);
         textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
         newDna.focus();
@@ -530,9 +627,12 @@
    * Injeta rótulos pill ("INÍCIO" / "PARADA") acima do textbox de RNA
    * para os códons de início e parada, usando uma máquina de estados simples.
    *
-   * Constantes de layout (devem espelhar o CSS):
-   *   padding-left de .textbox-rna = 6 px
-   *   uma base = 40 px | margem codon-end = 8 px → slot por códon = 128 px
+   * BUGFIX: a versão anterior calculava a posição horizontal com constantes
+   * fixas em pixels (padding + largura de slot) espelhando o CSS manualmente.
+   * Isso quebrava silenciosamente sempre que o CSS responsivo mudava o
+   * tamanho da fonte/input em telas menores. Agora a posição é lida
+   * diretamente do `offsetLeft` do input real que inicia o códon, então o
+   * rótulo sempre acompanha o layout de verdade, não uma cópia dele.
    */
   function updateCodonLabels() {
     const rnaBox = textboxRna[0];
@@ -561,10 +661,13 @@
       // AUG enquanto inCoding=true → sem rótulo (ribossomo já em andamento)
 
       if (kind) {
+        const startChar = rnaSequenceChars[c * 3];
+        if (!startChar) continue;
+
         const lbl = document.createElement('div');
         lbl.className   = 'codon-label codon-label-' + kind;
         lbl.textContent = kind === 'start' ? 'INÍCIO' : 'PARADA';
-        lbl.style.left  = (CODON_LABEL.PADDING_LEFT + c * CODON_LABEL.SLOT_WIDTH) + 'px';
+        lbl.style.left  = startChar.offsetLeft + 'px';
         rnaBox.appendChild(lbl);
       }
     }
@@ -802,16 +905,16 @@
         const next = activeEl.nextElementSibling;
         if (next && next.classList.contains('sequenceChar')) next.focus();
       } else {
-        const newDna = newSequenceChar(base);
-        const newRna = newSequenceChar(transcribe(base));
+        const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
+        const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
         textboxDna[0].insertBefore(newDna, activeEl.nextElementSibling);
         textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
         newDna.focus();
       }
     } else {
       // Nenhum input focado: anexa ao final
-      const newDna = newSequenceChar(base);
-      const newRna = newSequenceChar(transcribe(base));
+      const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
+      const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
       textboxDna[0].insertBefore(newDna, blankSpace);
       textboxRna[0].appendChild(newRna);
       newDna.focus();
@@ -861,8 +964,8 @@
     dnaSeq += stopCodons[Math.floor(Math.random() * stopCodons.length)];
 
     for (const base of dnaSeq) {
-      textboxDna[0].insertBefore(newSequenceChar(base), blankSpace);
-      textboxRna[0].appendChild(newSequenceChar(transcribe(base)));
+      textboxDna[0].insertBefore(newSequenceChar(base, 'sequenceChar', 'Base de DNA'), blankSpace);
+      textboxRna[0].appendChild(newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro'));
     }
 
     translate();
@@ -902,9 +1005,9 @@
 
     let lastDnaInput = null;
     for (const base of dnaSeq) {
-      lastDnaInput = newSequenceChar(base);
+      lastDnaInput = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
       textboxDna[0].insertBefore(lastDnaInput, blankSpace);
-      textboxRna[0].appendChild(newSequenceChar(transcribe(base)));
+      textboxRna[0].appendChild(newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro'));
     }
     if (lastDnaInput) lastDnaInput.focus();
 
@@ -1095,8 +1198,8 @@
    */
   function fillStrand(dnaTemplate, dnaContainer, rnaContainer, beforeNode) {
     for (const base of dnaTemplate) {
-      const dnaInput = newSequenceChar(base);
-      const rnaInput = newSequenceChar(transcribe(base));
+      const dnaInput = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
+      const rnaInput = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
       if (beforeNode) dnaContainer.insertBefore(dnaInput, beforeNode);
       else dnaContainer.appendChild(dnaInput);
       rnaContainer.appendChild(rnaInput);
@@ -1155,6 +1258,9 @@
 
   // DOMContentLoaded — vincula controles que dependem de elementos renderizados após este script
   document.addEventListener('DOMContentLoaded', function () {
+    // Gera a tabela de 64 códons a partir de CODON_TABLE antes de vincular os cliques nela
+    buildCodonTable();
+
     // Preenche o cache do drawer uma única vez
     drawer.panel   = document.getElementById('aminoacid-details-drawer');
     drawer.title   = document.getElementById('drawer-title');
@@ -1235,19 +1341,29 @@
       });
     }
 
-    // Tabela de códons — clique insere as bases de DNA correspondentes no simulador
+    // Tabela de códons — clique (ou Enter/Espaço, via teclado) insere as bases de DNA correspondentes no simulador
+    function activateCodonItem() {
+      const codon = this.getAttribute('data-codon');
+      if (!codon) return;
+
+      // Converte bases do mRNA para DNA molde: A→T, U→A, C→G, G→C
+      const dnaBases = codon.split('').map(b => RNA_BASE_TO_DNA[b] || b).join('');
+
+      const appBtn = document.getElementById('app');
+      if (appBtn) appBtn.click();
+
+      for (const base of dnaBases) insertBase(base);
+    }
+
     document.querySelectorAll('.codon-item').forEach(function (item) {
-      item.addEventListener('click', function () {
-        const codon = this.getAttribute('data-codon');
-        if (!codon) return;
-
-        // Converte bases do mRNA para DNA molde: A→T, U→A, C→G, G→C
-        const dnaBases = codon.split('').map(b => RNA_BASE_TO_DNA[b] || b).join('');
-
-        const appBtn = document.getElementById('app');
-        if (appBtn) appBtn.click();
-
-        for (const base of dnaBases) insertBase(base);
+      item.addEventListener('click', activateCodonItem);
+      // Os itens são focáveis (tabindex="0", role="button") para navegação por teclado;
+      // Enter e Espaço replicam o comportamento de clique.
+      item.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          activateCodonItem.call(this);
+        }
       });
     });
 
