@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
         integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
     <title>Protein Synthesis</title>
-    
+
 </head>
 
 <body>
@@ -37,7 +37,7 @@
                     <i class="fas fa-table"></i> Tabela de Códons
                 </li>
                 <li class="button" id="diseases">
-                    <i class="fas fa-disease"></i> Doenças Genéticas
+                    <i class="fas fa-universal-access"></i> Doenças Genéticas
                 </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
@@ -59,6 +59,10 @@
                         <i class="fas fa-sync-alt"></i> Substituição
                     </li>
                 </ul>
+                
+                <li class="button" id="quiz">
+                    <i class="fas fa-trophy"></i> Modo Desafio
+                </li>
                 <li class="header-title" id="about">
                     <span>Sobre o Aplicativo</span>
                 </li>
@@ -419,7 +423,7 @@
                     <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
                     <div class="output-aminoacids"></div>
                 </div>
-                <div class="mutation-panel">
+                <div class="mutation-panel" style="display: none;">
                     <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
                     <div class="mutation-analysis-result">
                         <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação no menu
@@ -432,6 +436,45 @@
                     </div>
                 </div>
             </div>
+            <!-- ═══ MODO DESAFIO (Quiz) ═══════════════════════════════════════════════
+                 Página independente, navegada pelo sidebar (li#quiz).
+                 O conteúdo das perguntas é gerado dinamicamente por script.js —
+                 ver buildConceptualQuestion, buildMutationQuestion, buildCodonQuestion
+                 e buildStartStopQuestion. Não há display:none aqui; a visibilidade
+                 é controlada pelo sistema de páginas do dom.js (classe .active).
+            ════════════════════════════════════════════════════════════════════════ -->
+            <div class="content quiz">
+                <div id="quiz-panel" class="quiz-panel">
+                    <div class="quiz-header">
+                        <h3><i class="fas fa-trophy"></i> Modo Desafio — Sobrevivência</h3>
+                        <div class="quiz-scoreboard">
+                            <span class="quiz-score-item">Pontuação: <strong id="quiz-score">0</strong></span>
+                            <span class="quiz-score-item">Recorde: <strong id="quiz-best">0</strong></span>
+                        </div>
+                        <button id="quiz-exit-btn" class="quiz-exit-btn" aria-label="Voltar ao Simulador">&times;</button>
+                    </div>
+
+                    <p class="quiz-subtitle">Responda o máximo de perguntas seguidas que conseguir — mistura
+                        perguntas conceituais de genética, identificação de mutações e reconhecimento de
+                        códons. Um erro encerra a rodada.</p>
+
+                    <div id="quiz-question-area" class="quiz-question-area"></div>
+
+                    <div id="quiz-feedback" class="quiz-feedback" aria-live="polite"></div>
+
+                    <div id="quiz-gameover" class="quiz-gameover" style="display:none;">
+                        <h4><i class="fas fa-flag-checkered"></i> Fim de jogo!</h4>
+                        <p id="quiz-gameover-text"></p>
+                        <div class="quiz-gameover-actions">
+                            <button id="quiz-retry-btn" class="btn-control"><i class="fas fa-redo"></i> Jogar
+                                novamente</button>
+                            <button id="quiz-back-btn" class="btn-control"><i class="fas fa-arrow-left"></i> Voltar
+                                ao Simulador</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="content versions">
                 <div class="page-header">
                     <h2>Histórico de Versões</h2>

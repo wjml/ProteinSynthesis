@@ -947,21 +947,33 @@
     treatSequence();
   }
 
-  /** Gera e insere uma sequência de DNA aleatória válida (início + corpo + parada). */
-  function randomSequence() {
-    clearSequence();
-
+  /**
+   * Gera uma string de DNA molde válida (início TAC=AUG + corpo aleatório + um dos três
+   * stop codons), sem tocar no DOM. Extraída de randomSequence() para ser reaproveitada
+   * tanto pela inserção no simulador quanto pelo gerador de perguntas do Modo Desafio.
+   * @param {number} [numCodons] - total de códons desejado (incluindo início e parada).
+   *        Se omitido, sorteia entre 4 e 7.
+   */
+  function generateRandomCodingDna(numCodons) {
     const bases      = ['A', 'T', 'C', 'G'];
-    const numCodons  = Math.floor(Math.random() * 4) + 4; // 4 a 7 códons
-    const stopCodons = ['ATT', 'ATC', 'ACT'];              // transcreve para UAA, UAG, UGA
+    const stopCodons = ['ATT', 'ATC', 'ACT']; // transcrevem para UAA, UAG, UGA
+    const total = numCodons || (Math.floor(Math.random() * 4) + 4); // 4 a 7 códons
 
     let dnaSeq = 'TAC'; // início: transcreve para AUG
-    for (let i = 0; i < numCodons - 2; i++) {
+    for (let i = 0; i < total - 2; i++) {
       dnaSeq += bases[Math.floor(Math.random() * 4)];
       dnaSeq += bases[Math.floor(Math.random() * 4)];
       dnaSeq += bases[Math.floor(Math.random() * 4)];
     }
     dnaSeq += stopCodons[Math.floor(Math.random() * stopCodons.length)];
+    return dnaSeq;
+  }
+
+  /** Gera e insere uma sequência de DNA aleatória válida (início + corpo + parada). */
+  function randomSequence() {
+    clearSequence();
+
+    const dnaSeq = generateRandomCodingDna();
 
     for (const base of dnaSeq) {
       textboxDna[0].insertBefore(newSequenceChar(base, 'sequenceChar', 'Base de DNA'), blankSpace);
@@ -1241,6 +1253,721 @@
     showInfo(disease.name, `Sequência carregada: ${disease.gene}. Veja a análise de mutação abaixo, no Simulador.`);
   }
 
+  // ─── Modo Desafio (Quiz) ──────────────────────────────────────────────────────
+  //
+  // Reaproveita CODON_TABLE/AMINOACIDS_DB e a MESMA regra de classificação de
+  // mutação usada no simulador (frameshift > silenciosa > nonsense > missense),
+  // mas em versões "puras" (sem tocar o DOM), para gerar perguntas e corrigi-las
+  // automaticamente sem precisar de gabarito hardcoded.
+
+  /** Transcreve uma string de DNA inteira para RNA (versão pura de transcribe(), sem DOM). */
+  function transcribeSeq(dnaSeq) {
+    let rna = '';
+    for (const base of dnaSeq) rna += transcribe(base);
+    return rna;
+  }
+
+  /**
+   * Traduz uma string de RNA para a cadeia de aminoácidos REALMENTE ativa
+   * (a partir do primeiro AUG até o STOP, exclusive), como uma lista de
+   * abbrevNames. Espelha a lógica de translateStrand()/getActiveAAs(), porém
+   * sem criar nenhum elemento no DOM — usada apenas para gerar/corrigir
+   * perguntas do quiz.
+   */
+  function translateProteinChainPure(rnaSeq) {
+    const chain = [];
+    let hasStart = false;
+    for (let i = 0; i + 3 <= rnaSeq.length; i += 3) {
+      const codon     = rnaSeq.substr(i, 3);
+      const aminoacid = CODON_TABLE[codon];
+      if (!aminoacid) continue;
+
+      if (aminoacid.abbrevName === 'MET') hasStart = true;
+      if (aminoacid.abbrevName === 'STOP') { hasStart = false; continue; }
+      if (hasStart) chain.push(aminoacid.abbrevName);
+    }
+    return chain;
+  }
+
+  /**
+   * Classifica uma mutação comparando duas sequências de DNA (original e mutada),
+   * em string puro — mesma regra de negócio de classifyMutation(), mas retornando
+   * apenas a chave do tipo ('frameshift'|'silent'|'nonsense'|'missense'), sem
+   * mexer em nenhum elemento da UI real.
+   * @returns {string|null} null se as sequências forem idênticas (sem mutação).
+   */
+  function classifyMutationPure(origDnaSeq, mutDnaSeq) {
+    if (!origDnaSeq || !mutDnaSeq || origDnaSeq === mutDnaSeq) return null;
+
+    const diff    = mutDnaSeq.length - origDnaSeq.length;
+    const absDiff = Math.abs(diff);
+
+    if (diff !== 0 && diff % 3 !== 0) return 'frameshift';
+
+    const origChain = translateProteinChainPure(transcribeSeq(origDnaSeq));
+    const mutChain  = translateProteinChainPure(transcribeSeq(mutDnaSeq));
+    const aaChanged = origChain.join(',') !== mutChain.join(',');
+
+    if (!aaChanged) return 'silent';
+    if (mutChain.length < origChain.length) return 'nonsense';
+    return 'missense';
+  }
+
+  /** Embaralha uma cópia do array (Fisher-Yates). Não muta o array original. */
+  function shuffled(array) {
+    const arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  const QUIZ_BEST_SCORE_KEY = 'proteinSynthesis.quizBestScore';
+  const QUIZ_TYPE_LABELS = {
+    silent:     { className: 'silent',     text: 'Silenciosa (Sinônima)' },
+    missense:   { className: 'missense',   text: 'Sentido Trocado (Missense)' },
+    nonsense:   { className: 'nonsense',   text: 'Sem Sentido (Nonsense)' },
+    frameshift: { className: 'frameshift', text: 'Deslocamento de Leitura (Frameshift)' },
+  };
+
+  /** Estado do Modo Desafio. Vive durante a sessão; só persiste o recorde (localStorage). */
+  const quiz = {
+    active:  false,
+    score:   0,
+    best:    0,
+    answer:  null,  // valor esperado para a pergunta atual (formato depende do tipo)
+    checked: false, // impede clicar em mais de uma opção após já ter respondido
+    els:     {},    // cache de elementos da UI, preenchido em initQuizUI()
+  };
+
+  /** Lê o recorde salvo no localStorage (gracioso se indisponível, ex: modo privado). */
+  function loadQuizBestScore() {
+    try {
+      return Number(window.localStorage.getItem(QUIZ_BEST_SCORE_KEY)) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /** Salva um novo recorde no localStorage, se suportado. */
+  function saveQuizBestScore(value) {
+    try {
+      window.localStorage.setItem(QUIZ_BEST_SCORE_KEY, String(value));
+    } catch (e) { /* localStorage indisponível — recorde fica só na sessão */ }
+  }
+
+  // ─── Geradores de pergunta ────────────────────────────────────────────────────
+
+  /**
+   * Pergunta tipo "mutação": gera uma sequência codificante aleatória, aplica uma
+   * mutação aleatória (substituição, inserção ou deleção de 1 ou 3 bases) e pede
+   * para classificar o tipo resultante. A resposta certa é sempre calculada pela
+   * mesma regra usada no simulador — nunca fixada manualmente — então é impossível
+   * a pergunta e o gabarito divergirem.
+   */
+  function buildMutationQuestion() {
+    let origDna, mutDna, trueType;
+
+    // Tenta algumas vezes até cair numa mutação válida (sequências diferentes).
+    for (let attempt = 0; attempt < 15; attempt++) {
+      origDna = generateRandomCodingDna();
+      const kind = shuffled(['sub', 'ins1', 'del1', 'ins3', 'del3'])[0];
+      const pos  = 3 + Math.floor(Math.random() * Math.max(1, origDna.length - 6)); // evita mexer no AUG inicial
+
+      if (kind === 'sub') {
+        const bases = ['A', 'T', 'C', 'G'].filter(b => b !== origDna[pos]);
+        const newBase = bases[Math.floor(Math.random() * bases.length)];
+        mutDna = origDna.slice(0, pos) + newBase + origDna.slice(pos + 1);
+      } else if (kind === 'ins1' || kind === 'ins3') {
+        const n = kind === 'ins1' ? 1 : 3;
+        let inserted = '';
+        for (let i = 0; i < n; i++) inserted += ['A', 'T', 'C', 'G'][Math.floor(Math.random() * 4)];
+        mutDna = origDna.slice(0, pos) + inserted + origDna.slice(pos);
+      } else {
+        const n = kind === 'del1' ? 1 : 3;
+        mutDna = origDna.slice(0, pos) + origDna.slice(pos + n);
+      }
+
+      trueType = classifyMutationPure(origDna, mutDna);
+      if (trueType) break;
+    }
+    if (!trueType) return null; // extremamente improvável, mas evita travar
+
+    return {
+      type:   'mutation',
+      answer: trueType,
+      render(container) {
+        container.innerHTML = `
+          <p class="quiz-prompt">Que tipo de mutação ocorreu nesta sequência?</p>
+          <div class="quiz-seq-compare">
+            <div class="quiz-seq-row"><span class="quiz-seq-label">DNA original</span><span class="quiz-seq-value">${origDna}</span></div>
+            <div class="quiz-seq-row"><span class="quiz-seq-label">DNA mutado</span><span class="quiz-seq-value">${mutDna}</span></div>
+          </div>
+          <div class="quiz-options" id="quiz-options"></div>
+        `;
+        const optionsEl = container.querySelector('#quiz-options');
+        shuffled(Object.keys(QUIZ_TYPE_LABELS)).forEach((key) => {
+          const meta = QUIZ_TYPE_LABELS[key];
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option mutation-type-badge ' + meta.className;
+          btn.textContent = meta.text;
+          btn.dataset.quizValue = key;
+          btn.addEventListener('click', () => submitQuizAnswer(key, btn));
+          optionsEl.appendChild(btn);
+        });
+      },
+    };
+  }
+
+  /**
+   * Pergunta tipo "tradução de códon": sorteia um códon (excluindo STOP, que não
+   * codifica aminoácido) e pede o aminoácido correspondente, com 3 distratores
+   * sorteados entre os outros 19 aminoácidos reais.
+   */
+  function buildCodonQuestion() {
+    const senseCodons = Object.keys(CODON_TABLE).filter(c => CODON_TABLE[c].abbrevName !== 'STOP');
+    const codon  = senseCodons[Math.floor(Math.random() * senseCodons.length)];
+    const correct = CODON_TABLE[codon];
+
+    const otherNames = Object.values(AMINOACIDS_DB)
+      .filter(aa => aa.abbrevs !== 'STOP / Fim' && aa.name !== correct.name)
+      .map(aa => aa.name);
+    const distractors = shuffled(otherNames).slice(0, 3);
+    const options = shuffled([correct.name, ...distractors]);
+
+    return {
+      type:   'codon',
+      answer: correct.name,
+      render(container) {
+        container.innerHTML = `
+          <p class="quiz-prompt">Qual aminoácido este códon de RNAm codifica?</p>
+          <div class="quiz-codon-display">${codon}</div>
+          <div class="quiz-options" id="quiz-options"></div>
+        `;
+        const optionsEl = container.querySelector('#quiz-options');
+        options.forEach((name) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option btn-control';
+          btn.textContent = name;
+          btn.dataset.quizValue = name;
+          btn.addEventListener('click', () => submitQuizAnswer(name, btn));
+          optionsEl.appendChild(btn);
+        });
+      },
+    };
+  }
+
+  /**
+   * Pergunta tipo "início/parada": mostra 4 códons lado a lado (1 alvo + 3
+   * distratores neutros) e pede para clicar no códon de INÍCIO (AUG) ou em um
+   * dos códons de PARADA, alternando aleatoriamente entre os dois.
+   */
+  function buildStartStopQuestion() {
+    const asksStart = Math.random() < 0.5;
+    const target = asksStart ? 'AUG' : shuffled(['UAA', 'UAG', 'UGA'])[0];
+
+    const neutralCodons = Object.keys(CODON_TABLE)
+      .filter(c => CODON_TABLE[c].abbrevName !== 'MET' && CODON_TABLE[c].abbrevName !== 'STOP');
+    const distractors = shuffled(neutralCodons).slice(0, 3);
+    const options = shuffled([target, ...distractors]);
+
+    return {
+      type:   'startstop',
+      answer: target,
+      render(container) {
+        container.innerHTML = `
+          <p class="quiz-prompt">Qual destes é o códon de ${asksStart ? 'INÍCIO' : 'PARADA'} da tradução?</p>
+          <div class="quiz-options quiz-options-codons" id="quiz-options"></div>
+        `;
+        const optionsEl = container.querySelector('#quiz-options');
+        options.forEach((codon) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option codon-item';
+          btn.innerHTML = `<span class="codon-name">${codon}</span>`;
+          btn.dataset.quizValue = codon;
+          btn.addEventListener('click', () => submitQuizAnswer(codon, btn));
+          optionsEl.appendChild(btn);
+        });
+      },
+    };
+  }
+
+  // ─── Banco de perguntas conceituais ──────────────────────────────────────────
+  //
+  // Cada objeto segue o contrato { question, correct, distractors[] }.
+  // Os distratores são os três incorretos; a ordem das 4 opções é embaralhada
+  // em buildConceptualQuestion() antes de renderizar, então não importa a ordem aqui.
+  //
+  // Categorias cobertas:
+  //   • Dogma central e enzimas envolvidas
+  //   • Transcrição e processamento do mRNA
+  //   • Tradução: ribossomo, tRNA, anticódon, fases
+  //   • Função e significado do AUG
+  //   • Tipos de mutação por descrição conceitual
+  //   • Código genético: degeneração, universalidade
+  //   • Casos clínicos (anemia falciforme, beta-talassemia)
+
+  const CONCEPTUAL_QUESTIONS = [
+    // ── Dogma central ────────────────────────────────────────────────────────
+    {
+      question: 'Qual é a sequência correta do dogma central da biologia molecular?',
+      correct:  'DNA → RNA → Proteína',
+      distractors: ['RNA → DNA → Proteína', 'Proteína → DNA → RNA', 'DNA → Proteína → RNA'],
+    },
+    {
+      question: 'Qual enzima é responsável por sintetizar o mRNA a partir de um molde de DNA?',
+      correct:  'RNA polimerase',
+      distractors: ['DNA polimerase', 'Ribonuclease', 'DNA ligase'],
+    },
+    {
+      question: 'Durante a tradução, qual molécula transporta os aminoácidos até o ribossomo?',
+      correct:  'RNA transportador (tRNA)',
+      distractors: ['RNA mensageiro (mRNA)', 'RNA ribossômico (rRNA)', 'DNA complementar (cDNA)'],
+    },
+    {
+      question: 'O RNA ribossômico (rRNA) tem qual função principal na síntese proteica?',
+      correct:  'Compor a estrutura do ribossomo e catalisar a formação de ligações peptídicas',
+      distractors: [
+        'Transportar aminoácidos até o sítio ativo',
+        'Ser o molde para a síntese da proteína',
+        'Sinalizar o início da transcrição',
+      ],
+    },
+
+    // ── Transcrição ──────────────────────────────────────────────────────────
+    {
+      question: 'A transcrição produz qual molécula diretamente?',
+      correct:  'RNA pré-mensageiro (pré-mRNA)',
+      distractors: ['Proteína', 'DNA dupla-fita', 'tRNA maduro'],
+    },
+    {
+      question: 'O que são íntrons?',
+      correct:  'Sequências não codificantes do pré-mRNA que são removidas durante o processamento',
+      distractors: [
+        'Sequências codificantes que permanecem no mRNA maduro',
+        'Regiões do DNA que controlam a transcrição',
+        'Porções do tRNA que reconhecem o códon',
+      ],
+    },
+    {
+      question: 'O que é splicing do RNA?',
+      correct:  'Remoção dos íntrons e junção dos éxons para formar o mRNA maduro',
+      distractors: [
+        'Adição do cap 5\' ao mRNA',
+        'Exportação do mRNA do núcleo para o citoplasma',
+        'Síntese da cauda poli-A no mRNA',
+      ],
+    },
+    {
+      question: 'Qual das modificações abaixo ocorre no pré-mRNA de eucariotos, mas NÃO em procariotos?',
+      correct:  'Remoção de íntrons por splicing',
+      distractors: [
+        'Início da tradução com metionina',
+        'Uso de códons de parada (UAA, UAG, UGA)',
+        'Transcrição pela RNA polimerase',
+      ],
+    },
+
+    // ── Tradução ─────────────────────────────────────────────────────────────
+    {
+      question: 'O que é um anticódon?',
+      correct:  'Sequência de 3 nucleotídeos no tRNA que é complementar a um códon do mRNA',
+      distractors: [
+        'Sequência de 3 nucleotídeos no mRNA que codifica um aminoácido',
+        'Região do ribossomo que catalisa a ligação peptídica',
+        'Sequência do DNA molde lida pela RNA polimerase',
+      ],
+    },
+    {
+      question: 'Em qual local celular ocorre a tradução em células eucarióticas?',
+      correct:  'No ribossomo (citoplasma ou retículo endoplasmático rugoso)',
+      distractors: ['No núcleo', 'Na mitocôndria exclusivamente', 'No aparelho de Golgi'],
+    },
+    {
+      question: 'Qual é a fase final da tradução?',
+      correct:  'Terminação — o ribossomo encontra um códon de parada e libera a cadeia polipeptídica',
+      distractors: [
+        'Elongação — adição sucessiva de aminoácidos',
+        'Iniciação — montagem do complexo ribossômico no mRNA',
+        'Ativação — ligação do aminoácido ao tRNA',
+      ],
+    },
+    {
+      question: 'Quantos nucleotídeos formam um códon?',
+      correct:  '3',
+      distractors: ['2', '4', '1'],
+    },
+    {
+      question: 'O que é uma ligação peptídica?',
+      correct:  'Ligação covalente entre o grupo amino de um aminoácido e o grupo carboxila do anterior',
+      distractors: [
+        'Ligação de hidrogênio entre as bases nitrogenadas do DNA',
+        'Ligação entre um nucleotídeo e o próximo na fita de RNA',
+        'Interação entre o tRNA e o ribossomo',
+      ],
+    },
+
+    // ── AUG e códons de parada ───────────────────────────────────────────────
+    {
+      question: 'Qual é a função do códon AUG na tradução?',
+      correct:  'Sinalizar o início da tradução e codificar o aminoácido metionina',
+      distractors: [
+        'Sinalizar o fim da cadeia polipeptídica',
+        'Codificar o aminoácido leucina, que inicia toda proteína',
+        'Indicar o local de splicing no pré-mRNA',
+      ],
+    },
+    {
+      question: 'Qual aminoácido é sempre o primeiro a ser incorporado na síntese de uma proteína?',
+      correct:  'Metionina (Met / M)',
+      distractors: ['Alanina (Ala / A)', 'Lisina (Lys / K)', 'Valina (Val / V)'],
+    },
+    {
+      question: 'O que ocorre quando o ribossomo encontra um códon de parada (UAA, UAG ou UGA)?',
+      correct:  'Fatores de liberação se ligam ao sítio A e a tradução é encerrada, soltando a proteína',
+      distractors: [
+        'O ribossomo reinicia a tradução no próximo AUG',
+        'Um tRNA especial adiciona um aminoácido de terminação',
+        'O mRNA é imediatamente degradado',
+      ],
+    },
+    {
+      question: 'Quantos códons de parada existem no código genético padrão?',
+      correct:  '3 (UAA, UAG e UGA)',
+      distractors: ['1 (UAA apenas)', '2 (UAA e UAG)', '4 (UAA, UAG, UGA e UAC)'],
+    },
+
+    // ── Código genético ──────────────────────────────────────────────────────
+    {
+      question: 'O código genético é dito "degenerado" (ou redundante). O que isso significa?',
+      correct:  'Vários códons diferentes podem codificar o mesmo aminoácido',
+      distractors: [
+        'Genes defeituosos acumulam mutações ao longo do tempo',
+        'O código genético varia entre espécies diferentes',
+        'Um único códon pode codificar vários aminoácidos distintos',
+      ],
+    },
+    {
+      question: 'O código genético é descrito como "quase universal". O que isso significa?',
+      correct:  'A grande maioria dos seres vivos usa o mesmo código de códons para aminoácidos',
+      distractors: [
+        'Todos os organismos têm exatamente o mesmo genoma',
+        'Apenas organismos eucarióticos compartilham o código genético',
+        'O número de genes é igual em todos os seres vivos',
+      ],
+    },
+    {
+      question: 'Quantos aminoácidos distintos são codificados pelo código genético padrão?',
+      correct:  '20',
+      distractors: ['16', '24', '64'],
+    },
+
+    // ── Tipos de mutação — conceituais ───────────────────────────────────────
+    {
+      question: 'O que define uma mutação missense (sentido trocado)?',
+      correct:  'Uma substituição de base que leva à troca de um aminoácido por outro na proteína',
+      distractors: [
+        'Uma substituição de base que não altera o aminoácido codificado',
+        'Uma inserção que desloca o quadro de leitura',
+        'Uma substituição que gera um códon de parada prematuro',
+      ],
+    },
+    {
+      question: 'O que é uma mutação nonsense (sem sentido)?',
+      correct:  'Uma mutação que converte um códon de aminoácido em um códon de parada prematuro',
+      distractors: [
+        'Uma mutação que troca um aminoácido por outro sem alterar a função da proteína',
+        'Uma deleção de múltiplos códons sem deslocar o quadro de leitura',
+        'Uma inserção de bases que não altera a sequência de aminoácidos',
+      ],
+    },
+    {
+      question: 'Por que uma mutação sinônima (silenciosa) geralmente não altera a proteína?',
+      correct:  'Porque o novo códon codifica o mesmo aminoácido, devido à degeneração do código genético',
+      distractors: [
+        'Porque a mutação ocorre em um íntron que é removido no splicing',
+        'Porque a proteína possui mecanismos de autocorreção',
+        'Porque a substituição acontece fora da fase de leitura',
+      ],
+    },
+    {
+      question: 'Qual tipo de mutação tem maior potencial de alterar completamente a proteína a partir do ponto da mutação?',
+      correct:  'Frameshift (deslocamento do quadro de leitura)',
+      distractors: ['Missense', 'Silenciosa (sinônima)', 'Nonsense'],
+    },
+    {
+      question: 'Uma deleção de 2 nucleotídeos em uma região codificante provoca qual efeito?',
+      correct:  'Deslocamento do quadro de leitura (frameshift), alterando todos os aminoácidos seguintes',
+      distractors: [
+        'Remoção de um único aminoácido sem alterar o restante da proteína',
+        'Inserção de um códon de parada no meio da sequência',
+        'Nenhum efeito, pois dois nucleotídeos se compensam mutuamente',
+      ],
+    },
+    {
+      question: 'Uma inserção de 3 nucleotídeos em fase (in-frame) em uma região codificante resulta em:',
+      correct:  'Adição de um aminoácido extra na proteína, sem deslocar o quadro de leitura',
+      distractors: [
+        'Deslocamento do quadro de leitura a partir do ponto de inserção',
+        'Eliminação de um aminoácido da cadeia polipeptídica',
+        'Interrupção prematura da tradução',
+      ],
+    },
+
+    // ── Casos clínicos ───────────────────────────────────────────────────────
+    {
+      question: 'Na anemia falciforme, que tipo de mutação ocorre no gene da hemoglobina β?',
+      correct:  'Missense — um único nucleotídeo substituído troca ácido glutâmico por valina na posição 6',
+      distractors: [
+        'Frameshift — deleção de uma base desloca o quadro de leitura',
+        'Nonsense — uma substituição gera um códon de parada prematuro',
+        'Silenciosa — a sequência de aminoácidos não é alterada',
+      ],
+    },
+    {
+      question: 'Por que a anemia falciforme causa a deformação das hemácias em foice?',
+      correct:  'A valina (hidrofóbica) no lugar do ácido glutâmico faz as moléculas de HbS se agregarem quando desoxigenadas',
+      distractors: [
+        'A proteína mutada é produzida em quantidade excessiva, sobrecarregando a hemácia',
+        'A mutação impede a ligação do ferro ao grupo heme da hemoglobina',
+        'A cadeia β mutada é degradada antes de formar a hemoglobina completa',
+      ],
+    },
+    {
+      question: 'A beta-talassemia é causada principalmente por mutações que afetam qual processo?',
+      correct:  'A produção ou estabilidade do mRNA da cadeia β da hemoglobina, reduzindo ou eliminando sua síntese',
+      distractors: [
+        'A estrutura do grupo heme, impedindo a ligação do oxigênio',
+        'A sequência de aminoácidos da cadeia α da hemoglobina',
+        'A degradação das hemácias no baço',
+      ],
+    },
+
+    // ── Replicação e reparo ──────────────────────────────────────────────────
+    {
+      question: 'O que são agentes mutagênicos?',
+      correct:  'Agentes físicos, químicos ou biológicos que aumentam a taxa de mutações no DNA',
+      distractors: [
+        'Enzimas que corrigem erros de replicação do DNA',
+        'Proteínas que regulam a expressão gênica',
+        'Moléculas que transportam informação genética entre células',
+      ],
+    },
+    {
+      question: 'Qual das afirmações sobre mutações germinativas está correta?',
+      correct:  'Ocorrem em células germinativas (óvulos ou espermatozoides) e podem ser transmitidas à descendência',
+      distractors: [
+        'Ocorrem em células somáticas e afetam apenas o indivíduo que as carrega',
+        'São sempre letais e eliminadas antes do nascimento',
+        'Não alteram a sequência de DNA, apenas a expressão gênica',
+      ],
+    },
+    {
+      question: 'O que é o polimorfismo de nucleotídeo único (SNP)?',
+      correct:  'Uma variação em um único nucleotídeo que ocorre em pelo menos 1% da população',
+      distractors: [
+        'Uma deleção de um fragmento inteiro de cromossomo',
+        'A duplicação de um gene inteiro no genoma',
+        'Uma inversão de um segmento de DNA que afeta todos os indivíduos da espécie',
+      ],
+    },
+
+    // ── Estrutura do gene / expressão gênica ─────────────────────────────────
+    {
+      question: 'O que é um promotor em um gene?',
+      correct:  'Sequência de DNA onde a RNA polimerase se liga para iniciar a transcrição',
+      distractors: [
+        'Sequência que codifica os primeiros aminoácidos da proteína',
+        'Região não traduzida no final do mRNA (3\' UTR)',
+        'Local onde o ribossomo se liga para iniciar a tradução',
+      ],
+    },
+    {
+      question: 'Qual é a definição mais precisa de um gene?',
+      correct:  'Sequência de DNA que contém informação para síntese de uma proteína funcional ou RNA funcional',
+      distractors: [
+        'Qualquer sequência de DNA presente no genoma de um organismo',
+        'Apenas as regiões do DNA que são transcritas em mRNA',
+        'Um fragmento de DNA com pelo menos 100 pares de bases',
+      ],
+    },
+  ];
+
+  /**
+   * Sorteia uma pergunta do banco conceitual e a renderiza com 4 opções (1 certa + 3 distratores).
+   * Nunca repete a mesma pergunta consecutivamente — guarda o índice da última usada para evitar
+   * duas iguais seguidas (mas permite que ela reapareça mais tarde).
+   */
+  let _lastConceptualIndex = -1;
+
+  function buildConceptualQuestion() {
+    let idx;
+    do {
+      idx = Math.floor(Math.random() * CONCEPTUAL_QUESTIONS.length);
+    } while (idx === _lastConceptualIndex && CONCEPTUAL_QUESTIONS.length > 1);
+    _lastConceptualIndex = idx;
+
+    const q = CONCEPTUAL_QUESTIONS[idx];
+    const options = shuffled([q.correct, ...q.distractors]);
+
+    return {
+      type:   'conceptual',
+      answer: q.correct,
+      render(container) {
+        container.innerHTML = `
+          <p class="quiz-prompt">${q.question}</p>
+          <div class="quiz-options quiz-options-conceptual" id="quiz-options"></div>
+        `;
+        const optionsEl = container.querySelector('#quiz-options');
+        options.forEach((opt) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option quiz-option-text btn-control';
+          btn.textContent = opt;
+          btn.dataset.quizValue = opt;
+          btn.addEventListener('click', () => submitQuizAnswer(opt, btn));
+          optionsEl.appendChild(btn);
+        });
+      },
+    };
+  }
+
+  // Pesos de seleção de tipo de pergunta:
+  //   conceptual  → 55 %  (conhecimento teórico que é cobrado em prova)
+  //   mutation    → 25 %  (identificação de tipo a partir de sequências)
+  //   startstop   →  10 %  (reconhecimento de AUG/stop na fita)
+  //   codon       →  10 %  (tradução de códon — mantido, mas com peso reduzido)
+  const QUIZ_QUESTION_BUILDERS = [
+    buildConceptualQuestion, buildConceptualQuestion, buildConceptualQuestion,
+    buildConceptualQuestion, buildConceptualQuestion,                          // 5 × conceptual
+    buildMutationQuestion, buildMutationQuestion,                              // 2 × mutation
+    buildStartStopQuestion,                                                    // 1 × startstop
+    buildCodonQuestion,                                                        // 1 × codon
+  ];
+
+  // ─── Máquina de estados do quiz ───────────────────────────────────────────────
+
+  /**
+   * Inicializa o cache de elementos do painel do quiz. Chamada em DOMContentLoaded.
+   *
+   * O quiz agora vive em sua própria página (.content.quiz), navegada pelo sistema
+   * do dom.js via li#quiz no sidebar — exatamente como todas as outras páginas.
+   * Por isso:
+   *   • Não há mais referências a elementos do simulador (simulator-controls,
+   *     sequences, mutation-panel) — essas páginas ficam intactas o tempo todo.
+   *   • startQuiz() não precisa mais navegar para #app nem manipular display de
+   *     outros elementos; só reseta o estado do quiz e renderiza a primeira pergunta.
+   *   • exitQuiz() apenas clica em #app no sidebar para navegar de volta.
+   */
+  function initQuizUI() {
+    quiz.els = {
+      panel:        document.getElementById('quiz-panel'),
+      score:        document.getElementById('quiz-score'),
+      best:         document.getElementById('quiz-best'),
+      questionArea: document.getElementById('quiz-question-area'),
+      feedback:     document.getElementById('quiz-feedback'),
+      gameover:     document.getElementById('quiz-gameover'),
+      gameoverText: document.getElementById('quiz-gameover-text'),
+      exitBtn:      document.getElementById('quiz-exit-btn'),
+      retryBtn:     document.getElementById('quiz-retry-btn'),
+      backBtn:      document.getElementById('quiz-back-btn'),
+    };
+
+    quiz.best = loadQuizBestScore();
+    if (quiz.els.best) quiz.els.best.textContent = quiz.best;
+
+    // Clique no item do sidebar (li#quiz) dispara startQuiz() além da navegação de página do dom.js
+    const sidebarQuizBtn = document.getElementById('quiz');
+    if (sidebarQuizBtn) sidebarQuizBtn.addEventListener('click', startQuiz);
+
+    if (quiz.els.exitBtn)  quiz.els.exitBtn.addEventListener('click', exitQuiz);
+    if (quiz.els.retryBtn) quiz.els.retryBtn.addEventListener('click', startQuiz);
+    if (quiz.els.backBtn)  quiz.els.backBtn.addEventListener('click', exitQuiz);
+  }
+
+  /** Reinicia o placar e renderiza a primeira pergunta da rodada. */
+  function startQuiz() {
+    quiz.active = true;
+    quiz.score  = 0;
+    if (quiz.els.score)        quiz.els.score.textContent = '0';
+    if (quiz.els.gameover)     quiz.els.gameover.style.display = 'none';
+    if (quiz.els.questionArea) quiz.els.questionArea.style.display = 'block';
+    nextQuestion();
+  }
+
+  /**
+   * Navega de volta ao Simulador clicando em #app no sidebar.
+   * dom.js cuida de remover a classe .active da página de quiz e ativar .content.app.
+   */
+  function exitQuiz() {
+    quiz.active = false;
+    const appBtn = document.getElementById('app');
+    if (appBtn) appBtn.click();
+  }
+
+  /** Sorteia um tipo de pergunta, gera e renderiza. */
+  function nextQuestion() {
+    quiz.checked = false;
+    if (quiz.els.feedback) { quiz.els.feedback.textContent = ''; quiz.els.feedback.className = 'quiz-feedback'; }
+
+    const builder  = QUIZ_QUESTION_BUILDERS[Math.floor(Math.random() * QUIZ_QUESTION_BUILDERS.length)];
+    const question = builder();
+    quiz.answer = question.answer;
+    if (quiz.els.questionArea) question.render(quiz.els.questionArea);
+  }
+
+  /** Avalia a opção clicada, dá feedback visual e decide se continua ou encerra a sequência. */
+  function submitQuizAnswer(value, btnEl) {
+    if (quiz.checked) return; // ignora cliques extras após já ter respondido
+    quiz.checked = true;
+
+    const isCorrect = value === quiz.answer;
+    const optionButtons = quiz.els.questionArea
+      ? Array.from(quiz.els.questionArea.querySelectorAll('.quiz-option'))
+      : [];
+    optionButtons.forEach((btn) => { btn.disabled = true; });
+    btnEl.classList.add(isCorrect ? 'quiz-correct' : 'quiz-incorrect');
+
+    if (isCorrect) {
+      quiz.score += 1;
+      if (quiz.els.score) quiz.els.score.textContent = String(quiz.score);
+      if (quiz.score > quiz.best) {
+        quiz.best = quiz.score;
+        saveQuizBestScore(quiz.best);
+        if (quiz.els.best) quiz.els.best.textContent = String(quiz.best);
+      }
+      if (quiz.els.feedback) {
+        quiz.els.feedback.textContent = '✅ Correto! Próxima pergunta…';
+        quiz.els.feedback.className = 'quiz-feedback quiz-feedback-correct';
+      }
+      setTimeout(nextQuestion, 1100);
+    } else {
+      // Destaca também qual era a opção correta, usando o valor exato (não texto) de cada botão.
+      const correctBtn = optionButtons.find((btn) => btn.dataset.quizValue === String(quiz.answer));
+      if (correctBtn) correctBtn.classList.add('quiz-correct-reveal');
+
+      if (quiz.els.feedback) {
+        quiz.els.feedback.textContent = '❌ Resposta incorreta.';
+        quiz.els.feedback.className = 'quiz-feedback quiz-feedback-incorrect';
+      }
+      setTimeout(() => endQuiz(), 900);
+    }
+  }
+
+  /** Encerra a sessão de sobrevivência e mostra a tela de fim de jogo com o placar final. */
+  function endQuiz() {
+    if (quiz.els.questionArea) quiz.els.questionArea.style.display = 'none';
+    if (quiz.els.gameover) quiz.els.gameover.style.display = 'block';
+    if (quiz.els.gameoverText) {
+      const isNewRecord = quiz.score > 0 && quiz.score === quiz.best;
+      quiz.els.gameoverText.innerHTML =
+        `Você acertou <strong>${quiz.score}</strong> pergunta${quiz.score === 1 ? '' : 's'} seguida${quiz.score === 1 ? '' : 's'}.` +
+        (isNewRecord
+          ? ' <strong>🏆 Novo recorde!</strong>'
+          : ` Recorde atual: <strong>${quiz.best}</strong>.`);
+    }
+  }
+
   // ─── Vinculação de eventos ────────────────────────────────────────────────────
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
@@ -1260,6 +1987,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     // Gera a tabela de 64 códons a partir de CODON_TABLE antes de vincular os cliques nela
     buildCodonTable();
+
+    // Inicializa o Modo Desafio (Quiz)
+    initQuizUI();
 
     // Preenche o cache do drawer uma única vez
     drawer.panel   = document.getElementById('aminoacid-details-drawer');
