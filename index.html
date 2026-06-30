@@ -59,7 +59,7 @@
                         <i class="fas fa-sync-alt"></i> Substituição
                     </li>
                 </ul>
-                
+
                 <li class="button" id="quiz">
                     <i class="fas fa-trophy"></i> Modo Desafio
                 </li>
@@ -72,8 +72,8 @@
                 <li class="button" id="tutorial">
                     <i class="fas fa-question-circle"></i> Tutorial
                 </li>
-                <li class="sidebar-toggle" id="toggle-professor">
-                    <i class="fas fa-chalkboard-teacher"></i> <span>🎯 Modo Professor</span>
+                <li class="button" id="feedback">
+                    <i class="fas fa-envelope"></i> Feedback
                 </li>
                 <li class="empty"></li>
             </ul>
@@ -404,16 +404,17 @@
                     </div>
                     <div class="label">RNAm
                         <div class="process-box">
-                        <span>↓ TRANSCRIÇÃO </span>
-                       </div>
+                            <span>↓ TRANSCRIÇÃO </span>
+                        </div>
                     </div>
-                    
+
                     <div class="textbox-rna"></div>
                     <div class="label">Estrutura Primária do Peptídeo (Sequência de Aminoácidos)
                         <div class="process-box">
-                        <span>↓ TRADUÇÃO </span>
-                       </div>
-                    </div><div class="output-aminoacids"></div>
+                            <span>↓ TRADUÇÃO </span>
+                        </div>
+                    </div>
+                    <div class="output-aminoacids"></div>
                 </div>
                 <div class="sequence to-mutate">
                     <div class="label">DNA</div>
@@ -451,7 +452,8 @@
                             <span class="quiz-score-item">Pontuação: <strong id="quiz-score">0</strong></span>
                             <span class="quiz-score-item">Recorde: <strong id="quiz-best">0</strong></span>
                         </div>
-                        <button id="quiz-exit-btn" class="quiz-exit-btn" aria-label="Voltar ao Simulador">&times;</button>
+                        <button id="quiz-exit-btn" class="quiz-exit-btn"
+                            aria-label="Voltar ao Simulador">&times;</button>
                     </div>
 
                     <p class="quiz-subtitle">Responda o máximo de perguntas seguidas que conseguir — mistura
@@ -525,7 +527,8 @@
                         <div class="step-num">1</div>
                         <div class="step-body">
                             <h3>Inserindo Sequências</h3>
-                            <p>Clique no espaço em branco na fita superior de DNA no <strong>Simulador</strong> e digite as bases
+                            <p>Clique no espaço em branco na fita superior de DNA no <strong>Simulador</strong> e digite
+                                as bases
                                 <strong>A</strong>, <strong>T</strong>, <strong>C</strong> ou <strong>G</strong>. O
                                 pareamento com a fita complementar de DNA e a transcrição para RNAm ocorrerão em tempo
                                 real.
@@ -649,10 +652,58 @@
                             <strong>terceira posição</strong> do mesmo códon (GAG → GAA). Como o código genético é
                             degenerado, ambos ainda especificam ácido glutâmico — a proteína permanece idêntica e
                             nenhuma doença se manifesta. Compare com a Anemia Falciforme para ver como a posição da
-                            mutação faz toda a diferença.</p>
+                            mutação faz toda a diferença.
+                        </p>
                         <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('silentDemo')">
                             <i class="fas fa-flask"></i> Carregar no Simulador
                         </button>
+                    </div>
+                </div>
+            </div>
+            <div class="content feedback">
+                <div class="page-header">
+                    <h2>Feedback aos Desenvolvedores</h2>
+                    <p>Envie dúvidas, sugestões ou relate problemas.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-paper-plane"></i> Enviar Mensagem</h3>
+                        <!-- O formulário usa mailto: para abrir o app de e-mail do usuário -->
+                        <form action="mailto:willianj16@gmail.com" method="GET" enctype="text/plain"
+                            style="margin-top: 15px;">
+
+                            <div style="margin-bottom: 15px;">
+                                <label for="nome"
+                                    style="display: block; font-weight: bold; margin-bottom: 5px;">Nome:</label>
+                                <input type="text" id="nome" name="Nome"
+                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+                                    required>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <span style="display: block; font-weight: bold; margin-bottom: 5px;">Você é:</span>
+                                <label style="margin-right: 15px;">
+                                    <input type="radio" name="Perfil" value="Professor" required> Professor
+                                </label>
+                                <label style="margin-right: 15px;">
+                                    <input type="radio" name="Perfil" value="Aluno"> Aluno
+                                </label>
+                                <label>
+                                    <input type="radio" name="Perfil" value="Entusiasta"> Entusiasta
+                                </label>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label for="mensagem"
+                                    style="display: block; font-weight: bold; margin-bottom: 5px;">Mensagem:</label>
+                                <textarea id="mensagem" name="Mensagem" rows="5"
+                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+                                    required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-control"><i class="fas fa-envelope"></i> Enviar por
+                                E-mail</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -726,7 +777,7 @@
     </div>
 
     <footer>
-        <span>© 2026 Willian J M Lourenço</span>
+        <span>© 2026 Protein Synthesis</span>
     </footer>
 
 
