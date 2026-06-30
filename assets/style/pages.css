@@ -110,11 +110,31 @@
 	font-size: 0.9rem;
 }
 
-.base-badge.base-a { background-color: #1e88e5; } /* Adenine - Blue */
-.base-badge.base-t { background-color: #f57c00; } /* Thymine - Orange */
-.base-badge.base-c { background-color: #43a047; } /* Cytosine - Green */
-.base-badge.base-g { background-color: #e53935; } /* Guanine - Red */
-.base-badge.base-u { background-color: #8e24aa; } /* Uracil - Purple */
+.base-badge.base-a {
+	background-color: #1e88e5;
+}
+
+/* Adenine - Blue */
+.base-badge.base-t {
+	background-color: #f57c00;
+}
+
+/* Thymine - Orange */
+.base-badge.base-c {
+	background-color: #43a047;
+}
+
+/* Cytosine - Green */
+.base-badge.base-g {
+	background-color: #e53935;
+}
+
+/* Guanine - Red */
+.base-badge.base-u {
+	background-color: #8e24aa;
+}
+
+/* Uracil - Purple */
 
 /* Rules Panel */
 .pairing-rule {
@@ -242,6 +262,7 @@
 	margin-top: 15px;
 	overflow: hidden;
 }
+
 .dna-helix {
 	display: flex;
 	flex-direction: column;
@@ -249,6 +270,7 @@
 	gap: 6px;
 	padding: 10px 0;
 }
+
 .base-pair {
 	display: flex;
 	align-items: center;
@@ -257,27 +279,42 @@
 	height: 10px;
 	position: relative;
 }
+
 .base-pair .dot {
 	width: 12px;
 	height: 12px;
 	border-radius: 50%;
 	position: absolute;
 	animation: rotateStrand 2.4s infinite ease-in-out;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
-.base-pair .dot.base-a { background-color: #1e88e5; }
-.base-pair .dot.base-t { background-color: #f57c00; }
-.base-pair .dot.base-c { background-color: #43a047; }
-.base-pair .dot.base-g { background-color: #e53935; }
+
+.base-pair .dot.base-a {
+	background-color: #1e88e5;
+}
+
+.base-pair .dot.base-t {
+	background-color: #f57c00;
+}
+
+.base-pair .dot.base-c {
+	background-color: #43a047;
+}
+
+.base-pair .dot.base-g {
+	background-color: #e53935;
+}
 
 .base-pair .dot:first-child {
 	left: 0;
 	animation-delay: calc(var(--i) * -0.22s);
 }
+
 .base-pair .dot:last-child {
 	right: 0;
 	animation-delay: calc(var(--i) * -0.22s - 1.2s);
 }
+
 .base-pair .line {
 	height: 2px;
 	background: #cbd5e1;
@@ -291,27 +328,39 @@
 	animation-delay: calc(var(--i) * -0.22s);
 	transform-origin: center;
 }
+
 @keyframes rotateStrand {
-	0%, 100% {
+
+	0%,
+	100% {
 		transform: translateX(0) scale(1.1);
 		z-index: 2;
 	}
+
 	25% {
 		transform: translateX(69px) scale(0.85);
 	}
+
 	50% {
 		transform: translateX(138px) scale(1.1);
 		z-index: -1;
 	}
+
 	75% {
 		transform: translateX(69px) scale(1.35);
 	}
 }
+
 @keyframes scaleLine {
-	0%, 50%, 100% {
+
+	0%,
+	50%,
+	100% {
 		transform: scaleX(1);
 	}
-	25%, 75% {
+
+	25%,
+	75% {
 		transform: scaleX(0);
 	}
 }
@@ -323,6 +372,7 @@
 	gap: 12px;
 	margin-top: 10px;
 }
+
 .transcription-step {
 	display: flex;
 	align-items: flex-start;
@@ -332,6 +382,7 @@
 	padding: 10px 12px;
 	border-left: 4px solid var(--colorDetails);
 }
+
 .transcription-step .step-badge {
 	background-color: var(--colorDetails);
 	color: white;
@@ -345,6 +396,7 @@
 	justify-content: center;
 	flex-shrink: 0;
 }
+
 .transcription-step .step-text {
 	font-size: 0.9rem;
 	line-height: 1.4;
@@ -360,16 +412,20 @@
 	background: #f8fafc;
 	margin-top: 10px;
 }
+
 .amino-table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: 0.85rem;
 }
-.amino-table th, .amino-table td {
+
+.amino-table th,
+.amino-table td {
 	padding: 8px 12px;
 	text-align: left;
 	border-bottom: 1px solid #e2e8f0;
 }
+
 .amino-table th {
 	background-color: #cbd5e1;
 	color: #1e293b;
@@ -378,9 +434,11 @@
 	top: 0;
 	z-index: 10;
 }
+
 .amino-table tr:hover {
 	background-color: #f1f5f9;
 }
+
 .amino-table td:last-child {
 	font-weight: 500;
 }
@@ -389,6 +447,7 @@
 .content.codon-table {
 	display: block;
 }
+
 .codon-table-responsive {
 	width: 100%;
 	overflow-x: auto;
@@ -399,26 +458,32 @@
 	padding: 1.5rem;
 	margin-bottom: 1.5rem;
 }
+
 .codon-matrix {
 	width: 100%;
 	border-collapse: collapse;
 	text-align: center;
 	font-size: 0.85rem;
 }
-.codon-matrix th, .codon-matrix td {
+
+.codon-matrix th,
+.codon-matrix td {
 	border: 1px solid #e2e8f0;
 	padding: 8px;
 }
+
 .codon-matrix th {
 	background-color: #f1f5f9;
 	font-weight: 700;
 	color: #334155;
 }
+
 .codon-cell-group {
 	display: grid;
 	grid-template-rows: repeat(4, 1fr);
 	gap: 4px;
 }
+
 .codon-item {
 	display: flex;
 	justify-content: space-between;
@@ -430,56 +495,79 @@
 	font-family: 'Roboto Mono', monospace;
 	font-weight: 600;
 }
+
 .codon-item:hover {
 	transform: translateY(-1px);
-	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	filter: brightness(0.95);
 }
+
 .codon-name {
 	color: #1e293b;
 }
+
 .codon-aa {
 	font-size: 0.75rem;
 	font-weight: bold;
 }
+
 /* Group by properties colors */
 .codon-item.base-apolar {
-	background-color: #fef3c7; /* Amber 100 */
-	border-left: 3px solid #d97706; /* Amber 600 */
+	background-color: #fef3c7;
+	/* Amber 100 */
+	border-left: 3px solid #d97706;
+	/* Amber 600 */
 	color: #92400e;
 }
+
 .codon-item.base-polar {
-	background-color: #dbeafe; /* Blue 100 */
-	border-left: 3px solid #2563eb; /* Blue 600 */
+	background-color: #dbeafe;
+	/* Blue 100 */
+	border-left: 3px solid #2563eb;
+	/* Blue 600 */
 	color: #1e40af;
 }
+
 .codon-item.base-basic {
-	background-color: #d1fae5; /* Emerald 100 */
-	border-left: 3px solid #059669; /* Emerald 600 */
+	background-color: #d1fae5;
+	/* Emerald 100 */
+	border-left: 3px solid #059669;
+	/* Emerald 600 */
 	color: #065f46;
 }
+
 .codon-item.base-acid {
-	background-color: #fee2e2; /* Red 100 */
-	border-left: 3px solid #dc2626; /* Red 600 */
+	background-color: #fee2e2;
+	/* Red 100 */
+	border-left: 3px solid #dc2626;
+	/* Red 600 */
 	color: #991b1b;
 }
+
 .codon-item.codon-start {
-	background-color: #e0f2fe; /* Sky 100 */
-	border-left: 3px solid #0284c7; /* Sky 600 */
+	background-color: #e0f2fe;
+	/* Sky 100 */
+	border-left: 3px solid #0284c7;
+	/* Sky 600 */
 	color: #0369a1;
 	box-shadow: 0 0 4px rgba(2, 132, 199, 0.4);
 }
+
 .codon-item.codon-stop {
-	background-color: #f3e8ff; /* Purple 100 */
-	border-left: 3px solid #9333ea; /* Purple 600 */
+	background-color: #f3e8ff;
+	/* Purple 100 */
+	border-left: 3px solid #9333ea;
+	/* Purple 600 */
 	color: #6b21a8;
 }
+
 .first-base-cell {
 	font-weight: bold;
 	font-size: 1.5rem;
 	color: var(--colorDetails);
 	background: #f8fafc;
 }
+
 .third-base-list {
 	display: flex;
 	flex-direction: column;
@@ -489,6 +577,7 @@
 	color: #475569;
 	min-height: 110px;
 }
+
 .third-base-list div {
 	flex: 1;
 	display: flex;
@@ -496,6 +585,7 @@
 	justify-content: center;
 	border-bottom: 1px solid #f1f5f9;
 }
+
 .third-base-list div:last-child {
 	border-bottom: none;
 }
@@ -516,9 +606,11 @@
 	padding: 2rem;
 	box-sizing: border-box;
 }
+
 .aminoacid-drawer.open {
 	right: 0;
 }
+
 .drawer-close-btn {
 	position: absolute;
 	top: 15px;
@@ -531,9 +623,11 @@
 	line-height: 1;
 	transition: color 0.15s ease;
 }
+
 .drawer-close-btn:hover {
 	color: #ef4444;
 }
+
 .drawer-content {
 	display: flex;
 	flex-direction: column;
@@ -542,6 +636,7 @@
 	overflow-y: auto;
 	margin-top: 1rem;
 }
+
 .drawer-content h3 {
 	margin: 0;
 	color: #1e293b;
@@ -550,6 +645,7 @@
 	border-bottom: 2px solid #e2e8f0;
 	padding-bottom: 8px;
 }
+
 .drawer-img-container {
 	width: 100%;
 	height: 180px;
@@ -561,6 +657,7 @@
 	justify-content: center;
 	padding: 10px;
 }
+
 .drawer-img-container .molecule {
 	width: 100%;
 	height: 100%;
@@ -568,11 +665,13 @@
 	background-position: center;
 	background-size: contain;
 }
+
 .drawer-info-group {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 }
+
 .drawer-info-group .info-label {
 	font-weight: 700;
 	color: #64748b;
@@ -580,13 +679,155 @@
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 }
+
 .drawer-info-group .info-value {
 	font-size: 0.95rem;
 	color: #334155;
 	line-height: 1.5;
 }
+
 #drawer-codons {
 	font-family: 'Roboto Mono', monospace;
 	font-weight: 600;
 	color: var(--colorDetails);
+}
+
+/* ===== Exportar / Importar Sequência — Modal ===== */
+/* Paleta neutra autocontida; ajuste as cores abaixo para casar com
+           as variáveis de assets/style/app.css caso queira integração total. */
+.seq-modal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(8, 10, 16, 0.72);
+	backdrop-filter: blur(3px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 9999;
+}
+
+.seq-modal {
+	position: relative;
+	width: min(440px, 90vw);
+	max-height: 85vh;
+	overflow-y: auto;
+	background: #161b24;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 12px;
+	padding: 24px;
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+	color: #e6e9ef;
+	font-family: inherit;
+}
+
+.seq-modal h3 {
+	margin: 0 0 8px;
+	font-size: 1.1rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #fff;
+}
+
+.seq-modal-desc {
+	margin: 0 0 16px;
+	font-size: 0.85rem;
+	color: #9aa3b2;
+	line-height: 1.5;
+}
+
+.seq-modal-label {
+	display: block;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #7d8696;
+	margin: 14px 0 6px;
+}
+
+.seq-modal-textarea {
+	width: 100%;
+	box-sizing: border-box;
+	background: #0d1117;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	color: #e6e9ef;
+	font-family: 'Courier New', monospace;
+	font-size: 0.9rem;
+	letter-spacing: 0.03em;
+	padding: 10px 12px;
+	resize: vertical;
+}
+
+.seq-modal-textarea:focus {
+	outline: none;
+	border-color: #00c2ff;
+}
+
+.seq-modal-action {
+	margin-top: 8px;
+	width: 100%;
+	justify-content: center;
+}
+
+.seq-modal-feedback {
+	display: block;
+	min-height: 1.2em;
+	font-size: 0.8rem;
+	margin-top: 10px;
+	color: #4ade80;
+}
+
+.seq-modal-feedback.error {
+	color: #f87171;
+}
+
+.seq-modal-close {
+	position: absolute;
+	top: 14px;
+	right: 14px;
+	background: none;
+	border: none;
+	color: #9aa3b2;
+	font-size: 1.4rem;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.seq-modal-close:hover {
+	color: #fff;
+}
+
+@media (max-width: 480px) {
+	.seq-modal {
+		padding: 18px;
+	}
+}
+
+/* ===== Doenças Genéticas — cards ===== */
+/* Reaproveita .mutation-type-badge (já definida em app.css) para herdar
+           as mesmas cores usadas no painel de análise de mutação do simulador. */
+.disease-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.disease-card-header h3 {
+	margin: 0;
+}
+
+.disease-gene {
+	font-size: 0.85rem;
+	opacity: 0.75;
+	margin: 0 0 10px;
+}
+
+.disease-load-btn {
+	margin-top: 12px;
+	width: 100%;
+	justify-content: center;
 }
