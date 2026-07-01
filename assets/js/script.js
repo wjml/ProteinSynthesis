@@ -718,6 +718,35 @@
   }
 
   /**
+   * Percorre uma sequência de RNA códon a códon, aplicando a única regra de fase de
+   * leitura aberta (ORF) do app: `hasStart` vira true no primeiro AUG e volta a false
+   * em cada STOP (permitindo múltiplas ORFs numa mesma sequência). Para cada códon,
+   * invoca onCodon(codon, aminoacid, isActive) — isActive é o mesmo valor de hasStart
+   * já ajustado, ou seja, true para o AUG e para todos os códons até (mas não incluindo)
+   * o STOP que os encerra.
+   *
+   * UNIFICAÇÃO: essa regra existia duplicada em translateStrand() e translateProteinChainPure().
+   * Agora ambas — e a nova animação do ribossomo (buildRibosomeSteps()) — usam esta função,
+   * então uma mudança na regra de ORF só precisa ser feita aqui.
+   *
+   * @param {string} rnaSeq
+   * @param {function(codon:string, aminoacid:object, isActive:boolean)} onCodon
+   */
+  function walkCodingRegion(rnaSeq, onCodon) {
+    let hasStart = false;
+    for (let i = 0; i < rnaSeq.length; i += 3) {
+      const codon     = rnaSeq.substr(i, 3);
+      const aminoacid = CODON_TABLE[codon];
+      if (!aminoacid) continue;
+
+      if (aminoacid.abbrevName === 'MET')  hasStart = true;
+      if (aminoacid.abbrevName === 'STOP') hasStart = false;
+
+      onCodon(codon, aminoacid, hasStart);
+    }
+  }
+
+  /**
    * Traduz a sequência de RNA de uma fita específica em aminoácidos e renderiza no container dado.
    * Generaliza a lógica usada tanto pela fita ativa (live) quanto pela fita de comparação (baseline),
    * permitindo reuso em loadDiseaseExample().
@@ -726,18 +755,234 @@
     outputContainer.innerHTML = '';
 
     const sequence = readSequence(rnaChars);
-    let hasStart = false;
+    walkCodingRegion(sequence, (codon, aminoacid, isActive) => {
+      outputContainer.appendChild(isActive ? newAminoacid(aminoacid) : newAminoacid());
+    });
+  }
 
-    for (let i = 0; i < sequence.length; i += 3) {
-      const codon     = sequence.substr(i, 3);
-      const aminoacid = CODON_TABLE[codon];
-      if (!aminoacid) continue;
+  /**
+   * Constrói a lista de passos para a animação do ribossomo: um item por códon
+   * dentro da primeira ORF encontrada (do AUG ao primeiro STOP em fase, inclusive),
+   * na ordem em que o ribossomo os seria percorrer. Reaproveita walkCodingRegion() —
+   * a mesma regra de fase de leitura usada pelo simulador e pelo quiz.
+   *
+   * Limitado à primeira ORF de propósito: animar múltiplas ORFs na mesma sequência
+   * confundiria o aluno sobre qual proteína está sendo montada.
+   *
+   * @param {string} rnaSeq
+   * @returns {Array<{codon:string, aminoacid:object, kind:'start'|'add'|'stop'}>}
+   */
+  function buildRibosomeSteps(rnaSeq) {
+    const steps = [];
+    let inOrf = false;
+    walkCodingRegion(rnaSeq, (codon, aminoacid, isActive) => {
+      if (isActive) {
+        steps.push({ codon, aminoacid, kind: inOrf ? 'add' : 'start' });
+        inOrf = true;
+      } else if (inOrf && aminoacid.abbrevName === 'STOP') {
+        steps.push({ codon, aminoacid, kind: 'stop' });
+        inOrf = false; // encerra após a primeira ORF completa
+      }
+    });
+    return steps;
+  }
 
-      if (aminoacid.abbrevName === 'MET')  hasStart = true;
-      if (aminoacid.abbrevName === 'STOP') hasStart = false;
+  /** Complemento de base RNA-RNA (para calcular o anticódon do tRNA a partir do códon do mRNA). */
+  const RNA_COMPLEMENT = { A: 'U', U: 'A', C: 'G', G: 'C' };
 
-      outputContainer.appendChild(hasStart ? newAminoacid(aminoacid) : newAminoacid());
+  /** Calcula o anticódon do tRNA que pareia com um códon de mRNA dado. */
+  function anticodonFor(codon) {
+    return codon.split('').map(b => RNA_COMPLEMENT[b] || b).join('');
+  }
+
+  // ─── Animação do Ribossomo ("Ribossomo em Ação") ─────────────────────────────
+  //
+  // Modo opcional (não afeta o modo instantâneo padrão do simulador): percorre
+  // a mesma lista de passos de buildRibosomeSteps() um de cada vez, mostrando
+  // visualmente o tRNA entrando, pareando com o mRNA e entregando o aminoácido
+  // à cadeia em formação — em vez de renderizar a proteína inteira de uma vez
+  // como translateStrand() já faz no simulador principal.
+
+  const ribosome = {
+    steps: [],
+    index: 0,
+    playing: false,
+    timers: [],
+    els: {}, // preenchido em cacheRibosomeElements()
+  };
+
+  /** Localiza e armazena os elementos do DOM do modal do ribossomo (uma única vez). */
+  function cacheRibosomeElements() {
+    ribosome.els = {
+      modal:        document.getElementById('ribosome-modal'),
+      emptyMsg:     document.getElementById('ribosome-empty-msg'),
+      stage:        document.getElementById('ribo-stage'),
+      controls:     document.getElementById('ribo-controls'),
+      codonsTrack:  document.getElementById('ribo-codons'),
+      marker:       document.getElementById('ribo-ribosome-marker'),
+      trna:         document.getElementById('ribo-trna'),
+      trnaAnticodon:document.getElementById('ribo-trna-anticodon'),
+      trnaCargo:    document.getElementById('ribo-trna-cargo'),
+      chain:        document.getElementById('ribo-chain'),
+      status:       document.getElementById('ribo-status'),
+      playBtn:      document.getElementById('ribo-play-pause'),
+      playIcon:     document.getElementById('ribo-play-icon'),
+      playLabel:    document.getElementById('ribo-play-label'),
+      resetBtn:     document.getElementById('ribo-reset'),
+      speedSelect:  document.getElementById('ribo-speed'),
+    };
+  }
+
+  /** Cancela todos os timers de animação pendentes — usado por pause/reset/close. */
+  function clearRibosomeTimers() {
+    ribosome.timers.forEach(clearTimeout);
+    ribosome.timers = [];
+  }
+
+  /** Agenda uma função para daqui a `delay` ms, registrando o timer para poder cancelá-lo depois. */
+  function scheduleRibosome(fn, delay) {
+    const id = setTimeout(fn, delay);
+    ribosome.timers.push(id);
+    return id;
+  }
+
+  /** Abre o modal, monta os passos a partir da sequência de DNA atual e prepara o palco inicial. */
+  function openRibosomeModal() {
+    cacheRibosomeElementsIfNeeded();
+    const els = ribosome.els;
+    if (!els.modal) return;
+
+    const dnaSeq = readSequence(dnaSequenceChars);
+    const rnaSeq = transcribeSeq(dnaSeq);
+    ribosome.steps   = buildRibosomeSteps(rnaSeq);
+    ribosome.index   = 0;
+    ribosome.playing = false;
+    clearRibosomeTimers();
+
+    const hasSteps = ribosome.steps.length > 0;
+    els.emptyMsg.style.display = hasSteps ? 'none' : 'block';
+    els.stage.style.display    = hasSteps ? 'flex'  : 'none';
+    els.controls.style.display = hasSteps ? 'flex'  : 'none';
+
+    if (hasSteps) renderRibosomeTrack();
+
+    els.modal.style.display = 'flex';
+  }
+
+  /** Garante que os elementos do modal já foram cacheados (defensivo, caso a ordem de init mude). */
+  function cacheRibosomeElementsIfNeeded() {
+    if (!ribosome.els.modal) cacheRibosomeElements();
+  }
+
+  /** Renderiza a trilha de códons (pílulas) e reposiciona o marcador do ribossomo no primeiro códon. */
+  function renderRibosomeTrack() {
+    const els = ribosome.els;
+    els.codonsTrack.querySelectorAll('.ribo-codon').forEach(el => el.remove());
+    els.chain.innerHTML = '';
+
+    ribosome.steps.forEach((step) => {
+      const pill = document.createElement('div');
+      pill.className = 'ribo-codon' + (step.kind === 'stop' ? ' is-stop' : '');
+      pill.textContent = step.codon;
+      els.codonsTrack.appendChild(pill); // marker é o primeiro filho; pílulas entram depois dele
+    });
+
+    els.trna.classList.remove('is-visible', 'is-leaving');
+    els.status.textContent = 'Pronto para iniciar.';
+    positionRibosomeMarker(0);
+    setPlayButtonState(false);
+  }
+
+  /** Move o marcador do ribossomo para centralizá-lo sobre a pílula de códon no índice dado. */
+  function positionRibosomeMarker(stepIndex) {
+    const els  = ribosome.els;
+    const pill = els.codonsTrack.querySelectorAll('.ribo-codon')[stepIndex];
+    if (!pill) return;
+    const left = pill.offsetLeft + pill.offsetWidth / 2 - els.marker.offsetWidth / 2;
+    els.marker.style.left = Math.max(0, left) + 'px';
+  }
+
+  /** Atualiza o texto/ícone do botão Play/Pause conforme o estado atual. */
+  function setPlayButtonState(isPlaying) {
+    const els = ribosome.els;
+    ribosome.playing = isPlaying;
+    els.playIcon.className  = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    els.playLabel.textContent = isPlaying ? 'Pause' : 'Play';
+  }
+
+  /** Executa um único passo (um códon) da animação: tRNA entra, pareia, entrega a carga, sai. */
+  function stepRibosome() {
+    const els = ribosome.els;
+    if (ribosome.index >= ribosome.steps.length) {
+      setPlayButtonState(false);
+      els.status.textContent = 'Tradução concluída — a proteína foi liberada do ribossomo!';
+      return;
     }
+
+    const step  = ribosome.steps[ribosome.index];
+    const speed = Number(els.speedSelect.value) || 950;
+    const pills = els.codonsTrack.querySelectorAll('.ribo-codon');
+
+    pills.forEach(p => p.classList.remove('is-current'));
+    const currentPill = pills[ribosome.index];
+    if (currentPill) currentPill.classList.add('is-current');
+    positionRibosomeMarker(ribosome.index);
+
+    // 1) tRNA entra com o anticódon e a carga corretos
+    els.trnaAnticodon.textContent = anticodonFor(step.codon);
+    els.trnaCargo.textContent     = step.kind === 'stop' ? 'Fator de liberação' : step.aminoacid.name;
+    els.trna.classList.remove('is-leaving');
+    els.trna.classList.add('is-visible');
+
+    els.status.textContent = step.kind === 'stop'
+      ? `Códon de parada ${step.codon} reconhecido — nenhum tRNA se encaixa aqui.`
+      : `tRNA com anticódon ${anticodonFor(step.codon)} pareia com o códon ${step.codon} do mRNA.`;
+
+    // 2) "Pareamento": entrega o aminoácido à cadeia (ou libera a proteína, se for STOP)
+    scheduleRibosome(() => {
+      if (currentPill) currentPill.classList.add('is-done');
+      if (step.kind === 'stop') {
+        els.status.textContent = 'A proteína é liberada do ribossomo!';
+      } else {
+        // A cadeia (#ribo-chain) tem class="output-aminoacids", então já herda a
+        // delegação de clique/teclado do drawer registrada 1x em DOMContentLoaded —
+        // nenhum listener novo precisa ser adicionado aqui por aminoácido.
+        els.chain.appendChild(newAminoacid(step.aminoacid));
+        els.status.textContent = `${step.aminoacid.name} adicionado à cadeia polipeptídica.`;
+      }
+    }, speed * 0.45);
+
+    // 3) tRNA sai
+    scheduleRibosome(() => {
+      els.trna.classList.remove('is-visible');
+      els.trna.classList.add('is-leaving');
+    }, speed * 0.75);
+
+    // 4) Avança para o próximo passo (se ainda estiver tocando)
+    scheduleRibosome(() => {
+      ribosome.index++;
+      if (ribosome.playing) stepRibosome();
+    }, speed);
+  }
+
+  /** Inicia (ou retoma) a reprodução automática da animação. */
+  function playRibosome() {
+    if (ribosome.index >= ribosome.steps.length) resetRibosomeAnimation();
+    setPlayButtonState(true);
+    stepRibosome();
+  }
+
+  /** Pausa a animação, mantendo o progresso atual. */
+  function pauseRibosome() {
+    clearRibosomeTimers();
+    setPlayButtonState(false);
+  }
+
+  /** Reinicia a animação do zero, sem fechar o modal. */
+  function resetRibosomeAnimation() {
+    clearRibosomeTimers();
+    ribosome.index = 0;
+    renderRibosomeTrack();
   }
 
   /**
@@ -1326,16 +1571,9 @@
    */
   function translateProteinChainPure(rnaSeq) {
     const chain = [];
-    let hasStart = false;
-    for (let i = 0; i + 3 <= rnaSeq.length; i += 3) {
-      const codon     = rnaSeq.substr(i, 3);
-      const aminoacid = CODON_TABLE[codon];
-      if (!aminoacid) continue;
-
-      if (aminoacid.abbrevName === 'MET') hasStart = true;
-      if (aminoacid.abbrevName === 'STOP') { hasStart = false; continue; }
-      if (hasStart) chain.push(aminoacid.abbrevName);
-    }
+    walkCodingRegion(rnaSeq, (codon, aminoacid, isActive) => {
+      if (isActive) chain.push(aminoacid.abbrevName);
+    });
     return chain;
   }
 
@@ -2072,41 +2310,64 @@
     const btnRandom = document.getElementById('btn-random');
     const btnExport = document.getElementById('btn-export');
     const btnImport = document.getElementById('btn-import');
-    if (btnClear)  btnClear.addEventListener('click', clearSequence);
-    if (btnRandom) btnRandom.addEventListener('click', randomSequence);
-    if (btnExport) btnExport.addEventListener('click', openExportModal);
-    if (btnImport) btnImport.addEventListener('click', openImportModal);
+    const btnAnimate = document.getElementById('btn-animate');
+    if (btnClear)   btnClear.addEventListener('click', clearSequence);
+    if (btnRandom)  btnRandom.addEventListener('click', randomSequence);
+    if (btnExport)  btnExport.addEventListener('click', openExportModal);
+    if (btnImport)  btnImport.addEventListener('click', openImportModal);
+    if (btnAnimate) btnAnimate.addEventListener('click', openRibosomeModal);
 
-    // Modais de exportar/importar sequência
+    // Modais de exportar/importar/animar sequência
     const exportModal = document.getElementById('export-modal');
     const importModal = document.getElementById('import-modal');
+    const ribosomeModal = document.getElementById('ribosome-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
+    const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
     const exportCopySeqBtn  = document.getElementById('export-copy-seq');
     const exportCopyLinkBtn = document.getElementById('export-copy-link');
     const importLoadBtn  = document.getElementById('import-load-btn');
     const importSeqInput = document.getElementById('import-seq-input');
 
-    const closeModal = (modal) => { if (modal) modal.style.display = 'none'; };
+    // A animação do ribossomo precisa parar seus timers ao fechar — o caso especial
+    // abaixo chama pauseRibosome() antes de esconder esse modal; os demais não têm
+    // estado de animação e só precisam de display:none.
+    const closeModal = (modal) => {
+      if (!modal) return;
+      if (modal === ribosomeModal) { pauseRibosome(); }
+      modal.style.display = 'none';
+    };
 
-    if (exportCloseBtn) exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
-    if (importCloseBtn) importCloseBtn.addEventListener('click', () => closeModal(importModal));
+    if (exportCloseBtn)   exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
+    if (importCloseBtn)   importCloseBtn.addEventListener('click', () => closeModal(importModal));
+    if (ribosomeCloseBtn) ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    [exportModal, importModal].forEach((modal) => {
+    [exportModal, importModal, ribosomeModal].forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal(modal);
       });
     });
 
-    // Fecha ambos os modais com a tecla Esc
+    // Fecha todos os modais com a tecla Esc
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         closeModal(exportModal);
         closeModal(importModal);
+        closeModal(ribosomeModal);
       }
     });
+
+    // Controles de reprodução da animação do ribossomo
+    const riboPlayBtn  = document.getElementById('ribo-play-pause');
+    const riboResetBtn = document.getElementById('ribo-reset');
+    if (riboPlayBtn) {
+      riboPlayBtn.addEventListener('click', () => {
+        if (ribosome.playing) pauseRibosome(); else playRibosome();
+      });
+    }
+    if (riboResetBtn) riboResetBtn.addEventListener('click', resetRibosomeAnimation);
 
     if (exportCopySeqBtn) {
       exportCopySeqBtn.addEventListener('click', () =>

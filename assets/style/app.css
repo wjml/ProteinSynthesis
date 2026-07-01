@@ -844,3 +844,279 @@ button.quiz-option.quiz-option-text {
     color: #fff;
     border-color: transparent;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   Animação do Ribossomo (Ribossomo em Ação)
+   ═══════════════════════════════════════════════════════════════════════
+   Tema escuro, consistente com o modal de exportar/importar (.seq-modal,
+   definido em pages.css). Reaproveita newAminoacid() e a delegação de
+   eventos já existente (bindAminoacidOutputEvents) dando à cadeia
+   polipeptídica a classe "output-aminoacids" — mesma acessibilidade e
+   comportamento de clique/teclado do simulador principal, sem código novo. */
+
+.ribosome-modal {
+    width: min(760px, 94vw);
+}
+
+.ribo-mrna-track {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px 0 4px;
+}
+
+.ribo-utr-label {
+    flex-shrink: 0;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #7d8696;
+}
+
+.ribo-codons {
+    position: relative;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 34px 6px 6px;
+    overflow-x: auto;
+}
+
+.ribo-codon {
+    flex: 0 0 auto;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 6px 9px;
+    border-radius: 6px;
+    background: #1c2431;
+    color: #7d8696;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ribo-codon.is-current {
+    background: rgba(20, 184, 166, 0.18);
+    color: #5eead4;
+    border-color: #14b8a6;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+.ribo-codon.is-done {
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.35);
+}
+
+.ribo-codon.is-stop.is-current {
+    background: rgba(248, 113, 113, 0.18);
+    color: #f87171;
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+/* Ribossomo: duas subunidades sobrepostas, posicionado em cima do códon atual */
+.ribo-ribosome {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 44px;
+    height: 30px;
+    transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.ribo-subunit {
+    position: absolute;
+    left: 50%;
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+.ribo-subunit-large {
+    top: 0;
+    width: 44px;
+    height: 24px;
+    background: linear-gradient(180deg, #475569, #1e293b);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.ribo-subunit-small {
+    bottom: 0;
+    width: 32px;
+    height: 15px;
+    background: linear-gradient(180deg, #64748b, #334155);
+}
+
+/* Palco onde o tRNA entra, pareia e sai */
+.ribo-stage-area {
+    position: relative;
+    height: 78px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.ribo-trna {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(26px) scale(0.85);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.ribo-trna.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.ribo-trna.is-leaving {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.85);
+}
+
+/* Forma estilizada de "folha de trevo" — não é anatomicamente literal,
+   mas comunica claramente "molécula distinta com anticódon e carga". */
+.ribo-trna-body {
+    width: 52px;
+    height: 42px;
+    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+    clip-path: polygon(50% 0%, 100% 32%, 100% 100%, 0% 100%, 0% 32%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ribo-trna-anticodon {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 800;
+    font-size: 0.7rem;
+    color: #78350f;
+    letter-spacing: 0.02em;
+}
+
+.ribo-trna-cargo {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #e6e9ef;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 9px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.ribo-chain-label {
+    margin-top: 6px;
+    margin-bottom: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #7d8696;
+}
+
+/* .output-aminoacids traz o comportamento (delegação de clique/teclado do
+   drawer); aqui sobrescrevemos só o layout, já que fora de .sequence
+   nenhuma regra de app.css para essa classe se aplica (evita conflito). */
+.ribo-chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 70px;
+    padding: 10px;
+    background: #0d1117;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+}
+
+/* Versão compacta e escura do cartão .aminoacid (reaproveitado de newAminoacid())
+   dentro da cadeia do ribossomo — mesma estrutura/dados/a11y, visual adaptado ao tema. */
+.ribo-chain .aminoacid {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 80px;
+    background: #1c2431;
+    border-color: rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    animation: riboChainPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ribo-chain .aminoacid:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.ribo-chain .aminoacid:focus-visible {
+    outline: 2px solid var(--colorDetails);
+    outline-offset: 2px;
+}
+
+.ribo-chain .aminoacid .abbreviated-name {
+    font-size: 0.75rem;
+    color: #e6e9ef;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    padding: 1px 0;
+}
+
+.ribo-chain .aminoacid .molecule {
+    max-height: 36px;
+}
+
+.ribo-chain .aminoacid .full-name {
+    font-size: 0.52rem;
+    color: #5eead4;
+}
+
+@keyframes riboChainPop {
+    0%   { opacity: 0; transform: scale(0.6) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ribo-status {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: #9aa3b2;
+    min-height: 1.2em;
+}
+
+.ribo-stage{
+    flex-direction: column;
+    align-items: center;
+}
+
+.ribo-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.ribo-controls .seq-modal-action {
+    width: auto;
+    margin-top: 0;
+    flex: 0 0 auto;
+    padding: 0.6rem 1rem;
+}
+
+.ribo-speed-label {
+    font-size: 0.78rem;
+    color: #9aa3b2;
+    margin-left: auto;
+}
+
+.ribo-speed-select {
+    background: #0d1117;
+    color: #e6e9ef;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 0.82rem;
+}
+
+@media (max-width: 480px) {
+    .ribo-speed-label {
+        margin-left: 0;
+    }
+}

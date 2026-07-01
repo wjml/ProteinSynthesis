@@ -384,6 +384,8 @@
                         <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
                         <button id="btn-random" class="btn-control"><i class="fas fa-random"></i> Sequência
                             aleatória</button>
+                        <button id="btn-animate" class="btn-control"><i class="fas fa-play-circle"></i> Animar
+                            Tradução</button>
                         <button id="btn-export" class="btn-control"><i class="fas fa-file-export"></i>
                             Exportar</button>
                         <button id="btn-import" class="btn-control"><i class="fas fa-file-import"></i>
@@ -773,6 +775,61 @@
             <span id="import-feedback" class="seq-modal-feedback"></span>
             <button id="import-load-btn" class="btn-control seq-modal-action"><i class="fas fa-upload"></i> Carregar
                 sequência</button>
+        </div>
+    </div>
+
+    <!-- Modal: Animação do Ribossomo -->
+    <div id="ribosome-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal ribosome-modal">
+            <button class="seq-modal-close" id="ribosome-modal-close">&times;</button>
+            <h3><i class="fas fa-atom"></i> Ribossomo em Ação</h3>
+            <p class="seq-modal-desc" id="ribosome-empty-msg">
+                Nenhum <strong>códon de início (AUG)</strong> foi encontrado na sequência atual.
+                Insira uma sequência de DNA que produza um início de tradução válido — ou clique em
+                "Sequência aleatória" — para animar o ribossomo.
+            </p>
+
+            <div class="ribo-stage" id="ribo-stage" style="display:none;">
+                <div class="ribo-mrna-track">
+                    <span class="ribo-utr-label">5'</span>
+                    <div class="ribo-codons" id="ribo-codons">
+                        <div class="ribo-ribosome" id="ribo-ribosome-marker" aria-hidden="true">
+                            <div class="ribo-subunit ribo-subunit-large"></div>
+                            <div class="ribo-subunit ribo-subunit-small"></div>
+                        </div>
+                    </div>
+                    <span class="ribo-utr-label">3'</span>
+                </div>
+
+                <div class="ribo-stage-area">
+                    <div class="ribo-trna" id="ribo-trna" aria-hidden="true">
+                        <div class="ribo-trna-body">
+                            <span class="ribo-trna-anticodon" id="ribo-trna-anticodon"></span>
+                        </div>
+                        <div class="ribo-trna-cargo" id="ribo-trna-cargo"></div>
+                    </div>
+                </div>
+
+                <div class="ribo-chain-label">Cadeia polipeptídica em formação</div>
+                <div class="output-aminoacids ribo-chain" id="ribo-chain"></div>
+
+                <p class="ribo-status" id="ribo-status" role="status" aria-live="polite">Pronto para iniciar.</p>
+            </div>
+
+            <div class="ribo-controls" id="ribo-controls" style="display:none;">
+                <button id="ribo-play-pause" class="btn-control seq-modal-action">
+                    <i class="fas fa-play" id="ribo-play-icon"></i> <span id="ribo-play-label">Play</span>
+                </button>
+                <button id="ribo-reset" class="btn-control seq-modal-action">
+                    <i class="fas fa-undo"></i> Reiniciar
+                </button>
+                <label class="ribo-speed-label" for="ribo-speed">Velocidade</label>
+                <select id="ribo-speed" class="ribo-speed-select">
+                    <option value="1700">Lenta</option>
+                    <option value="950" selected>Normal</option>
+                    <option value="500">Rápida</option>
+                </select>
+            </div>
         </div>
     </div>
 
