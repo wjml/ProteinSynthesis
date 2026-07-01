@@ -2,8 +2,9 @@
  * script.js — Simulador de Síntese de Proteínas
  *
  * Refatorado para performance, clareza e manutenibilidade.
- * Todo o código está encapsulado em uma IIFE para não poluir o escopo global.
- * Apenas `insertBase` é exposta globalmente (necessário por handlers inline no HTML).
+ * Todo o código está encapsulado em uma IIFE e nada é exposto no escopo global:
+ * o HTML se comunica com este script via data-attributes (data-base, data-disease,
+ * data-codon, data-abbrev) lidos por listeners delegados, não por onclick inline.
  */
 
 (function () {
@@ -293,20 +294,18 @@
     div.appendChild(moleculeEl);
     div.appendChild(nameEl);
 
-    // Interações do drawer apenas para aminoácidos reais (não para placeholders vazios)
+    // Interações do drawer apenas para aminoácidos reais (não para placeholders vazios).
+    // PERFORMANCE + A11Y: nenhum listener é registrado aqui — cada tecla digitada recriaria
+    // 3 listeners por aminoácido. Em vez disso, expomos `data-abbrev` + atributos de teclado/ARIA
+    // e um único par de listeners delegados no container (ver bindAminoacidOutputEvents(),
+    // registrado uma única vez em DOMContentLoaded) cuida de clique, hover e teclado para
+    // todos os aminoácidos presentes e futuros.
     if (aminoacid.abbrevName) {
       div.style.cursor = 'pointer';
-      div.addEventListener('click',      () => openAminoacidDrawer(aminoacid.abbrevName, true));
-      div.addEventListener('mouseenter', () => openAminoacidDrawer(aminoacid.abbrevName, false));
-      div.addEventListener('mouseleave', (event) => {
-        if (!drawer.panel) return;
-        const toEl = event.toElement || event.relatedTarget;
-        // Mantém o drawer aberto se o mouse foi para dentro dele
-        if (toEl && (drawer.panel.contains(toEl) || toEl === drawer.panel)) return;
-        if (!drawer.panel.classList.contains('clicked-open')) {
-          drawer.panel.classList.remove('open');
-        }
-      });
+      div.dataset.abbrev = aminoacid.abbrevName;
+      div.tabIndex = 0;
+      div.setAttribute('role', 'button');
+      div.setAttribute('aria-label', `Ver detalhes do aminoácido ${aminoacid.name}`);
     }
 
     return div;
@@ -431,6 +430,51 @@
   function closeDrawer() {
     if (!drawer.panel) return;
     drawer.panel.classList.remove('open', 'clicked-open');
+  }
+
+  /**
+   * Registra, uma única vez por container de saída (#output-aminoacids),
+   * os listeners delegados que substituem os 3 listeners por elemento
+   * que antes eram recriados a cada tecla digitada (ver newAminoacid()).
+   *
+   * click/keydown (Enter/Espaço) → abre o drawer "fixado".
+   * mouseover/mouseout           → abre/fecha o drawer em preview (hover),
+   *                                 usando `closest('[data-abbrev]')` para
+   *                                 emular o comportamento de mouseenter/mouseleave
+   *                                 (que não fazem bubbling) via delegação.
+   */
+  function bindAminoacidOutputEvents(container) {
+    if (!container) return;
+
+    container.addEventListener('click', (event) => {
+      const el = event.target.closest('[data-abbrev]');
+      if (el) openAminoacidDrawer(el.dataset.abbrev, true);
+    });
+
+    container.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      const el = event.target.closest('[data-abbrev]');
+      if (!el) return;
+      event.preventDefault();
+      openAminoacidDrawer(el.dataset.abbrev, true);
+    });
+
+    container.addEventListener('mouseover', (event) => {
+      const el = event.target.closest('[data-abbrev]');
+      if (el) openAminoacidDrawer(el.dataset.abbrev, false);
+    });
+
+    container.addEventListener('mouseout', (event) => {
+      const el = event.target.closest('[data-abbrev]');
+      if (!el || !drawer.panel) return;
+      const toEl = event.relatedTarget;
+      // Mantém o preview se o mouse ainda está sobre o mesmo aminoácido,
+      // ou se foi para dentro do próprio drawer.
+      if (toEl && (el.contains(toEl) || drawer.panel.contains(toEl) || toEl === drawer.panel)) return;
+      if (!drawer.panel.classList.contains('clicked-open')) {
+        drawer.panel.classList.remove('open');
+      }
+    });
   }
 
   // ─── Sincronização de scroll ──────────────────────────────────────────────────
@@ -805,7 +849,12 @@
     const { panel, noMutationMsg, details, badge, desc } = mutPanel;
     if (!panel || !noMutationMsg || !details || !badge || !desc) return;
 
-    if (!dnaSeq || !mutatedDnaSeq || dnaSeq === mutatedDnaSeq) {
+    // UNIFICAÇÃO: a regra de decisão (frameshift → silenciosa → nonsense → missense)
+    // vive em um único lugar, classifyMutationPure(), também usada pelo quiz.
+    // classifyMutation() cuida apenas de exibir/formatar o resultado no DOM.
+    const type = classifyMutationPure(dnaSeq, mutatedDnaSeq);
+
+    if (!type) {
       noMutationMsg.style.display = 'block';
       details.style.display       = 'none';
       return;
@@ -817,24 +866,18 @@
     const diff    = mutatedDnaSeq.length - dnaSeq.length;
     const absDiff = Math.abs(diff);
 
-    const getActiveAAs = (container) =>
-      Array.from(container.getElementsByClassName('aminoacid'))
-        .filter(el => !el.classList.contains('not-availlable'))
-        .map(el => { const n = el.querySelector('.abbreviated-name'); return n ? n.textContent.trim() : ''; });
-
-    const origAAs        = getActiveAAs(outputAminoacids[1]);
-    const mutAAs         = getActiveAAs(outputAminoacids[0]);
-    const aaChanged      = origAAs.join(',') !== mutAAs.join(',');
-    const hasEarlierStop = mutAAs.length < origAAs.length;
-
     // 1. Frameshift — indel não divisível por 3
-    if (diff !== 0 && diff % 3 !== 0) {
-      const verb     = diff > 0
+    if (type === 'frameshift') {
+      const verb = diff > 0
         ? `adição de <strong>${absDiff}</strong>`
         : `deleção de <strong>${absDiff}</strong>`;
-      const stopNote = hasEarlierStop
+
+      const origChain = translateProteinChainPure(transcribeSeq(dnaSeq));
+      const mutChain  = translateProteinChainPure(transcribeSeq(mutatedDnaSeq));
+      const stopNote  = mutChain.length < origChain.length
         ? ` A nova janela de leitura introduziu também um <strong>códon de parada prematuro</strong>, truncando a proteína resultante.`
         : '';
+
       badge.className   = 'mutation-type-badge frameshift';
       badge.textContent = 'Deslocamento de Leitura (Frameshift)';
       desc.innerHTML    =
@@ -851,7 +894,7 @@
         : `deleção de <strong>${absDiff}</strong> base(s) (múltiplo de 3, sem deslocamento de leitura)`;
 
     // 2. Silenciosa — sequência de aminoácidos inalterada
-    if (!aaChanged) {
+    if (type === 'silent') {
       badge.className   = 'mutation-type-badge silent';
       badge.textContent = 'Silenciosa (Sinônima)';
       desc.innerHTML    =
@@ -863,7 +906,7 @@
     }
 
     // 3. Nonsense — códon de parada prematuro introduzido
-    if (hasEarlierStop) {
+    if (type === 'nonsense') {
       badge.className   = 'mutation-type-badge nonsense';
       badge.textContent = 'Sem Sentido (Nonsense)';
       desc.innerHTML    =
@@ -885,10 +928,15 @@
 
   /**
    * Insere uma base de DNA na posição do cursor (ou no final da sequência).
-   * Exposta globalmente via window.insertBase para uso pela tabela de códons e
-   * handlers inline no HTML.
+   *
+   * PERFORMANCE: `skipRender` permite inserir várias bases em sequência (ex.: os 3
+   * nucleotídeos de um códon clicado na tabela de referência, em activateCodonItem())
+   * sem disparar translate()/treatSequence() — que recriam todos os elementos de
+   * aminoácido e recalculam a análise de mutação — a cada base individual. Quem
+   * chama em lote é responsável por chamar translate()/treatSequence() uma única
+   * vez ao final (ver activateCodonItem() e randomSequence(), que já seguia esse padrão).
    */
-  function insertBase(base) {
+  function insertBase(base, { skipRender = false } = {}) {
     base = base.toUpperCase();
     if (!VALID_BASES.has(base)) return;
 
@@ -920,8 +968,10 @@
       newDna.focus();
     }
 
-    translate();
-    treatSequence();
+    if (!skipRender) {
+      translate();
+      treatSequence();
+    }
   }
 
   /** Reinicia o simulador: limpa todas as sequências e desativa o modo de mutação. */
@@ -1223,7 +1273,7 @@
    * (saudável) vai para a fita de comparação (baseline) e a sequência com a mutação
    * real vai para a fita ativa, com o modo de mutação já habilitado para que a
    * análise automática (Missense/Nonsense/Frameshift/Silenciosa) apareça imediatamente.
-   * Exposta globalmente via window.loadDiseaseExample para uso pelos cartões de doença no HTML.
+   * Chamada pelos cartões de doença via listener delegado (data-disease), ver DOMContentLoaded.
    */
   function loadDiseaseExample(key) {
     const disease = DISEASE_EXAMPLES[key];
@@ -2000,6 +2050,23 @@
     drawer.func    = document.getElementById('drawer-function');
     drawer.img     = document.getElementById('drawer-img');
 
+    // Delegação de eventos do drawer de aminoácido — um único par de listeners
+    // por container, em vez de 3 listeners recriados a cada aminoácido renderizado
+    // (ver newAminoacid() e bindAminoacidOutputEvents()).
+    for (let i = 0; i < outputAminoacids.length; i++) {
+      bindAminoacidOutputEvents(outputAminoacids[i]);
+    }
+
+    // Botões de inserção de base (A/T/C/G) — antes eram onclick="insertBase('A')" inline no HTML
+    document.querySelectorAll('.btn-base[data-base]').forEach((btn) => {
+      btn.addEventListener('click', () => insertBase(btn.dataset.base));
+    });
+
+    // Cartões de doenças genéticas — antes eram onclick="loadDiseaseExample('sickle')" inline no HTML
+    document.querySelectorAll('.disease-load-btn[data-disease]').forEach((btn) => {
+      btn.addEventListener('click', () => loadDiseaseExample(btn.dataset.disease));
+    });
+
     // Controles do simulador
     const btnClear  = document.getElementById('btn-clear');
     const btnRandom = document.getElementById('btn-random');
@@ -2082,7 +2149,12 @@
       const appBtn = document.getElementById('app');
       if (appBtn) appBtn.click();
 
-      for (const base of dnaBases) insertBase(base);
+      // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
+      // e dispara translate()/treatSequence() uma única vez ao final — antes eram
+      // 3 ciclos completos de tradução + análise de mutação por clique em um códon.
+      for (const base of dnaBases) insertBase(base, { skipRender: true });
+      translate();
+      treatSequence();
     }
 
     document.querySelectorAll('.codon-item').forEach(function (item) {
@@ -2101,9 +2173,8 @@
     loadSequenceFromUrl();
   });
 
-  // ─── Exportações globais ──────────────────────────────────────────────────────
-  // Expõe apenas o necessário para o HTML; todo o restante permanece encapsulado.
-  window.insertBase = insertBase;
-  window.loadDiseaseExample = loadDiseaseExample;
+  // Nenhuma exportação global é necessária: os cartões de doença e os botões de base
+  // agora usam data-attributes + listeners delegados (ver bloco de vinculação de eventos
+  // em DOMContentLoaded), em vez de onclick inline no HTML. O IIFE permanece 100% encapsulado.
 
 })();

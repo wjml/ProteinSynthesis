@@ -391,10 +391,10 @@
                     </div>
                     <div class="base-input-buttons">
                         <span class="button-label">Inserir Base:</span>
-                        <button class="btn-base base-A" onclick="insertBase('A')">A</button>
-                        <button class="btn-base base-T" onclick="insertBase('T')">T</button>
-                        <button class="btn-base base-C" onclick="insertBase('C')">C</button>
-                        <button class="btn-base base-G" onclick="insertBase('G')">G</button>
+                        <button class="btn-base base-A" data-base="A">A</button>
+                        <button class="btn-base base-T" data-base="T">T</button>
+                        <button class="btn-base base-C" data-base="C">C</button>
+                        <button class="btn-base base-G" data-base="G">G</button>
                     </div>
                 </div>
                 <div class="sequence">
@@ -610,7 +610,7 @@
                         <p>Uma única base trocada substitui o ácido glutâmico (hidrofílico) por valina (hidrofóbico)
                             na cadeia da hemoglobina. Sob baixa concentração de oxigênio, as moléculas alteradas se
                             agregam em fibras longas, deformando as hemácias no característico formato de foice.</p>
-                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('sickle')">
+                        <button class="btn-control disease-load-btn" data-disease="sickle">
                             <i class="fas fa-flask"></i> Carregar no Simulador
                         </button>
                     </div>
@@ -624,7 +624,7 @@
                                 prematuro</strong>. A tradução é interrompida muito antes do esperado, produzindo uma
                             beta-globina truncada e não funcional — uma das causas mais comuns de talassemia na bacia
                             do Mediterrâneo.</p>
-                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('thalassemia')">
+                        <button class="btn-control disease-load-btn" data-disease="thalassemia">
                             <i class="fas fa-flask"></i> Carregar no Simulador
                         </button>
                     </div>
@@ -638,7 +638,7 @@
                             toda a janela de leitura a partir do ponto de inserção. A enzima resultante é
                             completamente diferente e não-funcional, levando ao acúmulo tóxico de gangliosídeos GM2
                             nos neurônios.</p>
-                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('taysachs')">
+                        <button class="btn-control disease-load-btn" data-disease="taysachs">
                             <i class="fas fa-flask"></i> Carregar no Simulador
                         </button>
                     </div>
@@ -654,7 +654,7 @@
                             nenhuma doença se manifesta. Compare com a Anemia Falciforme para ver como a posição da
                             mutação faz toda a diferença.
                         </p>
-                        <button class="btn-control disease-load-btn" onclick="loadDiseaseExample('silentDemo')">
+                        <button class="btn-control disease-load-btn" data-disease="silentDemo">
                             <i class="fas fa-flask"></i> Carregar no Simulador
                         </button>
                     </div>

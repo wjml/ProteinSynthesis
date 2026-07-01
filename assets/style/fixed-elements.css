@@ -8,7 +8,10 @@
 	--headerSize: 0%;
 	--footerSize: 40px;
 	--sidebarSize: 260px;
-	--colorDetails: #14b8a6; /* Modern Teal */
+	--colorDetails: #14b8a6; /* Modern Teal — usar para bordas, ícones e fundos decorativos */
+	--colorDetailsText: #0f766e; /* Teal 700 — variante escura de --colorDetails, ~5,5:1 de contraste
+	   contra branco (WCAG AA). Usar sempre que a cor carregar texto: headings, badges com texto,
+	   texto sobre fundo teal, ou fundo teal com texto branco em cima. */
 	--bgSidebar: #0f172a; /* Slate 900 */
 	--bgSidebarHover: #1e293b; /* Slate 800 */
 }
@@ -189,7 +192,7 @@ nav #logo img {
 
 .button.active,
 .button.active:hover {
-	background: var(--colorDetails);
+	background: var(--colorDetailsText);
 	color: white;
 	border-left: 4px solid #0d9488;
 	transition: all 0.2s ease-in;

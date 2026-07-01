@@ -68,7 +68,7 @@
 
 .info-card h3 {
 	margin: 0 0 1rem 0;
-	color: var(--colorDetails);
+	color: var(--colorDetailsText);
 	font-size: 1.3rem;
 	display: flex;
 	align-items: center;
@@ -183,7 +183,7 @@
 }
 
 .badge-active {
-	background-color: var(--colorDetails);
+	background-color: var(--colorDetailsText);
 	color: white;
 	font-size: 0.75rem;
 	padding: 0.2rem 0.6rem;
@@ -228,7 +228,7 @@
 	min-width: 45px;
 	height: 45px;
 	border-radius: 50%;
-	background-color: var(--colorDetails);
+	background-color: var(--colorDetailsText);
 	color: white;
 	font-size: 1.4rem;
 	font-weight: bold;
@@ -384,7 +384,7 @@
 }
 
 .transcription-step .step-badge {
-	background-color: var(--colorDetails);
+	background-color: var(--colorDetailsText);
 	color: white;
 	font-weight: bold;
 	font-size: 0.9rem;
@@ -502,6 +502,14 @@
 	filter: brightness(0.95);
 }
 
+/* A11Y: .codon-item é focável via teclado (tabindex="0", role="button" — ver script.js),
+   mas sem esta regra dependia do outline padrão do navegador, inconsistente entre
+   Chrome/Firefox/Safari e destoante do restante da UI. */
+.codon-item:focus-visible {
+	outline: 2px solid var(--colorDetailsText);
+	outline-offset: 2px;
+}
+
 .codon-name {
 	color: #1e293b;
 }
@@ -564,7 +572,7 @@
 .first-base-cell {
 	font-weight: bold;
 	font-size: 1.5rem;
-	color: var(--colorDetails);
+	color: var(--colorDetailsText);
 	background: #f8fafc;
 }
 
@@ -689,7 +697,7 @@
 #drawer-codons {
 	font-family: 'Roboto Mono', monospace;
 	font-weight: 600;
-	color: var(--colorDetails);
+	color: var(--colorDetailsText);
 }
 
 /* ===== Exportar / Importar Sequência — Modal ===== */
