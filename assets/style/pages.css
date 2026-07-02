@@ -839,3 +839,59 @@
 	width: 100%;
 	justify-content: center;
 }
+/* ===== Genética Mendeliana — cartão de chamada para o construtor ===== */
+.mendel-cta-card {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+	background: linear-gradient(135deg, #ffffff, #f0fdfa);
+	border: 1px solid #ccfbf1;
+	border-radius: 12px;
+	padding: 1.5rem 1.75rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mendel-cta-text h3 {
+	margin: 0 0 0.4rem 0;
+	color: var(--colorDetailsText);
+	font-size: 1.25rem;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.mendel-cta-text p {
+	margin: 0;
+	color: #55606d;
+	line-height: 1.6;
+	font-size: 0.95rem;
+	max-width: 46ch;
+}
+
+.mendel-cta-btn {
+	flex: 0 0 auto;
+	width: auto;
+	margin-top: 0;
+	padding: 0.85rem 1.4rem;
+	font-size: 0.95rem;
+	background: var(--colorDetailsText);
+	color: white;
+	border-color: transparent;
+}
+
+.mendel-cta-btn:hover {
+	filter: brightness(1.1);
+}
+
+@media (max-width: 640px) {
+	.mendel-cta-card {
+		flex-direction: column;
+		align-items: stretch;
+		text-align: center;
+	}
+	.mendel-cta-text p {
+		max-width: none;
+	}
+}

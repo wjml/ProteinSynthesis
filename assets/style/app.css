@@ -1080,11 +1080,6 @@ button.quiz-option.quiz-option-text {
     min-height: 1.2em;
 }
 
-.ribo-stage{
-    flex-direction: column;
-    align-items: center;
-}
-
 .ribo-controls {
     display: flex;
     align-items: center;
@@ -1118,5 +1113,297 @@ button.quiz-option.quiz-option-text {
 @media (max-width: 480px) {
     .ribo-speed-label {
         margin-left: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Genética Mendeliana — Construtor de Cruzamentos (Quadro de Punnett)
+   ═══════════════════════════════════════════════════════════════════════
+   Tema CLARO (diferente do .seq-modal/.ribosome-modal escuros), consistente
+   com o restante das páginas de conteúdo do app (.info-card, .step-card). */
+
+.mendel-modal {
+    width: min(820px, 95vw);
+    background: #ffffff;
+    color: #2c3e50;
+    border-color: #eef2f5;
+}
+
+.mendel-modal-close {
+    color: #94a3b8;
+}
+
+.mendel-modal-close:hover {
+    color: #ef4444;
+}
+
+.mendel-modal-title {
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+}
+
+.mendel-modal-title i {
+    color: var(--colorDetailsText);
+}
+
+.mendel-modal-desc {
+    color: #64748b;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.mendel-field-group {
+    margin-bottom: 16px;
+}
+
+.mendel-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.mendel-toggle-group {
+    display: flex;
+    gap: 8px;
+}
+
+.mendel-toggle-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mendel-toggle-btn:hover {
+    background: #f1f5f9;
+}
+
+.mendel-toggle-btn.active {
+    background: var(--colorDetailsText);
+    border-color: var(--colorDetailsText);
+    color: #ffffff;
+}
+
+.mendel-toggle-sub {
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.mendel-gene-config {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.mendel-gene-title {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: var(--colorDetailsText);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mendel-grid-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.mendel-grid-inputs:last-child {
+    margin-bottom: 0;
+}
+
+.mendel-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.mendel-field-narrow {
+    max-width: 110px;
+}
+
+.mendel-input {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #2c3e50;
+    font-size: 0.88rem;
+    font-family: inherit;
+    font-weight: 400;
+}
+
+.mendel-input:focus {
+    outline: none;
+    border-color: var(--colorDetailsText);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.mendel-input-letter {
+    text-transform: uppercase;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    text-align: center;
+}
+
+.mendel-parent-genotypes {
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.mendel-generate-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--colorDetailsText), #14b8a6);
+    color: #ffffff;
+    border-color: transparent;
+    font-size: 0.95rem;
+    padding: 0.85rem;
+}
+
+.mendel-generate-btn:hover {
+    filter: brightness(1.08);
+}
+
+.mendel-results {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #eef2f5;
+}
+
+.mendel-results-title {
+    margin: 0 0 12px;
+    color: #1e293b;
+    font-size: 1.05rem;
+}
+
+.mendel-punnett-wrapper {
+    overflow-x: auto;
+    margin-bottom: 16px;
+}
+
+.mendel-punnett-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.mendel-punnett-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.mendel-punnett-table thead th:first-child {
+    background: transparent;
+    border: none;
+}
+
+.mendel-cell {
+    border: 1.5px solid #e2e8f0;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 56px;
+}
+
+.mendel-cell-genotype {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.mendel-tally-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.mendel-tally-col h5 {
+    margin: 0 0 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+}
+
+.mendel-tally-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mendel-tally-col li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid #eef2f5;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+.mendel-swatch {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.mendel-tally-detail {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.mendel-explanation {
+    font-size: 0.88rem;
+    color: #55606d;
+    line-height: 1.6;
+    background: #f0fdfa;
+    border-left: 3px solid var(--colorDetailsText);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin: 0;
+}
+
+@media (max-width: 560px) {
+    .mendel-field-narrow {
+        max-width: none;
     }
 }

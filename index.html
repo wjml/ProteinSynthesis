@@ -39,6 +39,9 @@
                 <li class="button" id="diseases">
                     <i class="fas fa-universal-access"></i> Doenças Genéticas
                 </li>
+                <li class="button" id="mendel">
+                    <i class="fas fa-sitemap"></i> Genética Mendeliana
+                </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
@@ -662,6 +665,55 @@
                     </div>
                 </div>
             </div>
+            <div class="content mendel">
+                <div class="page-header">
+                    <h2>Genética Mendeliana</h2>
+                    <p>Além da biologia molecular: como as características são herdadas dos pais para os filhos,
+                        segundo as leis propostas por Gregor Mendel.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-seedling"></i> 1ª Lei de Mendel</h3>
+                        <p>Cada característica é controlada por um par de <strong>alelos</strong> (versões de um
+                            gene), um herdado de cada genitor. Na formação dos gametas, esse par se <strong>separa
+                                (segrega)</strong>, e cada gameta carrega apenas um dos dois alelos — daí o nome "Lei
+                            da Segregação".</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-table"></i> Quadro de Punnett</h3>
+                        <p>É a ferramenta clássica para prever a proporção de descendentes de um cruzamento: os
+                            gametas possíveis de cada genitor são colocados nas bordas de uma grade, e cada célula
+                            mostra a combinação genotípica resultante daquele cruzamento específico.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-palette"></i> Padrões de Dominância</h3>
+                        <p><strong>Dominância completa:</strong> o heterozigoto (Aa) tem o mesmo fenótipo do
+                            homozigoto dominante (AA). <strong>Codominância:</strong> os dois alelos se expressam
+                            simultaneamente e de forma distinta (ex: gado ruão). <strong>Dominância incompleta:</strong>
+                            o heterozigoto apresenta um fenótipo intermediário, uma mistura dos dois (ex: boca-de-leão
+                            rosa).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-dice"></i> Mono-híbrido vs. Di-híbrido</h3>
+                        <p>Um cruzamento <strong>mono-híbrido</strong> acompanha uma única característica (ex: só a
+                            cor da semente). Um cruzamento <strong>di-híbrido</strong> acompanha duas características
+                            simultaneamente e independentes entre si (ex: cor e textura da semente), gerando uma
+                            grade de 4×4 e a clássica proporção fenotípica 9:3:3:1.</p>
+                    </div>
+                </div>
+
+                <div class="mendel-cta-card">
+                    <div class="mendel-cta-text">
+                        <h3><i class="fas fa-flask"></i> Construtor de Cruzamentos</h3>
+                        <p>Monte seu próprio cruzamento — escolha o padrão de dominância, os genótipos dos genitores,
+                            e veja o quadro de Punnett, as proporções genotípicas e fenotípicas calculadas
+                            automaticamente.</p>
+                    </div>
+                    <button class="btn-control mendel-cta-btn" id="btn-open-mendel">
+                        <i class="fas fa-play-circle"></i> Abrir Construtor
+                    </button>
+                </div>
+            </div>
             <div class="content feedback">
                 <div class="page-header">
                     <h2>Feedback aos Desenvolvedores</h2>
@@ -829,6 +881,140 @@
                     <option value="950" selected>Normal</option>
                     <option value="500">Rápida</option>
                 </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Construtor de Cruzamentos (Genética Mendeliana) -->
+    <div id="mendel-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal mendel-modal">
+            <button class="seq-modal-close mendel-modal-close" id="mendel-modal-close">&times;</button>
+            <h3 class="mendel-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
+            <p class="mendel-modal-desc">Configure o(s) gene(s) e o genótipo de cada genitor para gerar o quadro de
+                Punnett e as proporções resultantes.</p>
+
+            <div class="mendel-field-group">
+                <span class="mendel-label">Tipo de cruzamento</span>
+                <div class="mendel-toggle-group" role="radiogroup" aria-label="Tipo de cruzamento">
+                    <button type="button" class="mendel-toggle-btn active" id="mendel-mode-mono" data-mode="mono"
+                        aria-pressed="true">Mono-híbrido <span class="mendel-toggle-sub">1 gene</span></button>
+                    <button type="button" class="mendel-toggle-btn" id="mendel-mode-di" data-mode="di"
+                        aria-pressed="false">Di-híbrido <span class="mendel-toggle-sub">2 genes</span></button>
+                </div>
+            </div>
+
+            <!-- Gene 1 -->
+            <div class="mendel-gene-config" id="mendel-gene-1">
+                <h4 class="mendel-gene-title"><i class="fas fa-flask"></i> Gene 1</h4>
+                <div class="mendel-grid-inputs">
+                    <label class="mendel-field">Característica
+                        <input type="text" class="mendel-input" id="mendel-g1-name" value="Cor da flor">
+                    </label>
+                    <label class="mendel-field mendel-field-narrow">Alelo dominante
+                        <input type="text" maxlength="1" class="mendel-input mendel-input-letter" id="mendel-g1-letter" value="R">
+                    </label>
+                    <label class="mendel-field">Padrão de herança
+                        <select class="mendel-input" id="mendel-g1-pattern">
+                            <option value="complete">Dominância completa</option>
+                            <option value="codominance">Codominância</option>
+                            <option value="incomplete">Dominância incompleta</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="mendel-grid-inputs">
+                    <label class="mendel-field">Fenótipo dominante (homozigoto)
+                        <input type="text" class="mendel-input" id="mendel-g1-domname" value="Roxa">
+                    </label>
+                    <label class="mendel-field" id="mendel-g1-het-wrap" style="display:none;">Fenótipo do heterozigoto
+                        <input type="text" class="mendel-input" id="mendel-g1-hetname" placeholder="ex: Rosa">
+                    </label>
+                    <label class="mendel-field">Fenótipo recessivo (homozigoto)
+                        <input type="text" class="mendel-input" id="mendel-g1-recname" value="Branca">
+                    </label>
+                </div>
+                <div class="mendel-grid-inputs mendel-parent-genotypes">
+                    <label class="mendel-field">Genótipo — Genitor 1
+                        <select class="mendel-input" id="mendel-g1-p1">
+                            <option value="homDom">Homozigoto dominante (RR)</option>
+                            <option value="het" selected>Heterozigoto (Rr)</option>
+                            <option value="homRec">Homozigoto recessivo (rr)</option>
+                        </select>
+                    </label>
+                    <label class="mendel-field">Genótipo — Genitor 2
+                        <select class="mendel-input" id="mendel-g1-p2">
+                            <option value="homDom">Homozigoto dominante (RR)</option>
+                            <option value="het" selected>Heterozigoto (Rr)</option>
+                            <option value="homRec">Homozigoto recessivo (rr)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Gene 2 (só aparece no modo di-híbrido) -->
+            <div class="mendel-gene-config" id="mendel-gene-2" style="display:none;">
+                <h4 class="mendel-gene-title"><i class="fas fa-flask"></i> Gene 2</h4>
+                <div class="mendel-grid-inputs">
+                    <label class="mendel-field">Característica
+                        <input type="text" class="mendel-input" id="mendel-g2-name" value="Textura da semente">
+                    </label>
+                    <label class="mendel-field mendel-field-narrow">Alelo dominante
+                        <input type="text" maxlength="1" class="mendel-input mendel-input-letter" id="mendel-g2-letter" value="Y">
+                    </label>
+                    <label class="mendel-field">Padrão de herança
+                        <select class="mendel-input" id="mendel-g2-pattern">
+                            <option value="complete">Dominância completa</option>
+                            <option value="codominance">Codominância</option>
+                            <option value="incomplete">Dominância incompleta</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="mendel-grid-inputs">
+                    <label class="mendel-field">Fenótipo dominante (homozigoto)
+                        <input type="text" class="mendel-input" id="mendel-g2-domname" value="Lisa">
+                    </label>
+                    <label class="mendel-field" id="mendel-g2-het-wrap" style="display:none;">Fenótipo do heterozigoto
+                        <input type="text" class="mendel-input" id="mendel-g2-hetname" placeholder="ex: Semi-lisa">
+                    </label>
+                    <label class="mendel-field">Fenótipo recessivo (homozigoto)
+                        <input type="text" class="mendel-input" id="mendel-g2-recname" value="Rugosa">
+                    </label>
+                </div>
+                <div class="mendel-grid-inputs mendel-parent-genotypes">
+                    <label class="mendel-field">Genótipo — Genitor 1
+                        <select class="mendel-input" id="mendel-g2-p1">
+                            <option value="homDom">Homozigoto dominante (YY)</option>
+                            <option value="het" selected>Heterozigoto (Yy)</option>
+                            <option value="homRec">Homozigoto recessivo (yy)</option>
+                        </select>
+                    </label>
+                    <label class="mendel-field">Genótipo — Genitor 2
+                        <select class="mendel-input" id="mendel-g2-p2">
+                            <option value="homDom">Homozigoto dominante (YY)</option>
+                            <option value="het" selected>Heterozigoto (Yy)</option>
+                            <option value="homRec">Homozigoto recessivo (yy)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn-control mendel-generate-btn" id="mendel-generate-btn">
+                <i class="fas fa-magic"></i> Gerar Quadro de Punnett
+            </button>
+
+            <div class="mendel-results" id="mendel-results" style="display:none;">
+                <h4 class="mendel-results-title">Resultado do Cruzamento</h4>
+                <div class="mendel-punnett-wrapper" id="mendel-punnett-wrapper"></div>
+                <div class="mendel-tally-columns">
+                    <div class="mendel-tally-col">
+                        <h5>Proporção Genotípica</h5>
+                        <ul id="mendel-genotype-tally"></ul>
+                    </div>
+                    <div class="mendel-tally-col">
+                        <h5>Proporção Fenotípica</h5>
+                        <ul id="mendel-phenotype-tally"></ul>
+                    </div>
+                </div>
+                <p class="mendel-explanation" id="mendel-explanation"></p>
             </div>
         </div>
     </div>

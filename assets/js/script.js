@@ -972,9 +972,15 @@
     stepRibosome();
   }
 
-  /** Pausa a animação, mantendo o progresso atual. */
+  /**
+   * Pausa a animação, mantendo o progresso atual.
+   * DEFENSIVO: pode ser chamada pelo handler global de Esc (via closeModal()) mesmo que o
+   * modal do ribossomo nunca tenha sido aberto nesta sessão — nesse caso ribosome.els ainda
+   * está vazio, então simplesmente não há nada a pausar.
+   */
   function pauseRibosome() {
     clearRibosomeTimers();
+    if (!ribosome.els.playIcon) return;
     setPlayButtonState(false);
   }
 
@@ -1546,6 +1552,321 @@
     treatSequence();
 
     showInfo(disease.name, `Sequência carregada: ${disease.gene}. Veja a análise de mutação abaixo, no Simulador.`);
+  }
+
+  // ─── Genética Mendeliana (Construtor de Cruzamentos / Quadro de Punnett) ─────
+  //
+  // Módulo independente do simulador molecular: modela cruzamentos mono e
+  // di-híbridos com os três padrões de dominância (completa, codominância,
+  // dominância incompleta), gera o quadro de Punnett e as proporções
+  // genotípica/fenotípica resultantes. Segue o mesmo padrão pure-function +
+  // camada de DOM usado no resto do app (ex.: classifyMutationPure/classifyMutation),
+  // para que o motor de cálculo possa ser testado isoladamente, sem tocar no DOM.
+
+  const MENDEL_PALETTE = ['#1e88e5', '#f57c00', '#43a047', '#e53935', '#8e24aa', '#00897b', '#c0ca33', '#6d4c41', '#5c6bc0'];
+
+  /** Retorna os dois alelos (ex: ['R','R'], ['R','r'] ou ['r','r']) de um genitor para um gene. */
+  function mendelAllelesForGenotype(genotypeClass, dominantLetter) {
+    const dom = dominantLetter.toUpperCase();
+    const rec = dominantLetter.toLowerCase();
+    if (genotypeClass === 'homDom') return [dom, dom];
+    if (genotypeClass === 'homRec') return [rec, rec];
+    return [dom, rec];
+  }
+
+  /** Gera a lista de gametas de um genitor para 1+ genes independentes (produto cartesiano dos alelos). */
+  function mendelGameteList(genes, parentGenotypes) {
+    const perGeneAlleles = genes.map((g, i) => mendelAllelesForGenotype(parentGenotypes[i], g.letter));
+    let combos = [[]];
+    for (const alleles of perGeneAlleles) {
+      const next = [];
+      for (const combo of combos) for (const a of alleles) next.push([...combo, a]);
+      combos = next;
+    }
+    return combos;
+  }
+
+  /** Classifica um par de alelos como homozigoto dominante, heterozigoto ou homozigoto recessivo. */
+  function mendelClassifyPair(a1, a2, dominantLetter) {
+    const dom = dominantLetter.toUpperCase();
+    const isDom1 = a1 === dom, isDom2 = a2 === dom;
+    if (isDom1 && isDom2) return 'homDom';
+    if (!isDom1 && !isDom2) return 'homRec';
+    return 'het';
+  }
+
+  /** Formata um par de alelos para exibição, sempre com o dominante primeiro (ex: sempre "Rr", nunca "rR"). */
+  function mendelDisplayPair(a1, a2, dominantLetter) {
+    const dom = dominantLetter.toUpperCase();
+    const pair = [a1, a2];
+    pair.sort((x, y) => (x === dom) === (y === dom) ? 0 : (x === dom ? -1 : 1));
+    return pair.join('');
+  }
+
+  /** Retorna o nome do fenótipo de um gene para uma classe genotípica, respeitando o padrão de dominância. */
+  function mendelPhenotypeLabel(gene, genotypeClass) {
+    if (genotypeClass === 'homDom') return gene.domName;
+    if (genotypeClass === 'homRec') return gene.recName;
+    return gene.pattern === 'complete' ? gene.domName : gene.hetName;
+  }
+
+  /**
+   * Monta o quadro de Punnett completo para 1 ou mais genes independentes (sem ligação gênica).
+   * @param {Array<{letter, pattern, domName, hetName, recName}>} genes
+   * @param {Array<'homDom'|'het'|'homRec'>} parent1Genotypes — um valor por gene, mesma ordem de `genes`
+   * @param {Array<'homDom'|'het'|'homRec'>} parent2Genotypes
+   */
+  function buildPunnettSquare(genes, parent1Genotypes, parent2Genotypes) {
+    const gametes1 = mendelGameteList(genes, parent1Genotypes);
+    const gametes2 = mendelGameteList(genes, parent2Genotypes);
+    const cells = [];
+    for (const g1 of gametes1) {
+      const row = [];
+      for (const g2 of gametes2) {
+        const perGene = genes.map((gene, i) => {
+          const cls = mendelClassifyPair(g1[i], g2[i], gene.letter);
+          return {
+            class: cls,
+            display: mendelDisplayPair(g1[i], g2[i], gene.letter),
+            phenotype: mendelPhenotypeLabel(gene, cls),
+          };
+        });
+        row.push({
+          genotypeDisplay:  perGene.map(p => p.display).join(''),
+          phenotypeDisplay: perGene.map(p => p.phenotype).join(', '),
+        });
+      }
+      cells.push(row);
+    }
+
+    const genotypeTally = new Map();
+    const phenotypeTally = new Map();
+    let total = 0;
+    for (const row of cells) {
+      for (const cell of row) {
+        total++;
+        genotypeTally.set(cell.genotypeDisplay, (genotypeTally.get(cell.genotypeDisplay) || 0) + 1);
+        phenotypeTally.set(cell.phenotypeDisplay, (phenotypeTally.get(cell.phenotypeDisplay) || 0) + 1);
+      }
+    }
+
+    return {
+      gametes1: gametes1.map(g => g.join('')),
+      gametes2: gametes2.map(g => g.join('')),
+      cells, total, genotypeTally, phenotypeTally,
+    };
+  }
+
+  /** Maior divisor comum de uma lista de inteiros positivos (simplifica proporções, ex.: 12:4 → 3:1). */
+  function mendelGcdAll(nums) {
+    const gcd2 = (a, b) => (b === 0 ? a : gcd2(b, a % b));
+    return nums.reduce((a, b) => gcd2(a, b));
+  }
+
+  /** Formata um Map de contagens como lista com proporção simplificada + porcentagem. */
+  function mendelFormatTally(tally, total) {
+    const entries = [...tally.entries()];
+    const divisor = mendelGcdAll(entries.map(([, count]) => count));
+    return entries.map(([label, count]) => ({
+      label, count,
+      ratio:   count / divisor,
+      percent: Math.round((count / total) * 1000) / 10,
+    }));
+  }
+
+  // ─── Camada de DOM: formulário, quadro de Punnett e resultados ───────────────
+
+  const mendel = {
+    els: {},
+    mode: 'mono', // 'mono' | 'di'
+    colorByPhenotype: new Map(),
+  };
+
+  /** Localiza e armazena os elementos do modal do construtor de cruzamentos (uma única vez). */
+  function cacheMendelElements() {
+    mendel.els = {
+      modal:              document.getElementById('mendel-modal'),
+      modeMonoBtn:        document.getElementById('mendel-mode-mono'),
+      modeDiBtn:          document.getElementById('mendel-mode-di'),
+      gene2Config:        document.getElementById('mendel-gene-2'),
+      generateBtn:        document.getElementById('mendel-generate-btn'),
+      results:            document.getElementById('mendel-results'),
+      punnettWrapper:     document.getElementById('mendel-punnett-wrapper'),
+      genotypeTallyList:  document.getElementById('mendel-genotype-tally'),
+      phenotypeTallyList: document.getElementById('mendel-phenotype-tally'),
+      explanation:        document.getElementById('mendel-explanation'),
+    };
+  }
+
+  /** Abre o modal do construtor de cruzamentos. */
+  function openMendelModal() {
+    if (!mendel.els.modal) cacheMendelElements();
+    if (!mendel.els.modal) return;
+    mendel.els.modal.style.display = 'flex';
+  }
+
+  /** Lê a configuração de um gene (índice 0 ou 1) a partir dos campos do formulário. */
+  function readMendelGeneConfig(index) {
+    const p = 'mendel-g' + (index + 1) + '-';
+    const get = (suffix) => document.getElementById(p + suffix);
+
+    const letter  = (get('letter').value || 'A').trim().charAt(0) || 'A';
+    const pattern = get('pattern').value;
+    const domName = get('domname').value.trim() || (letter.toUpperCase() + letter.toUpperCase());
+    const recName = get('recname').value.trim() || (letter.toLowerCase() + letter.toLowerCase());
+    const hetRaw  = get('hetname').value.trim();
+    const hetName = pattern === 'complete' ? domName : hetRaw;
+
+    return {
+      gene: { letter, pattern, domName, recName, hetName },
+      p1: get('p1').value,
+      p2: get('p2').value,
+    };
+  }
+
+  /** Mostra/esconde o campo de nome do heterozigoto conforme o padrão de dominância escolhido para o gene. */
+  function updateMendelHetFieldVisibility(index) {
+    const p = 'mendel-g' + (index + 1) + '-';
+    const pattern = document.getElementById(p + 'pattern').value;
+    const wrap = document.getElementById(p + 'het-wrap');
+    if (wrap) wrap.style.display = pattern === 'complete' ? 'none' : 'flex';
+  }
+
+  /** Alterna entre cruzamento mono-híbrido e di-híbrido, mostrando/escondendo a configuração do 2º gene. */
+  function setMendelMode(mode) {
+    if (!mendel.els.modal) cacheMendelElements();
+    mendel.mode = mode;
+    const isDi = mode === 'di';
+    mendel.els.gene2Config.style.display = isDi ? 'block' : 'none';
+    mendel.els.modeMonoBtn.classList.toggle('active', !isDi);
+    mendel.els.modeDiBtn.classList.toggle('active', isDi);
+    mendel.els.modeMonoBtn.setAttribute('aria-pressed', String(!isDi));
+    mendel.els.modeDiBtn.setAttribute('aria-pressed', String(isDi));
+    mendel.els.results.style.display = 'none';
+  }
+
+  /** Retorna (criando se necessário) a cor consistente atribuída a um rótulo de fenótipo, para a grade e a legenda. */
+  function colorForPhenotype(label) {
+    if (!mendel.colorByPhenotype.has(label)) {
+      mendel.colorByPhenotype.set(label, MENDEL_PALETTE[mendel.colorByPhenotype.size % MENDEL_PALETTE.length]);
+    }
+    return mendel.colorByPhenotype.get(label);
+  }
+
+  /**
+   * Converte uma cor hex (#rrggbb) para rgba() com a opacidade dada.
+   * Calculado em JS em vez de usar CSS color-mix() para evitar dependência de
+   * suporte de navegador mais recente para uma função puramente decorativa.
+   */
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  /** Constrói a tabela HTML do quadro de Punnett (gametas nas bordas, genótipos nas células, coloridas por fenótipo). */
+  function renderPunnettGrid(result) {
+    const table = document.createElement('table');
+    table.className = 'mendel-punnett-table';
+
+    const thead = document.createElement('thead');
+    const headRow = document.createElement('tr');
+    headRow.appendChild(document.createElement('th')); // canto vazio
+    result.gametes2.forEach((g) => {
+      const th = document.createElement('th');
+      th.textContent = g;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    result.cells.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      const rowHeader = document.createElement('th');
+      rowHeader.textContent = result.gametes1[i];
+      tr.appendChild(rowHeader);
+
+      row.forEach((cell) => {
+        const td = document.createElement('td');
+        td.className = 'mendel-cell';
+        const color = colorForPhenotype(cell.phenotypeDisplay);
+        td.style.backgroundColor = hexToRgba(color, 0.12);
+        td.style.borderColor     = hexToRgba(color, 0.45);
+        td.title = cell.phenotypeDisplay;
+        const span = document.createElement('span');
+        span.className = 'mendel-cell-genotype';
+        span.style.color = color;
+        span.textContent = cell.genotypeDisplay;
+        td.appendChild(span);
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    return table;
+  }
+
+  /** Preenche uma lista <ul> com a proporção (genotípica ou fenotípica) já formatada e, opcionalmente, colorida. */
+  function renderMendelTallyList(listEl, tally, total, withColor) {
+    listEl.innerHTML = '';
+    mendelFormatTally(tally, total).forEach(({ label, count, ratio, percent }) => {
+      const li = document.createElement('li');
+      if (withColor) {
+        const swatch = document.createElement('span');
+        swatch.className = 'mendel-swatch';
+        swatch.style.background = colorForPhenotype(label);
+        li.appendChild(swatch);
+      }
+      const text = document.createElement('span');
+      const strong = document.createElement('strong');
+      strong.textContent = String(ratio);
+      text.appendChild(strong);
+      text.append(` parte(s) — ${label} `);
+      const detail = document.createElement('span');
+      detail.className = 'mendel-tally-detail';
+      detail.textContent = `(${count}/${total} · ${percent}%)`;
+      text.appendChild(detail);
+      li.appendChild(text);
+      listEl.appendChild(li);
+    });
+  }
+
+  /** Gera uma frase curta e genérica descrevendo o resultado (nº de classes, proporção simplificada). */
+  function generateMendelExplanation(result) {
+    const genoClasses  = result.genotypeTally.size;
+    const phenoClasses = result.phenotypeTally.size;
+    const ratioStr = mendelFormatTally(result.phenotypeTally, result.total).map(f => f.ratio).join(' : ');
+    return `Este cruzamento gera ${genoClasses} classe(s) genotípica(s) e ${phenoClasses} classe(s) ` +
+      `fenotípica(s) distintas, na proporção ${ratioStr} (de ${result.total} combinações possíveis no quadro).`;
+  }
+
+  /** Lê o formulário completo, calcula o quadro de Punnett e renderiza a grade + as proporções. */
+  function generateMendelCross() {
+    const els = mendel.els;
+    const configs = [readMendelGeneConfig(0)];
+    if (mendel.mode === 'di') configs.push(readMendelGeneConfig(1));
+
+    for (const cfg of configs) {
+      if (cfg.gene.pattern !== 'complete' && !cfg.gene.hetName) {
+        showAlert('Campo obrigatório', 'Preencha o nome do fenótipo do heterozigoto (codominância/dominância incompleta) antes de gerar o quadro.');
+        return;
+      }
+    }
+
+    mendel.colorByPhenotype = new Map(); // recalcula as cores a cada novo cruzamento
+    const genes   = configs.map(c => c.gene);
+    const parent1 = configs.map(c => c.p1);
+    const parent2 = configs.map(c => c.p2);
+    const result  = buildPunnettSquare(genes, parent1, parent2);
+
+    els.punnettWrapper.innerHTML = '';
+    els.punnettWrapper.appendChild(renderPunnettGrid(result));
+    renderMendelTallyList(els.genotypeTallyList,  result.genotypeTally,  result.total, false);
+    renderMendelTallyList(els.phenotypeTallyList, result.phenotypeTally, result.total, true);
+    els.explanation.textContent = generateMendelExplanation(result);
+    els.results.style.display = 'block';
   }
 
   // ─── Modo Desafio (Quiz) ──────────────────────────────────────────────────────
@@ -2311,19 +2632,23 @@
     const btnExport = document.getElementById('btn-export');
     const btnImport = document.getElementById('btn-import');
     const btnAnimate = document.getElementById('btn-animate');
-    if (btnClear)   btnClear.addEventListener('click', clearSequence);
-    if (btnRandom)  btnRandom.addEventListener('click', randomSequence);
-    if (btnExport)  btnExport.addEventListener('click', openExportModal);
-    if (btnImport)  btnImport.addEventListener('click', openImportModal);
-    if (btnAnimate) btnAnimate.addEventListener('click', openRibosomeModal);
+    const btnOpenMendel = document.getElementById('btn-open-mendel');
+    if (btnClear)      btnClear.addEventListener('click', clearSequence);
+    if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
+    if (btnExport)     btnExport.addEventListener('click', openExportModal);
+    if (btnImport)     btnImport.addEventListener('click', openImportModal);
+    if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
+    if (btnOpenMendel) btnOpenMendel.addEventListener('click', openMendelModal);
 
-    // Modais de exportar/importar/animar sequência
+    // Modais de exportar/importar/animar sequência/construir cruzamento
     const exportModal = document.getElementById('export-modal');
     const importModal = document.getElementById('import-modal');
     const ribosomeModal = document.getElementById('ribosome-modal');
+    const mendelModal = document.getElementById('mendel-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
     const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
+    const mendelCloseBtn = document.getElementById('mendel-modal-close');
     const exportCopySeqBtn  = document.getElementById('export-copy-seq');
     const exportCopyLinkBtn = document.getElementById('export-copy-link');
     const importLoadBtn  = document.getElementById('import-load-btn');
@@ -2341,9 +2666,10 @@
     if (exportCloseBtn)   exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
     if (importCloseBtn)   importCloseBtn.addEventListener('click', () => closeModal(importModal));
     if (ribosomeCloseBtn) ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
+    if (mendelCloseBtn)   mendelCloseBtn.addEventListener('click', () => closeModal(mendelModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    [exportModal, importModal, ribosomeModal].forEach((modal) => {
+    [exportModal, importModal, ribosomeModal, mendelModal].forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal(modal);
@@ -2356,6 +2682,7 @@
         closeModal(exportModal);
         closeModal(importModal);
         closeModal(ribosomeModal);
+        closeModal(mendelModal);
       }
     });
 
@@ -2368,6 +2695,18 @@
       });
     }
     if (riboResetBtn) riboResetBtn.addEventListener('click', resetRibosomeAnimation);
+
+    // Controles do construtor de cruzamentos (Genética Mendeliana)
+    const mendelModeMonoBtn = document.getElementById('mendel-mode-mono');
+    const mendelModeDiBtn   = document.getElementById('mendel-mode-di');
+    const mendelGenerateBtn = document.getElementById('mendel-generate-btn');
+    const mendelG1Pattern   = document.getElementById('mendel-g1-pattern');
+    const mendelG2Pattern   = document.getElementById('mendel-g2-pattern');
+    if (mendelModeMonoBtn) mendelModeMonoBtn.addEventListener('click', () => setMendelMode('mono'));
+    if (mendelModeDiBtn)   mendelModeDiBtn.addEventListener('click', () => setMendelMode('di'));
+    if (mendelGenerateBtn) mendelGenerateBtn.addEventListener('click', generateMendelCross);
+    if (mendelG1Pattern)   mendelG1Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(0));
+    if (mendelG2Pattern)   mendelG2Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(1));
 
     if (exportCopySeqBtn) {
       exportCopySeqBtn.addEventListener('click', () =>
