@@ -175,7 +175,7 @@
                         <p>Diferente do DNA, o RNA:</p>
                         <ul class="base-list">
                             <li>É composto por uma <strong>fita simples</strong>.</li>
-                            <li><span>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</span></li>
+                            <li>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</li>
                             <li>Substitui a Timina (T) pela <span class="base-badge base-u">U</span>
                                 <strong>Uracila</strong>.
                             </li>
@@ -391,6 +391,8 @@
                             Tradução</button>
                         <button id="btn-crispr" class="btn-control"><i class="fas fa-cut"></i> Editar com
                             CRISPR</button>
+                        <button id="btn-replicate" class="btn-control"><i class="fas fa-clone"></i> Replicar
+                            DNA</button>
                         <button id="btn-export" class="btn-control"><i class="fas fa-file-export"></i>
                             Exportar</button>
                         <button id="btn-import" class="btn-control"><i class="fas fa-file-import"></i>
@@ -1079,6 +1081,58 @@
             <button type="button" class="btn-control mendel-generate-btn" id="crispr-apply-btn" style="display:none;">
                 <i class="fas fa-check"></i> Aplicar Edição no Simulador
             </button>
+        </div>
+    </div>
+
+    <!-- Modal: Replicação do DNA -->
+    <div id="replication-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal mendel-modal replication-modal">
+            <button class="seq-modal-close mendel-modal-close" id="replication-modal-close">&times;</button>
+            <h3 class="mendel-modal-title"><i class="fas fa-clone"></i> Replicação do DNA</h3>
+            <p class="mendel-modal-desc">A dupla-hélice se abre e cada fita antiga serve de molde para uma fita
+                nova — por isso a replicação é <strong>semiconservativa</strong>. Como a DNA polimerase só
+                sintetiza no sentido 5'→3', uma fita nova cresce continuamente (fita <strong>líder</strong>)
+                enquanto a outra cresce em pedaços curtos — os <strong>fragmentos de Okazaki</strong> (fita
+                <strong>tardia</strong>) — depois unidos pela enzima DNA ligase.</p>
+
+            <div class="repl-ladder-wrapper" id="repl-ladder-wrapper">
+                <div class="repl-ends-row">
+                    <span class="repl-end-label">3'</span><span class="repl-end-label">5'</span>
+                </div>
+                <div class="repl-row repl-row-new-lagging" id="repl-row-new-lagging"></div>
+                <div class="repl-row repl-row-template2" id="repl-row-template2"></div>
+                <div class="repl-fork-track" id="repl-fork-track">
+                    <div class="repl-fork-marker" id="repl-fork-marker" aria-hidden="true">
+                        <i class="fas fa-unlock"></i>
+                    </div>
+                </div>
+                <div class="repl-row repl-row-template1" id="repl-row-template1"></div>
+                <div class="repl-row repl-row-new-leading" id="repl-row-new-leading"></div>
+                <div class="repl-ends-row">
+                    <span class="repl-end-label">5'</span><span class="repl-end-label">3'</span>
+                </div>
+                <p class="repl-daughter-caption repl-daughter-caption-top" id="repl-daughter-caption-2" style="display:none;">
+                    ↑ Molécula-filha 2 — fita original 2 + fita tardia nova (fragmentada, depois unida)</p>
+                <p class="repl-daughter-caption repl-daughter-caption-bottom" id="repl-daughter-caption-1" style="display:none;">
+                    ↓ Molécula-filha 1 — fita original 1 + fita líder nova (contínua)</p>
+            </div>
+
+            <p class="repl-status" id="repl-status" role="status" aria-live="polite">Pronto para iniciar.</p>
+
+            <div class="repl-controls" id="repl-controls">
+                <button class="btn-control seq-modal-action" id="repl-play-pause">
+                    <i class="fas fa-play" id="repl-play-icon"></i> <span id="repl-play-label">Play</span>
+                </button>
+                <button class="btn-control seq-modal-action" id="repl-reset">
+                    <i class="fas fa-undo"></i> Reiniciar
+                </button>
+                <label class="ribo-speed-label" for="repl-speed">Velocidade</label>
+                <select id="repl-speed" class="ribo-speed-select">
+                    <option value="500">Lenta</option>
+                    <option value="250" selected>Normal</option>
+                    <option value="120">Rápida</option>
+                </select>
+            </div>
         </div>
     </div>
 

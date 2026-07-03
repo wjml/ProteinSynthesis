@@ -2159,6 +2159,240 @@
     showInfo(`Edição CRISPR aplicada (${pathwayName})`, 'Veja a análise de mutação abaixo, no Simulador.');
   }
 
+  // ─── Replicação do DNA (bolha de replicação, fita líder vs. tardia) ──────────
+  //
+  // Módulo independente: abre a fita de DNA atual em duas fitas-molde
+  // complementares e anima a "bolha de replicação" — o garfo avançando enquanto
+  // a fita líder cresce continuamente (mesmo sentido do garfo) e a fita tardia
+  // cresce em fragmentos de Okazaki, depois unidos pela DNA ligase — demonstrando
+  // a natureza semiconservativa da replicação (cada molécula-filha herda uma
+  // fita original + uma fita nova).
+
+  const DNA_COMPLEMENT = { A: 'T', T: 'A', C: 'G', G: 'C' };
+
+  /** Complemento de uma única base de DNA (A↔T, C↔G) — usado para montar a fita antiparalela. */
+  function complementBase(base) {
+    return DNA_COMPLEMENT[base.toUpperCase()] || base;
+  }
+
+  /** Complemento de uma fita inteira, alinhada base a base com o original (visão "escada"). */
+  function complementStrand(seq) {
+    return seq.toUpperCase().split('').map(complementBase).join('');
+  }
+
+  const OKAZAKI_FRAGMENT_SIZE = 4;
+
+  /** Divide o comprimento de uma fita em fragmentos de Okazaki (índices [start,end) de cada um). */
+  function buildOkazakiFragments(length, fragmentSize) {
+    const fragments = [];
+    for (let start = 0; start < length; start += fragmentSize) {
+      fragments.push({ start, end: Math.min(start + fragmentSize, length) });
+    }
+    return fragments;
+  }
+
+  // ─── Camada de DOM: renderização da "escada" e animação do garfo de replicação ─
+
+  const replication = {
+    els: {},
+    strand1: '',
+    strand2: '',
+    index: 0,
+    playing: false,
+    timers: [],
+  };
+
+  /** Localiza e armazena os elementos do modal de replicação (uma única vez). */
+  function cacheReplicationElements() {
+    replication.els = {
+      modal:          document.getElementById('replication-modal'),
+      rowNewLagging:  document.getElementById('repl-row-new-lagging'),
+      rowTemplate2:   document.getElementById('repl-row-template2'),
+      forkMarker:     document.getElementById('repl-fork-marker'),
+      rowTemplate1:   document.getElementById('repl-row-template1'),
+      rowNewLeading:  document.getElementById('repl-row-new-leading'),
+      captionTop:     document.getElementById('repl-daughter-caption-2'),
+      captionBottom:  document.getElementById('repl-daughter-caption-1'),
+      status:         document.getElementById('repl-status'),
+      playIcon:       document.getElementById('repl-play-icon'),
+      playLabel:      document.getElementById('repl-play-label'),
+      speedSelect:    document.getElementById('repl-speed'),
+    };
+  }
+
+  /** Cancela todos os timers de animação pendentes — usado por pause/reset/close. */
+  function clearReplicationTimers() {
+    replication.timers.forEach(clearTimeout);
+    replication.timers = [];
+  }
+
+  /** Agenda uma função para daqui a `delay` ms, registrando o timer para poder cancelá-lo depois. */
+  function scheduleReplication(fn, delay) {
+    const id = setTimeout(fn, delay);
+    replication.timers.push(id);
+    return id;
+  }
+
+  /** Preenche uma linha com spans de base já definidos (usado pelas fitas-molde, sempre visíveis desde o início). */
+  function renderReplicationStaticRow(container, seq) {
+    container.innerHTML = '';
+    seq.split('').forEach((base) => {
+      const span = document.createElement('span');
+      span.className = 'repl-base';
+      span.textContent = base;
+      container.appendChild(span);
+    });
+  }
+
+  /** Preenche uma linha com spans vazios ("pendentes") — usado pelas fitas novas, reveladas conforme o garfo avança. */
+  function renderReplicationPendingRow(container, length) {
+    container.innerHTML = '';
+    for (let i = 0; i < length; i++) {
+      const span = document.createElement('span');
+      span.className = 'repl-base repl-pending';
+      span.textContent = '•';
+      container.appendChild(span);
+    }
+  }
+
+  /** Atualiza o texto/ícone do botão Play/Pause conforme o estado atual. */
+  function setReplicationPlayButtonState(isPlaying) {
+    const els = replication.els;
+    replication.playing = isPlaying;
+    els.playIcon.className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+    els.playLabel.textContent = isPlaying ? 'Pause' : 'Play';
+  }
+
+  /** Move o marcador do garfo de replicação para a posição correspondente ao índice de base dado. */
+  function positionReplicationFork(index) {
+    const els = replication.els;
+    const bases = els.rowTemplate1.querySelectorAll('.repl-base');
+    if (bases.length === 0) return;
+    if (index <= 0) {
+      els.forkMarker.style.left = '-4px';
+    } else if (index >= bases.length) {
+      const last = bases[bases.length - 1];
+      els.forkMarker.style.left = (last.offsetLeft + last.offsetWidth) + 'px';
+    } else {
+      els.forkMarker.style.left = (bases[index].offsetLeft - 2) + 'px';
+    }
+  }
+
+  /** Reinicia a animação do zero (fitas-molde redesenhadas, fitas novas esvaziadas), sem fechar o modal. */
+  function resetReplicationAnimation() {
+    clearReplicationTimers();
+    replication.index = 0;
+    const els = replication.els;
+
+    renderReplicationStaticRow(els.rowTemplate1, replication.strand1);
+    renderReplicationStaticRow(els.rowTemplate2, replication.strand2);
+    renderReplicationPendingRow(els.rowNewLeading, replication.strand1.length);
+    renderReplicationPendingRow(els.rowNewLagging, replication.strand1.length);
+
+    els.captionTop.style.display = 'none';
+    els.captionBottom.style.display = 'none';
+    els.captionTop.classList.remove('visible');
+    els.captionBottom.classList.remove('visible');
+
+    positionReplicationFork(0);
+    els.status.textContent = 'Pronto para iniciar.';
+    setReplicationPlayButtonState(false);
+  }
+
+  /** Abre o modal, lendo a sequência de DNA atualmente ativa no simulador como a fita-molde 1. */
+  function openReplicationModal() {
+    if (!replication.els.modal) cacheReplicationElements();
+    if (!replication.els.modal) return;
+
+    const dna = readSequence(dnaSequenceChars);
+    if (!dna) {
+      showAlert('Sequência vazia', 'Digite uma sequência de DNA no simulador antes de replicar.');
+      return;
+    }
+
+    replication.strand1 = dna.toUpperCase();
+    replication.strand2 = complementStrand(replication.strand1);
+    resetReplicationAnimation();
+    replication.els.modal.style.display = 'flex';
+  }
+
+  /**
+   * Executa um único passo do garfo (uma base): revela a base nova na fita líder
+   * (imediatamente, contínua) e na fita tardia (também revelada, mas colorida por
+   * fragmento de Okazaki — a alternância de tom entre fragmentos vizinhos é o que
+   * comunica a descontinuidade, já que a diferença real está na direção/tempo de
+   * síntese de cada fragmento, difícil de representar sem uma view molecular 3D).
+   */
+  function stepReplication() {
+    const els = replication.els;
+    const length = replication.strand1.length;
+
+    if (replication.index >= length) {
+      finishReplicationLigase();
+      return;
+    }
+
+    const i = replication.index;
+    const speed = Number(els.speedSelect.value) || 250;
+
+    const leadingSpan = els.rowNewLeading.children[i];
+    leadingSpan.textContent = complementBase(replication.strand1[i]);
+    leadingSpan.className = 'repl-base';
+
+    const laggingSpan = els.rowNewLagging.children[i];
+    laggingSpan.textContent = complementBase(replication.strand2[i]);
+    const fragmentIndex = Math.floor(i / OKAZAKI_FRAGMENT_SIZE);
+    laggingSpan.className = 'repl-base' + (fragmentIndex % 2 === 1 ? ' repl-fragment-alt' : '');
+
+    positionReplicationFork(i + 1);
+    els.status.textContent = `Helicase abrindo a hélice — base ${i + 1}/${length}. A fita líder cresce sem ` +
+      `interrupção; a fita tardia inicia um novo fragmento de Okazaki a cada ${OKAZAKI_FRAGMENT_SIZE} bases.`;
+
+    replication.index++;
+    scheduleReplication(() => { if (replication.playing) stepReplication(); }, speed);
+  }
+
+  /** Chamado quando o garfo termina de percorrer toda a fita: une os fragmentos e revela as moléculas-filhas. */
+  function finishReplicationLigase() {
+    const els = replication.els;
+    els.status.textContent = 'DNA ligase uniu os fragmentos de Okazaki — a fita tardia agora é uma molécula ' +
+      'contínua, e a replicação está completa!';
+
+    els.rowNewLagging.querySelectorAll('.repl-base').forEach((span) => {
+      span.classList.remove('repl-fragment-alt');
+      span.classList.add('repl-joined');
+    });
+
+    setReplicationPlayButtonState(false);
+    els.captionTop.style.display = 'block';
+    els.captionBottom.style.display = 'block';
+    scheduleReplication(() => {
+      els.captionTop.classList.add('visible');
+      els.captionBottom.classList.add('visible');
+    }, 50);
+  }
+
+  /** Inicia (ou retoma) a reprodução automática da animação do garfo de replicação. */
+  function playReplication() {
+    if (replication.index >= replication.strand1.length) resetReplicationAnimation();
+    setReplicationPlayButtonState(true);
+    stepReplication();
+  }
+
+  /**
+   * Pausa a animação, mantendo o progresso atual.
+   * DEFENSIVO: pode ser chamada pelo handler global de Esc mesmo que o modal de
+   * replicação nunca tenha sido aberto nesta sessão — nesse caso replication.els
+   * ainda está vazio, então simplesmente não há nada a pausar (mesmo padrão de
+   * proteção aplicado em pauseRibosome(), depois que um bug real nesse sentido
+   * foi encontrado e corrigido nessa função irmã).
+   */
+  function pauseReplication() {
+    clearReplicationTimers();
+    if (!replication.els.playIcon) return;
+    setReplicationPlayButtonState(false);
+  }
+
   // ─── Modo Desafio (Quiz) ──────────────────────────────────────────────────────
   //
   // Reaproveita CODON_TABLE/AMINOACIDS_DB e a MESMA regra de classificação de
@@ -2923,6 +3157,7 @@
     const btnImport = document.getElementById('btn-import');
     const btnAnimate = document.getElementById('btn-animate');
     const btnCrispr = document.getElementById('btn-crispr');
+    const btnReplicate = document.getElementById('btn-replicate');
     const btnOpenMendel = document.getElementById('btn-open-mendel');
     if (btnClear)      btnClear.addEventListener('click', clearSequence);
     if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
@@ -2930,41 +3165,45 @@
     if (btnImport)     btnImport.addEventListener('click', openImportModal);
     if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
     if (btnCrispr)     btnCrispr.addEventListener('click', openCrisprModal);
+    if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
     if (btnOpenMendel) btnOpenMendel.addEventListener('click', openMendelModal);
 
-    // Modais de exportar/importar/animar sequência/construir cruzamento/CRISPR
+    // Modais de exportar/importar/animar sequência/construir cruzamento/CRISPR/replicação
     const exportModal = document.getElementById('export-modal');
     const importModal = document.getElementById('import-modal');
     const ribosomeModal = document.getElementById('ribosome-modal');
     const mendelModal = document.getElementById('mendel-modal');
     const crisprModal = document.getElementById('crispr-modal');
+    const replicationModal = document.getElementById('replication-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
     const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
     const mendelCloseBtn = document.getElementById('mendel-modal-close');
     const crisprCloseBtn = document.getElementById('crispr-modal-close');
+    const replicationCloseBtn = document.getElementById('replication-modal-close');
     const exportCopySeqBtn  = document.getElementById('export-copy-seq');
     const exportCopyLinkBtn = document.getElementById('export-copy-link');
     const importLoadBtn  = document.getElementById('import-load-btn');
     const importSeqInput = document.getElementById('import-seq-input');
 
-    // A animação do ribossomo precisa parar seus timers ao fechar — o caso especial
-    // abaixo chama pauseRibosome() antes de esconder esse modal; os demais não têm
-    // estado de animação e só precisam de display:none.
+    // A animação do ribossomo e a de replicação precisam parar seus timers ao
+    // fechar; os demais modais não têm estado de animação e só precisam de display:none.
     const closeModal = (modal) => {
       if (!modal) return;
       if (modal === ribosomeModal) { pauseRibosome(); }
+      if (modal === replicationModal) { pauseReplication(); }
       modal.style.display = 'none';
     };
 
-    if (exportCloseBtn)   exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
-    if (importCloseBtn)   importCloseBtn.addEventListener('click', () => closeModal(importModal));
-    if (ribosomeCloseBtn) ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
-    if (mendelCloseBtn)   mendelCloseBtn.addEventListener('click', () => closeModal(mendelModal));
-    if (crisprCloseBtn)   crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
+    if (exportCloseBtn)      exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
+    if (importCloseBtn)      importCloseBtn.addEventListener('click', () => closeModal(importModal));
+    if (ribosomeCloseBtn)    ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
+    if (mendelCloseBtn)      mendelCloseBtn.addEventListener('click', () => closeModal(mendelModal));
+    if (crisprCloseBtn)      crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
+    if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    [exportModal, importModal, ribosomeModal, mendelModal, crisprModal].forEach((modal) => {
+    [exportModal, importModal, ribosomeModal, mendelModal, crisprModal, replicationModal].forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal(modal);
@@ -2979,6 +3218,7 @@
         closeModal(ribosomeModal);
         closeModal(mendelModal);
         closeModal(crisprModal);
+        closeModal(replicationModal);
       }
     });
 
@@ -2991,6 +3231,16 @@
       });
     }
     if (riboResetBtn) riboResetBtn.addEventListener('click', resetRibosomeAnimation);
+
+    // Controles de reprodução da animação de replicação do DNA
+    const replPlayBtn  = document.getElementById('repl-play-pause');
+    const replResetBtn = document.getElementById('repl-reset');
+    if (replPlayBtn) {
+      replPlayBtn.addEventListener('click', () => {
+        if (replication.playing) pauseReplication(); else playReplication();
+      });
+    }
+    if (replResetBtn) replResetBtn.addEventListener('click', resetReplicationAnimation);
 
     // Controles do construtor de cruzamentos (Genética Mendeliana)
     const mendelModeMonoBtn = document.getElementById('mendel-mode-mono');

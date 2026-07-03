@@ -1600,3 +1600,158 @@ button.quiz-option.quiz-option-text {
     text-decoration: line-through;
     font-weight: 700;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Replicação do DNA (bolha de replicação, fita líder vs. tardia)
+   ═══════════════════════════════════════════════════════════════════════
+   Tema claro, mesma base visual dos modais .mendel-modal/.crispr-modal. */
+
+.replication-modal {
+    width: min(720px, 95vw);
+}
+
+.repl-ladder-wrapper {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 14px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+}
+
+.repl-ends-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    padding: 0 2px;
+}
+
+.repl-row {
+    display: flex;
+    gap: 2px;
+    min-height: 26px;
+    align-items: center;
+}
+
+.repl-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    transition: background 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+}
+
+/* Fitas-molde (originais) — sempre visíveis, tom neutro/azul */
+.repl-row-template1 .repl-base,
+.repl-row-template2 .repl-base {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Fita nova líder — verde, contínua */
+.repl-row-new-leading .repl-base {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Fita nova tardia — laranja enquanto fragmentada; fragmentos alternam tom p/ ficarem distinguíveis */
+.repl-row-new-lagging .repl-base {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.repl-row-new-lagging .repl-base.repl-fragment-alt {
+    background: #fdba74;
+}
+
+.repl-row-new-lagging .repl-base.repl-joined {
+    background: #dcfce7;
+    color: #166534;
+}
+
+/* Bases ainda não sintetizadas — invisíveis, mas ocupam espaço p/ não saltar o layout */
+.repl-base.repl-pending {
+    background: transparent;
+    opacity: 0;
+}
+
+.repl-fork-track {
+    position: relative;
+    height: 22px;
+    margin: 2px 0;
+}
+
+.repl-fork-marker {
+    position: absolute;
+    top: -2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+    transition: left 0.3s linear;
+}
+
+.repl-daughter-caption {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin: 2px 0 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.repl-daughter-caption.visible {
+    opacity: 1;
+}
+
+.repl-status {
+    font-size: 0.85rem;
+    color: #64748b;
+    min-height: 1.3em;
+    margin: 0 0 14px;
+}
+
+.repl-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.repl-controls .seq-modal-action {
+    width: auto;
+    margin-top: 0;
+    flex: 0 0 auto;
+    padding: 0.6rem 1rem;
+    background: #f8fafc;
+    color: var(--colorDetailsText);
+    border: 1px solid #ccfbf1;
+}
+
+.repl-controls .seq-modal-action:hover {
+    background: #f0fdfa;
+}
+
+.repl-controls .ribo-speed-label {
+    color: #64748b;
+}
+
+.repl-controls .ribo-speed-select {
+    background: #ffffff;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
