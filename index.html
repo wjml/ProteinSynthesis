@@ -175,7 +175,7 @@
                         <p>Diferente do DNA, o RNA:</p>
                         <ul class="base-list">
                             <li>É composto por uma <strong>fita simples</strong>.</li>
-                            <li>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</li>
+                            <li><span>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</span></li>
                             <li>Substitui a Timina (T) pela <span class="base-badge base-u">U</span>
                                 <strong>Uracila</strong>.
                             </li>
@@ -389,6 +389,8 @@
                             aleatória</button>
                         <button id="btn-animate" class="btn-control"><i class="fas fa-play-circle"></i> Animar
                             Tradução</button>
+                        <button id="btn-crispr" class="btn-control"><i class="fas fa-cut"></i> Editar com
+                            CRISPR</button>
                         <button id="btn-export" class="btn-control"><i class="fas fa-file-export"></i>
                             Exportar</button>
                         <button id="btn-import" class="btn-control"><i class="fas fa-file-import"></i>
@@ -1016,6 +1018,67 @@
                 </div>
                 <p class="mendel-explanation" id="mendel-explanation"></p>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Edição Gênica com CRISPR-Cas9 -->
+    <div id="crispr-modal" class="seq-modal-overlay" style="display:none;">
+        <div class="seq-modal mendel-modal crispr-modal">
+            <button class="seq-modal-close mendel-modal-close" id="crispr-modal-close">&times;</button>
+            <h3 class="mendel-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
+            <p class="mendel-modal-desc">A Cas9 corta o DNA num ponto guiado por um RNA guia seguido de um PAM
+                ("NGG"). Depois, a célula repara o corte por uma de duas vias: <strong>NHEJ</strong> (rápida, mas
+                sujeita a erros) ou <strong>HDR</strong> (mais lenta, porém precisa — se você fornecer um molde).</p>
+
+            <div class="crispr-step">
+                <span class="mendel-label">Sequência de DNA atual (fita ativa do simulador)</span>
+                <div class="crispr-sequence-display" id="crispr-sequence-display"></div>
+                <button type="button" class="crispr-link-btn" id="crispr-load-demo">Carregar sequência de
+                    exemplo com alvo válido</button>
+            </div>
+
+            <div class="crispr-step">
+                <label class="mendel-field">RNA guia (protoespaçador, escrito em bases de DNA)
+                    <input type="text" class="mendel-input" id="crispr-guide-input" placeholder="ex: TACCTCATT">
+                </label>
+                <button type="button" class="btn-control crispr-search-btn" id="crispr-search-btn">
+                    <i class="fas fa-crosshairs"></i> Buscar Alvo (PAM)
+                </button>
+            </div>
+
+            <div class="crispr-result" id="crispr-result" style="display:none;"></div>
+
+            <div class="crispr-pathways" id="crispr-pathways" style="display:none;">
+                <span class="mendel-label">Via de reparo</span>
+                <div class="crispr-pathway-cards">
+                    <button type="button" class="crispr-pathway-card" id="crispr-pathway-nhej" data-pathway="nhej">
+                        <i class="fas fa-dice"></i>
+                        <strong>NHEJ</strong>
+                        <span>Junção de extremidades não-homólogas — insere ou deleta bases aleatórias no ponto de
+                            corte.</span>
+                    </button>
+                    <button type="button" class="crispr-pathway-card" id="crispr-pathway-hdr" data-pathway="hdr">
+                        <i class="fas fa-bullseye"></i>
+                        <strong>HDR</strong>
+                        <span>Reparo dirigido por homologia — insere com precisão o molde que você fornecer.</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="crispr-hdr-donor" id="crispr-hdr-donor" style="display:none;">
+                <label class="mendel-field">Sequência-molde (donor)
+                    <input type="text" class="mendel-input" id="crispr-donor-input" placeholder="ex: GAA">
+                </label>
+                <button type="button" class="btn-control crispr-search-btn" id="crispr-hdr-generate-btn">
+                    <i class="fas fa-eye"></i> Gerar Prévia do Reparo HDR
+                </button>
+            </div>
+
+            <div class="crispr-preview" id="crispr-preview" style="display:none;"></div>
+
+            <button type="button" class="btn-control mendel-generate-btn" id="crispr-apply-btn" style="display:none;">
+                <i class="fas fa-check"></i> Aplicar Edição no Simulador
+            </button>
         </div>
     </div>
 
