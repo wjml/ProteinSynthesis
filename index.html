@@ -45,6 +45,9 @@
                 <li class="button" id="pedigree">
                     <i class="fas fa-users"></i> Heredogramas
                 </li>
+                <li class="button" id="popgen">
+                    <i class="fas fa-chart-pie"></i> Genética Populacional
+                </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
@@ -792,6 +795,109 @@
                     </div>
 
                     <p class="pedigree-feedback" id="pedigree-feedback" style="display:none;"></p>
+                </div>
+            </div>
+            <div class="content popgen">
+                <div class="page-header">
+                    <h2>Genética Populacional</h2>
+                    <p>O Princípio de Hardy-Weinberg descreve as frequências alélicas e genotípicas esperadas numa
+                        população que <strong>não está evoluindo</strong> — um ponto de referência para detectar
+                        quando (e como) a evolução está de fato acontecendo.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-square-root-alt"></i> As Duas Equações</h3>
+                        <p><span class="popgen-eq">p + q = 1</span> — as frequências dos dois alelos de um gene
+                            somam sempre 100% da população. <span class="popgen-eq">p² + 2pq + q² = 1</span> — as
+                            frequências genotípicas esperadas: <strong>p²</strong> (homozigoto dominante),
+                            <strong>2pq</strong> (heterozigoto, portador) e <strong>q²</strong> (homozigoto
+                            recessivo, geralmente o fenótipo "afetado" observável).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-balance-scale"></i> 5 Condições de Equilíbrio</h3>
+                        <p>Uma população só permanece em equilíbrio se: <strong>(1)</strong> não houver mutação,
+                            <strong>(2)</strong> não houver migração (fluxo gênico), <strong>(3)</strong> o
+                            acasalamento for aleatório, <strong>(4)</strong> não houver seleção natural, e
+                            <strong>(5)</strong> a população for infinitamente grande (sem deriva genética).
+                            Quando qualquer uma dessas condições é violada, a população evolui.</p>
+                    </div>
+                </div>
+
+                <div class="pedigree-tool popgen-tool">
+                    <div class="pedigree-mode-toggle mendel-toggle-group popgen-mode-toggle">
+                        <button type="button" class="mendel-toggle-btn active" id="popgen-mode-qsquared"
+                            data-mode="qsquared" aria-pressed="true">A partir do<span class="mendel-toggle-sub">fenótipo
+                                recessivo</span></button>
+                        <button type="button" class="mendel-toggle-btn" id="popgen-mode-p" data-mode="p"
+                            aria-pressed="false">A partir da<span class="mendel-toggle-sub">frequência alélica</span></button>
+                        <button type="button" class="mendel-toggle-btn" id="popgen-mode-test" data-mode="test"
+                            aria-pressed="false">Testar<span class="mendel-toggle-sub">equilíbrio</span></button>
+                    </div>
+
+                    <!-- Modo 1: a partir da frequência do fenótipo recessivo -->
+                    <div class="popgen-mode-panel" id="popgen-panel-qsquared">
+                        <div class="mendel-grid-inputs">
+                            <label class="mendel-field">Tamanho da população (N)
+                                <input type="number" class="mendel-input" id="popgen-n" value="10000" min="1">
+                            </label>
+                            <label class="mendel-field">Indivíduos afetados (fenótipo recessivo)
+                                <input type="number" class="mendel-input" id="popgen-affected" value="4" min="0">
+                            </label>
+                        </div>
+                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-calc-qsquared-btn">
+                            <i class="fas fa-calculator"></i> Calcular
+                        </button>
+                    </div>
+
+                    <!-- Modo 2: a partir da frequência alélica p -->
+                    <div class="popgen-mode-panel" id="popgen-panel-p" style="display:none;">
+                        <div class="mendel-grid-inputs">
+                            <label class="mendel-field">Frequência do alelo dominante (p)
+                                <input type="number" class="mendel-input" id="popgen-p-input" value="0.7" min="0"
+                                    max="1" step="0.01">
+                            </label>
+                            <label class="mendel-field">Tamanho da população (N) — opcional
+                                <input type="number" class="mendel-input" id="popgen-n2" value="1000" min="1">
+                            </label>
+                        </div>
+                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-calc-p-btn">
+                            <i class="fas fa-calculator"></i> Calcular
+                        </button>
+                    </div>
+
+                    <!-- Modo 3: testar equilíbrio a partir de contagens observadas -->
+                    <div class="popgen-mode-panel" id="popgen-panel-test" style="display:none;">
+                        <p class="mendel-modal-desc">Digite quantos indivíduos de uma amostra têm cada genótipo
+                            (requer um marcador codominante, onde os 3 genótipos são distinguíveis — ex: grupos
+                            sanguíneos MN).</p>
+                        <div class="mendel-grid-inputs">
+                            <label class="mendel-field">Genótipo AA (contagem)
+                                <input type="number" class="mendel-input" id="popgen-count-aa" value="1787" min="0">
+                            </label>
+                            <label class="mendel-field">Genótipo Aa (contagem)
+                                <input type="number" class="mendel-input" id="popgen-count-het" value="3039" min="0">
+                            </label>
+                            <label class="mendel-field">Genótipo aa (contagem)
+                                <input type="number" class="mendel-input" id="popgen-count-rec" value="1303" min="0">
+                            </label>
+                        </div>
+                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-test-btn">
+                            <i class="fas fa-vial"></i> Testar Equilíbrio
+                        </button>
+                    </div>
+
+                    <div class="popgen-results" id="popgen-results" style="display:none;">
+                        <h4 class="mendel-results-title">Resultado</h4>
+
+                        <div class="popgen-allele-freqs" id="popgen-allele-freqs"></div>
+
+                        <div class="popgen-bar" id="popgen-bar"></div>
+                        <div class="popgen-bar-legend" id="popgen-bar-legend"></div>
+
+                        <div class="mendel-tally-col popgen-table-wrap" id="popgen-table-wrap"></div>
+
+                        <p class="mendel-explanation" id="popgen-explanation"></p>
+                    </div>
                 </div>
             </div>
             <div class="content feedback">

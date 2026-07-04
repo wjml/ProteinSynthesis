@@ -1755,3 +1755,152 @@ button.quiz-option.quiz-option-text {
     color: #334155;
     border: 1px solid #e2e8f0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Genética Populacional (Hardy-Weinberg)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.popgen-eq {
+    display: inline-block;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    background: #f0fdfa;
+    color: var(--colorDetailsText);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 0 2px;
+}
+
+.popgen-mode-toggle {
+    max-width: 620px;
+}
+
+.popgen-mode-toggle .mendel-toggle-btn {
+    font-size: 0.82rem;
+}
+
+.popgen-mode-panel {
+    margin-bottom: 4px;
+}
+
+.popgen-mode-panel .mendel-generate-btn {
+    width: auto;
+    padding: 0.65rem 1.2rem;
+}
+
+.popgen-results {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #eef2f5;
+}
+
+.popgen-allele-freqs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.popgen-stat-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    text-align: center;
+}
+
+.popgen-stat-card .popgen-stat-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.popgen-stat-card .popgen-stat-value {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--colorDetailsText);
+}
+
+.popgen-bar {
+    display: flex;
+    width: 100%;
+    height: 34px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
+}
+
+.popgen-bar-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: 'Roboto Mono', monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: width 0.4s ease;
+}
+
+.popgen-bar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.popgen-bar-legend .mendel-swatch {
+    margin-right: 5px;
+}
+
+.popgen-bar-legend span.legend-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+.popgen-table-wrap table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+}
+
+.popgen-table-wrap th,
+.popgen-table-wrap td {
+    padding: 7px 10px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.popgen-table-wrap th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+}
+
+.popgen-table-wrap td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: #334155;
+}
+
+.popgen-verdict {
+    font-weight: 700;
+}
+
+.popgen-verdict.in-equilibrium {
+    color: #166534;
+}
+
+.popgen-verdict.out-equilibrium {
+    color: #991b1b;
+}

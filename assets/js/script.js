@@ -2141,6 +2141,227 @@
     els.feedback.style.display = 'block';
   }
 
+  // ─── Genética Populacional (Hardy-Weinberg) ──────────────────────────────────
+  //
+  // Calculadora de frequências alélicas/genotípicas sob o Princípio de
+  // Hardy-Weinberg, com 3 modos: a partir da frequência do fenótipo recessivo
+  // (q²), a partir da frequência alélica (p), e um teste de equilíbrio via
+  // qui-quadrado comparando genótipos observados numa amostra contra os
+  // esperados sob Hardy-Weinberg (útil com marcadores codominantes, onde os
+  // 3 genótipos são distinguíveis por fenótipo — ex.: grupos sanguíneos MN).
+
+  /** Calcula p, q e as frequências genotípicas a partir da frequência do fenótipo recessivo (q²). */
+  function hwFromQSquared(qSquared) {
+    const q = Math.sqrt(qSquared);
+    const p = 1 - q;
+    return { p, q, pSquared: p * p, twoPQ: 2 * p * q, qSquared: q * q };
+  }
+
+  /** Calcula q e as frequências genotípicas a partir da frequência do alelo dominante (p). */
+  function hwFromP(p) {
+    const q = 1 - p;
+    return { p, q, pSquared: p * p, twoPQ: 2 * p * q, qSquared: q * q };
+  }
+
+  /** Calcula as frequências alélicas REAIS (contagem direta de alelos) a partir das contagens genotípicas observadas. */
+  function hwObservedFrequencies(countAA, countAa, countaa) {
+    const total = countAA + countAa + countaa;
+    const p = (2 * countAA + countAa) / (2 * total);
+    const q = (2 * countaa + countAa) / (2 * total);
+    return { total, p, q };
+  }
+
+  /**
+   * Testa se uma amostra está em equilíbrio de Hardy-Weinberg: calcula as frequências
+   * alélicas observadas, as frequências genotípicas ESPERADAS sob HW, e compara com
+   * as contagens observadas via teste de qui-quadrado (1 grau de liberdade: 3 classes
+   * genotípicas − 1 − 1 parâmetro estimado (p); valor crítico 3,841 para α=0,05).
+   */
+  function hwChiSquare(countAA, countAa, countaa) {
+    const { total, p, q } = hwObservedFrequencies(countAA, countAa, countaa);
+    const expectedAA = p * p * total;
+    const expectedAa = 2 * p * q * total;
+    const expectedaa = q * q * total;
+    const chiSquare =
+      Math.pow(countAA - expectedAA, 2) / expectedAA +
+      Math.pow(countAa - expectedAa, 2) / expectedAa +
+      Math.pow(countaa - expectedaa, 2) / expectedaa;
+    const criticalValue = 3.841;
+    return {
+      expectedAA, expectedAa, expectedaa, chiSquare, criticalValue,
+      inEquilibrium: chiSquare <= criticalValue, p, q, total,
+    };
+  }
+
+  // ─── Camada de DOM: alternância de modos, cálculo e renderização dos resultados ─
+
+  const popgen = { els: {}, mode: 'qsquared' };
+
+  /** Localiza e armazena os elementos da calculadora de genética populacional (uma única vez). */
+  function cachePopgenElements() {
+    popgen.els = {
+      modeQsquaredBtn: document.getElementById('popgen-mode-qsquared'),
+      modePBtn:        document.getElementById('popgen-mode-p'),
+      modeTestBtn:     document.getElementById('popgen-mode-test'),
+      panelQsquared:   document.getElementById('popgen-panel-qsquared'),
+      panelP:          document.getElementById('popgen-panel-p'),
+      panelTest:       document.getElementById('popgen-panel-test'),
+      results:         document.getElementById('popgen-results'),
+      alleleFreqs:     document.getElementById('popgen-allele-freqs'),
+      bar:             document.getElementById('popgen-bar'),
+      barLegend:       document.getElementById('popgen-bar-legend'),
+      tableWrap:       document.getElementById('popgen-table-wrap'),
+      explanation:     document.getElementById('popgen-explanation'),
+    };
+  }
+
+  /** Alterna entre os 3 modos da calculadora, mostrando o painel de entrada correspondente. */
+  function setPopgenMode(mode) {
+    if (!popgen.els.modeQsquaredBtn) cachePopgenElements();
+    popgen.mode = mode;
+    const els = popgen.els;
+
+    els.modeQsquaredBtn.classList.toggle('active', mode === 'qsquared');
+    els.modePBtn.classList.toggle('active', mode === 'p');
+    els.modeTestBtn.classList.toggle('active', mode === 'test');
+    els.modeQsquaredBtn.setAttribute('aria-pressed', String(mode === 'qsquared'));
+    els.modePBtn.setAttribute('aria-pressed', String(mode === 'p'));
+    els.modeTestBtn.setAttribute('aria-pressed', String(mode === 'test'));
+
+    els.panelQsquared.style.display = mode === 'qsquared' ? 'block' : 'none';
+    els.panelP.style.display        = mode === 'p' ? 'block' : 'none';
+    els.panelTest.style.display     = mode === 'test' ? 'block' : 'none';
+    els.results.style.display = 'none';
+  }
+
+  /** Renderiza os dois cartões de frequência alélica (p e q) em destaque. */
+  function renderPopgenAlleleFreqs(p, q) {
+    popgen.els.alleleFreqs.innerHTML = `
+      <div class="popgen-stat-card">
+        <span class="popgen-stat-label">Alelo dominante (p)</span>
+        <span class="popgen-stat-value">${(p * 100).toFixed(2)}%</span>
+      </div>
+      <div class="popgen-stat-card">
+        <span class="popgen-stat-label">Alelo recessivo (q)</span>
+        <span class="popgen-stat-value">${(q * 100).toFixed(2)}%</span>
+      </div>`;
+  }
+
+  /** Renderiza a barra de proporção empilhada (p² / 2pq / q²) e sua legenda. */
+  function renderPopgenBar(pSquared, twoPQ, qSquared) {
+    const segments = [
+      { pct: pSquared * 100, color: '#1e88e5', label: 'p² — Homozigoto dominante (AA)' },
+      { pct: twoPQ * 100,    color: '#f59e0b', label: '2pq — Heterozigoto, portador (Aa)' },
+      { pct: qSquared * 100, color: '#e53935', label: 'q² — Homozigoto recessivo (aa)' },
+    ];
+    popgen.els.bar.innerHTML = segments.map(s =>
+      `<div class="popgen-bar-segment" style="width:${s.pct}%;background:${s.color};">` +
+      `${s.pct >= 8 ? s.pct.toFixed(1) + '%' : ''}</div>`
+    ).join('');
+    popgen.els.barLegend.innerHTML = segments.map(s =>
+      `<span class="legend-item"><span class="mendel-swatch" style="background:${s.color};"></span>${s.label} (${s.pct.toFixed(2)}%)</span>`
+    ).join('');
+  }
+
+  /** Renderiza a tabela simples de frequências genotípicas (modos 1 e 2), com contagens esperadas se N for dado. */
+  function renderPopgenGenotypeTable(pSquared, twoPQ, qSquared, n) {
+    const hasN = n && n > 0;
+    let html = '<table><thead><tr><th>Genótipo</th><th>Frequência</th>' + (hasN ? '<th>Indivíduos esperados</th>' : '') + '</tr></thead><tbody>';
+    const rows = [
+      ['AA (homozigoto dominante)', pSquared],
+      ['Aa (heterozigoto)', twoPQ],
+      ['aa (homozigoto recessivo)', qSquared],
+    ];
+    rows.forEach(([label, freq]) => {
+      html += `<tr><td>${label}</td><td>${(freq * 100).toFixed(2)}%</td>` +
+        (hasN ? `<td>${Math.round(freq * n)}</td>` : '') + '</tr>';
+    });
+    html += '</tbody></table>';
+    popgen.els.tableWrap.innerHTML = html;
+  }
+
+  /** Calcula e exibe o resultado a partir da frequência do fenótipo recessivo (Modo 1). */
+  function calcPopgenFromQSquared() {
+    if (!popgen.els.alleleFreqs) cachePopgenElements();
+    const n = Number(document.getElementById('popgen-n').value) || 0;
+    const affected = Number(document.getElementById('popgen-affected').value) || 0;
+    if (n <= 0 || affected < 0 || affected > n) {
+      showAlert('Valores inválidos', 'Confira o tamanho da população e o número de afetados (não pode ser maior que a população).');
+      return;
+    }
+    const qSquared = affected / n;
+    const r = hwFromQSquared(qSquared);
+
+    renderPopgenAlleleFreqs(r.p, r.q);
+    renderPopgenBar(r.pSquared, r.twoPQ, r.qSquared);
+    renderPopgenGenotypeTable(r.pSquared, r.twoPQ, r.qSquared, n);
+
+    const carrierCount = Math.round(r.twoPQ * n);
+    popgen.els.explanation.innerHTML = `Com <strong>${affected}</strong> afetados em <strong>${n}</strong> ` +
+      `indivíduos, q² = ${qSquared.toFixed(6)}, logo q = ${r.q.toFixed(4)} e p = ${r.p.toFixed(4)}. ` +
+      `Aproximadamente <strong>${carrierCount}</strong> indivíduos (${(r.twoPQ * 100).toFixed(2)}%) devem ser ` +
+      `portadores heterozigotos — não afetados, mas capazes de transmitir o alelo recessivo.`;
+    popgen.els.results.style.display = 'block';
+  }
+
+  /** Calcula e exibe o resultado a partir da frequência alélica p informada diretamente (Modo 2). */
+  function calcPopgenFromP() {
+    if (!popgen.els.alleleFreqs) cachePopgenElements();
+    const p = Number(document.getElementById('popgen-p-input').value);
+    const n = Number(document.getElementById('popgen-n2').value) || 0;
+    if (isNaN(p) || p < 0 || p > 1) {
+      showAlert('Valor inválido', 'A frequência alélica p deve ser um número entre 0 e 1.');
+      return;
+    }
+    const r = hwFromP(p);
+
+    renderPopgenAlleleFreqs(r.p, r.q);
+    renderPopgenBar(r.pSquared, r.twoPQ, r.qSquared);
+    renderPopgenGenotypeTable(r.pSquared, r.twoPQ, r.qSquared, n);
+
+    popgen.els.explanation.innerHTML = `Com p = ${r.p.toFixed(4)}, a frequência do alelo recessivo é ` +
+      `q = 1 − p = ${r.q.toFixed(4)}. As frequências genotípicas esperadas seguem diretamente de ` +
+      `p² + 2pq + q² = 1.`;
+    popgen.els.results.style.display = 'block';
+  }
+
+  /** Testa o equilíbrio de Hardy-Weinberg a partir de contagens genotípicas observadas (Modo 3). */
+  function testPopgenEquilibrium() {
+    if (!popgen.els.alleleFreqs) cachePopgenElements();
+    const countAA = Number(document.getElementById('popgen-count-aa').value);
+    const countAa = Number(document.getElementById('popgen-count-het').value);
+    const countaa = Number(document.getElementById('popgen-count-rec').value);
+    if ([countAA, countAa, countaa].some(v => isNaN(v) || v < 0) || (countAA + countAa + countaa) === 0) {
+      showAlert('Valores inválidos', 'Digite contagens genotípicas válidas (números não-negativos, soma maior que zero).');
+      return;
+    }
+
+    const r = hwChiSquare(countAA, countAa, countaa);
+    renderPopgenAlleleFreqs(r.p, r.q);
+    renderPopgenBar(r.p * r.p, 2 * r.p * r.q, r.q * r.q);
+
+    let html = '<table><thead><tr><th>Genótipo</th><th>Observado</th><th>Esperado (HW)</th></tr></thead><tbody>';
+    html += `<tr><td>AA</td><td>${countAA}</td><td>${r.expectedAA.toFixed(1)}</td></tr>`;
+    html += `<tr><td>Aa</td><td>${countAa}</td><td>${r.expectedAa.toFixed(1)}</td></tr>`;
+    html += `<tr><td>aa</td><td>${countaa}</td><td>${r.expectedaa.toFixed(1)}</td></tr>`;
+    html += `<tr><td>Total</td><td>${r.total}</td><td>${r.total}</td></tr>`;
+    html += '</tbody></table>';
+    popgen.els.tableWrap.innerHTML = html;
+
+    const verdictClass = r.inEquilibrium ? 'in-equilibrium' : 'out-equilibrium';
+    const verdictText = r.inEquilibrium
+      ? 'CONSISTENTE com o equilíbrio de Hardy-Weinberg'
+      : 'FORA do equilíbrio de Hardy-Weinberg';
+    popgen.els.explanation.innerHTML = `Qui-quadrado (χ²) = <strong>${r.chiSquare.toFixed(3)}</strong>, valor ` +
+      `crítico = 3,841 (1 grau de liberdade, α = 0,05). Como ${r.chiSquare.toFixed(3)} ` +
+      `${r.inEquilibrium ? '≤' : '>'} 3,841, essa amostra é ` +
+      `<span class="popgen-verdict ${verdictClass}">${verdictText}</span>. ` +
+      (r.inEquilibrium
+        ? 'As diferenças entre observado e esperado são pequenas o bastante para serem atribuídas ao acaso.'
+        : 'As diferenças são grandes demais para serem só acaso — algo está violando as condições de equilíbrio (seleção, deriva, migração, acasalamento não-aleatório ou mutação).');
+    popgen.els.results.style.display = 'block';
+  }
+
   // ─── Edição Gênica com CRISPR-Cas9 ────────────────────────────────────────────
   //
   // Módulo independente: busca um alvo (protoespaçador + PAM "NGG") na sequência
@@ -3541,6 +3762,20 @@
         btn.addEventListener('click', () => answerPedigreeQuiz(btn.dataset.answer));
       });
     }
+
+    // Controles da calculadora de Genética Populacional (Hardy-Weinberg)
+    const popgenModeQsquaredBtn = document.getElementById('popgen-mode-qsquared');
+    const popgenModePBtn        = document.getElementById('popgen-mode-p');
+    const popgenModeTestBtn     = document.getElementById('popgen-mode-test');
+    const popgenCalcQsquaredBtn = document.getElementById('popgen-calc-qsquared-btn');
+    const popgenCalcPBtn        = document.getElementById('popgen-calc-p-btn');
+    const popgenTestBtn         = document.getElementById('popgen-test-btn');
+    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', () => setPopgenMode('qsquared'));
+    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', () => setPopgenMode('p'));
+    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', () => setPopgenMode('test'));
+    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', calcPopgenFromQSquared);
+    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', calcPopgenFromP);
+    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', testPopgenEquilibrium);
 
     // Controles do editor CRISPR-Cas9
     const crisprLoadDemoBtn    = document.getElementById('crispr-load-demo');
