@@ -895,3 +895,122 @@
 		max-width: none;
 	}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Heredogramas
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.pedigree-tool {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 1.5rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	border: 1px solid #eef2f5;
+}
+
+.pedigree-mode-toggle {
+	max-width: 360px;
+	margin-bottom: 1.25rem;
+}
+
+.pedigree-study-controls,
+.pedigree-quiz-controls {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 1.25rem;
+}
+
+.pedigree-study-controls .mendel-field {
+	min-width: 220px;
+}
+
+.pedigree-study-controls .mendel-generate-btn,
+.pedigree-quiz-controls .mendel-generate-btn {
+	width: auto;
+	flex: 0 0 auto;
+	padding: 0.6rem 1.1rem;
+}
+
+.pedigree-svg-wrapper {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	padding: 12px;
+	overflow-x: auto;
+	min-height: 80px;
+	display: flex;
+	justify-content: center;
+}
+
+.pedigree-svg-wrapper svg {
+	max-width: 100%;
+	height: auto;
+}
+
+.pedigree-symbol-affected {
+	fill: #334155;
+	stroke: #1e293b;
+	stroke-width: 2;
+}
+
+.pedigree-symbol-unaffected {
+	fill: #ffffff;
+	stroke: #334155;
+	stroke-width: 2;
+}
+
+.pedigree-line {
+	stroke: #334155;
+	stroke-width: 1.5;
+	fill: none;
+}
+
+.pedigree-label {
+	font-family: 'Roboto Mono', monospace;
+	font-size: 11px;
+	fill: #64748b;
+	text-anchor: middle;
+}
+
+.pedigree-info-text {
+	font-size: 0.88rem;
+	color: #55606d;
+	line-height: 1.6;
+	margin: 12px 0 0;
+}
+
+.pedigree-quiz-answers {
+	margin-top: 16px;
+}
+
+.pedigree-feedback {
+	margin-top: 14px;
+	padding: 10px 14px;
+	border-radius: 8px;
+	font-size: 0.9rem;
+	line-height: 1.6;
+}
+
+.pedigree-feedback.correct {
+	background: #f0fdf4;
+	border: 1px solid #bbf7d0;
+	color: #166534;
+}
+
+.pedigree-feedback.incorrect {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #991b1b;
+}
+
+.crispr-pathway-card.pedigree-answer-correct {
+	border-color: #22c55e;
+	background: #f0fdf4;
+}
+
+.crispr-pathway-card.pedigree-answer-wrong {
+	border-color: #ef4444;
+	background: #fef2f2;
+}

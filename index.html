@@ -42,6 +42,9 @@
                 <li class="button" id="mendel">
                     <i class="fas fa-sitemap"></i> Genética Mendeliana
                 </li>
+                <li class="button" id="pedigree">
+                    <i class="fas fa-users"></i> Heredogramas
+                </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
@@ -716,6 +719,79 @@
                     <button class="btn-control mendel-cta-btn" id="btn-open-mendel">
                         <i class="fas fa-play-circle"></i> Abrir Construtor
                     </button>
+                </div>
+            </div>
+            <div class="content pedigree">
+                <div class="page-header">
+                    <h2>Heredogramas</h2>
+                    <p>Árvores genealógicas que registram a ocorrência de uma característica através das gerações
+                        de uma família — usadas para descobrir o padrão de herança de uma condição genética.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-square"></i> Símbolos</h3>
+                        <p>Quadrados representam indivíduos do sexo masculino, círculos do sexo feminino. Símbolos
+                            <strong>preenchidos</strong> indicam indivíduos afetados pela característica; símbolos
+                            vazios, não afetados. Uma linha horizontal une um casal; linhas que descem e se
+                            ramificam levam aos filhos.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-dna"></i> 4 Padrões Clássicos</h3>
+                        <p><strong>Autossômica dominante:</strong> aparece em toda geração. <strong>Autossômica
+                            recessiva:</strong> pode pular gerações, afetando filhos de pais não afetados.
+                            <strong>Ligada ao X recessiva:</strong> muito mais comum em homens.
+                            <strong>Ligada ao X dominante:</strong> pai afetado transmite a característica para
+                            100% das filhas e 0% dos filhos.</p>
+                    </div>
+                </div>
+
+                <div class="pedigree-tool">
+                    <div class="pedigree-mode-toggle mendel-toggle-group">
+                        <button type="button" class="mendel-toggle-btn active" id="pedigree-mode-study"
+                            data-mode="study" aria-pressed="true">Modo Estudo</button>
+                        <button type="button" class="mendel-toggle-btn" id="pedigree-mode-quiz" data-mode="quiz"
+                            aria-pressed="false">Modo Quiz</button>
+                    </div>
+
+                    <div class="pedigree-study-controls" id="pedigree-study-controls">
+                        <label class="mendel-field">Padrão de herança
+                            <select class="mendel-input" id="pedigree-pattern-select">
+                                <option value="AD">Autossômica Dominante</option>
+                                <option value="AR">Autossômica Recessiva</option>
+                                <option value="XR">Ligada ao X Recessiva</option>
+                                <option value="XD">Ligada ao X Dominante</option>
+                            </select>
+                        </label>
+                        <button type="button" class="btn-control mendel-generate-btn" id="pedigree-generate-btn">
+                            <i class="fas fa-random"></i> Gerar Heredograma
+                        </button>
+                    </div>
+
+                    <div class="pedigree-quiz-controls" id="pedigree-quiz-controls" style="display:none;">
+                        <button type="button" class="btn-control mendel-generate-btn" id="pedigree-quiz-generate-btn">
+                            <i class="fas fa-question-circle"></i> Gerar Heredograma Misterioso
+                        </button>
+                    </div>
+
+                    <div class="pedigree-svg-wrapper" id="pedigree-svg-wrapper"></div>
+
+                    <p class="pedigree-info-text" id="pedigree-info-text"></p>
+
+                    <div class="pedigree-quiz-answers" id="pedigree-quiz-answers" style="display:none;">
+                        <span class="mendel-label">Qual é o padrão de herança deste heredograma?</span>
+                        <div class="crispr-pathway-cards">
+                            <button type="button" class="crispr-pathway-card" data-answer="AD"><strong>Autossômica
+                                Dominante</strong></button>
+                            <button type="button" class="crispr-pathway-card" data-answer="AR"><strong>Autossômica
+                                Recessiva</strong></button>
+                            <button type="button" class="crispr-pathway-card" data-answer="XR"><strong>Ligada ao X
+                                Recessiva</strong></button>
+                            <button type="button" class="crispr-pathway-card" data-answer="XD"><strong>Ligada ao X
+                                Dominante</strong></button>
+                        </div>
+                    </div>
+
+                    <p class="pedigree-feedback" id="pedigree-feedback" style="display:none;"></p>
                 </div>
             </div>
             <div class="content feedback">

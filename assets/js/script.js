@@ -1869,6 +1869,278 @@
     els.results.style.display = 'block';
   }
 
+  // ─── Heredogramas ──────────────────────────────────────────────────────────
+  //
+  // Gera heredogramas de 3 gerações, geneticamente consistentes, para os 4
+  // padrões clássicos de herança (autossômica dominante/recessiva, ligada ao X
+  // dominante/recessiva). A topologia da árvore é fixa (sempre a mesma forma),
+  // então as coordenadas do desenho SVG também são fixas — só o genótipo/status
+  // de afetado de cada indivíduo muda a cada geração aleatória.
+
+  /** Sorteia um dos dois alelos de um par (transmissão mendeliana 50/50). */
+  function pedigreeRandomAllele(pair) {
+    return pair[Math.floor(Math.random() * 2)];
+  }
+
+  /** Genótipos dos fundadores (geração I) e dos cônjuges que entram por casamento, por padrão de herança. */
+  function pedigreeFoundersForPattern(pattern) {
+    switch (pattern) {
+      case 'AR': return { g1m: ['A', 'a'],  g1f: ['A', 'a'],  spouseM: ['A', 'A'],   spouseF: ['A', 'A'] };
+      case 'AD': return { g1m: ['A', 'a'],  g1f: ['a', 'a'],  spouseM: ['a', 'a'],   spouseF: ['a', 'a'] };
+      case 'XR': return { g1m: ['XA', 'Y'], g1f: ['XA', 'Xa'], spouseM: ['XA', 'Y'],  spouseF: ['XA', 'XA'] };
+      case 'XD': return { g1m: ['XA', 'Y'], g1f: ['Xa', 'Xa'], spouseM: ['Xa', 'Y'],  spouseF: ['Xa', 'Xa'] };
+      default:   return null;
+    }
+  }
+
+  /** Herança autossômica: o filho recebe 1 alelo aleatório de cada um dos 2 pais. */
+  function pedigreeInheritAutosomal(parentA, parentB) {
+    return [pedigreeRandomAllele(parentA), pedigreeRandomAllele(parentB)];
+  }
+
+  /** Herança ligada ao X: filhos recebem Y do pai + 1 X aleatório da mãe; filhas sempre recebem o único X do pai + 1 X aleatório da mãe. */
+  function pedigreeInheritXLinked(father, mother, sex) {
+    const momAllele = pedigreeRandomAllele(mother);
+    if (sex === 'M') return [momAllele, 'Y'];
+    return [father[0], momAllele];
+  }
+
+  function pedigreeCountAllele(genotype, allele) {
+    return genotype.filter(a => a === allele).length;
+  }
+
+  /** Determina se um genótipo resulta em fenótipo afetado, de acordo com o padrão de herança. */
+  function pedigreeIsAffected(genotype, pattern) {
+    switch (pattern) {
+      case 'AR': return pedigreeCountAllele(genotype, 'a') === 2;
+      case 'AD': return pedigreeCountAllele(genotype, 'A') >= 1;
+      case 'XR': return genotype.includes('Y') ? genotype[0] === 'Xa' : pedigreeCountAllele(genotype, 'Xa') === 2;
+      case 'XD': return genotype.includes('Y') ? genotype[0] === 'XA' : pedigreeCountAllele(genotype, 'XA') >= 1;
+      default:   return false;
+    }
+  }
+
+  /**
+   * Topologia fixa da árvore (3 gerações: 1 casal → 2 filhos que casam com
+   * cônjuges externos → 4 netos) já com as coordenadas de desenho (viewBox
+   * 0 0 600 380) e a numeração padrão de heredogramas (geração-posição).
+   */
+  const PEDIGREE_TOPOLOGY = [
+    { id: 'g1m',    sex: 'M', gen: 1, parents: null,                  x: 250, y: 50,  label: 'I-1' },
+    { id: 'g1f',    sex: 'F', gen: 1, parents: null,                  x: 330, y: 50,  label: 'I-2' },
+    { id: 'g2a_sp', sex: 'M', gen: 2, parents: null,                  x: 90,  y: 190, label: 'II-1' },
+    { id: 'g2a',    sex: 'F', gen: 2, parents: ['g1m', 'g1f'],        x: 170, y: 190, label: 'II-2' },
+    { id: 'g2b',    sex: 'M', gen: 2, parents: ['g1m', 'g1f'],        x: 430, y: 190, label: 'II-3' },
+    { id: 'g2b_sp', sex: 'F', gen: 2, parents: null,                  x: 510, y: 190, label: 'II-4' },
+    { id: 'g3a1',   sex: 'M', gen: 3, parents: ['g2a_sp', 'g2a'],     x: 130, y: 330, label: 'III-1' },
+    { id: 'g3a2',   sex: 'F', gen: 3, parents: ['g2a_sp', 'g2a'],     x: 210, y: 330, label: 'III-2' },
+    { id: 'g3b1',   sex: 'F', gen: 3, parents: ['g2b', 'g2b_sp'],     x: 390, y: 330, label: 'III-3' },
+    { id: 'g3b2',   sex: 'M', gen: 3, parents: ['g2b', 'g2b_sp'],     x: 470, y: 330, label: 'III-4' },
+  ];
+
+  /** Linhas de conexão fixas (casamento + descendência) — sempre as mesmas, a topologia nunca muda. */
+  const PEDIGREE_LINES = [
+    { type: 'h', x1: 250, x2: 330, y: 50 },
+    { type: 'v', x: 290, y1: 50,  y2: 120 },
+    { type: 'h', x1: 170, x2: 430, y: 120 },
+    { type: 'v', x: 170, y1: 120, y2: 190 },
+    { type: 'v', x: 430, y1: 120, y2: 190 },
+    { type: 'h', x1: 90,  x2: 170, y: 190 },
+    { type: 'h', x1: 430, x2: 510, y: 190 },
+    { type: 'v', x: 130, y1: 190, y2: 260 },
+    { type: 'h', x1: 130, x2: 210, y: 260 },
+    { type: 'v', x: 130, y1: 260, y2: 330 },
+    { type: 'v', x: 210, y1: 260, y2: 330 },
+    { type: 'v', x: 470, y1: 190, y2: 260 },
+    { type: 'h', x1: 390, x2: 470, y: 260 },
+    { type: 'v', x: 390, y1: 260, y2: 330 },
+    { type: 'v', x: 470, y1: 260, y2: 330 },
+  ];
+
+  /** Calcula o genótipo de um filho a partir dos dois genótipos dos pais, de acordo com o padrão de herança. */
+  function pedigreeInherit(parentAGenotype, parentBGenotype, childSex, pattern) {
+    if (pattern === 'XR' || pattern === 'XD') {
+      const father = parentAGenotype.includes('Y') ? parentAGenotype : parentBGenotype;
+      const mother = parentAGenotype.includes('Y') ? parentBGenotype : parentAGenotype;
+      return pedigreeInheritXLinked(father, mother, childSex);
+    }
+    return pedigreeInheritAutosomal(parentAGenotype, parentBGenotype);
+  }
+
+  /** Gera uma árvore genética completa (genótipo + status afetado de cada indivíduo) para um padrão de herança. */
+  function generatePedigree(pattern) {
+    const founders = pedigreeFoundersForPattern(pattern);
+    const genotypes = {
+      g1m: founders.g1m, g1f: founders.g1f,
+      g2a_sp: founders.spouseM, g2b_sp: founders.spouseF,
+    };
+
+    for (const person of PEDIGREE_TOPOLOGY) {
+      if (person.parents) {
+        const [pA, pB] = person.parents;
+        genotypes[person.id] = pedigreeInherit(genotypes[pA], genotypes[pB], person.sex, pattern);
+      }
+    }
+
+    return PEDIGREE_TOPOLOGY.map(p => ({
+      ...p, genotype: genotypes[p.id], affected: pedigreeIsAffected(genotypes[p.id], pattern),
+    }));
+  }
+
+  /**
+   * Gera heredogramas repetidamente (até maxTries vezes) até achar um que seja
+   * pedagogicamente interessante — com pelo menos 1 indivíduo afetado E 1 não
+   * afetado. Evita o caso raro (mas possível) de uma árvore totalmente uniforme,
+   * que não ilustra bem o padrão de herança.
+   */
+  function generateInterestingPedigree(pattern, maxTries) {
+    let last = null;
+    for (let i = 0; i < maxTries; i++) {
+      const individuals = generatePedigree(pattern);
+      const affectedCount = individuals.filter(p => p.affected).length;
+      last = individuals;
+      if (affectedCount >= 1 && affectedCount <= individuals.length - 1) return individuals;
+    }
+    return last;
+  }
+
+  /** Desenha o heredograma como SVG: linhas de conexão fixas + símbolos (quadrado=M, círculo=F) coloridos por status. */
+  function renderPedigreeSvg(individuals) {
+    const R = 16;
+    let svg = '<svg viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg" role="img" ' +
+      'aria-label="Heredograma de 3 gerações">';
+
+    PEDIGREE_LINES.forEach((line) => {
+      if (line.type === 'h') {
+        svg += `<line class="pedigree-line" x1="${line.x1}" y1="${line.y}" x2="${line.x2}" y2="${line.y}" />`;
+      } else {
+        svg += `<line class="pedigree-line" x1="${line.x}" y1="${line.y1}" x2="${line.x}" y2="${line.y2}" />`;
+      }
+    });
+
+    individuals.forEach((person) => {
+      const cls = person.affected ? 'pedigree-symbol-affected' : 'pedigree-symbol-unaffected';
+      if (person.sex === 'F') {
+        svg += `<circle class="${cls}" cx="${person.x}" cy="${person.y}" r="${R}" />`;
+      } else {
+        svg += `<rect class="${cls}" x="${person.x - R}" y="${person.y - R}" width="${R * 2}" height="${R * 2}" />`;
+      }
+      svg += `<text class="pedigree-label" x="${person.x}" y="${person.y + R + 16}">${person.label}</text>`;
+    });
+
+    svg += '</svg>';
+    return svg;
+  }
+
+  // ─── Camada de DOM: alternância estudo/quiz e feedback das respostas ─────────
+
+  const PEDIGREE_PATTERN_NAMES = {
+    AD: 'Autossômica Dominante', AR: 'Autossômica Recessiva',
+    XR: 'Ligada ao X Recessiva', XD: 'Ligada ao X Dominante',
+  };
+
+  const PEDIGREE_PATTERN_EXPLANATIONS = {
+    AD: 'A característica aparece em praticamente toda geração, já que basta um alelo dominante para se ' +
+      'manifestar. Um indivíduo afetado geralmente tem pelo menos um dos pais também afetado.',
+    AR: 'A característica pode "pular" gerações: dois pais não afetados (portadores heterozigotos) podem ter ' +
+      'filhos afetados, já que são necessários dois alelos recessivos para a manifestação.',
+    XR: 'É bem mais comum em homens, já que eles só precisam de uma cópia do alelo recessivo (são hemizigotos). ' +
+      'Mulheres portadoras (heterozigotas) não são afetadas, mas podem transmitir a característica aos filhos.',
+    XD: 'Um pai afetado transmite a característica para 100% das filhas (que sempre recebem seu único X) e ' +
+      'nenhum filho (que recebe o Y dele). Uma mãe afetada heterozigota transmite para ~50% dos filhos de ambos os sexos.',
+  };
+
+  const pedigree = { els: {}, mode: 'study', currentPattern: null, answered: false };
+
+  /** Localiza e armazena os elementos da ferramenta de heredogramas (uma única vez). */
+  function cachePedigreeElements() {
+    pedigree.els = {
+      modeStudyBtn:    document.getElementById('pedigree-mode-study'),
+      modeQuizBtn:     document.getElementById('pedigree-mode-quiz'),
+      studyControls:   document.getElementById('pedigree-study-controls'),
+      quizControls:    document.getElementById('pedigree-quiz-controls'),
+      patternSelect:   document.getElementById('pedigree-pattern-select'),
+      quizAnswersWrap: document.getElementById('pedigree-quiz-answers'),
+      svgWrapper:      document.getElementById('pedigree-svg-wrapper'),
+      infoText:        document.getElementById('pedigree-info-text'),
+      feedback:        document.getElementById('pedigree-feedback'),
+    };
+  }
+
+  /** Alterna entre Modo Estudo (padrão escolhido, revelado) e Modo Quiz (padrão sorteado, escondido até responder). */
+  function setPedigreeMode(mode) {
+    if (!pedigree.els.modeStudyBtn) cachePedigreeElements();
+    pedigree.mode = mode;
+    const isQuiz = mode === 'quiz';
+    const els = pedigree.els;
+
+    els.modeStudyBtn.classList.toggle('active', !isQuiz);
+    els.modeQuizBtn.classList.toggle('active', isQuiz);
+    els.modeStudyBtn.setAttribute('aria-pressed', String(!isQuiz));
+    els.modeQuizBtn.setAttribute('aria-pressed', String(isQuiz));
+    els.studyControls.style.display = isQuiz ? 'none' : 'flex';
+    els.quizControls.style.display  = isQuiz ? 'flex' : 'none';
+    els.quizAnswersWrap.style.display = 'none';
+    els.feedback.style.display = 'none';
+    els.svgWrapper.innerHTML = '';
+    els.infoText.textContent = '';
+  }
+
+  /** Gera um heredograma no Modo Estudo: padrão escolhido pelo usuário, revelado imediatamente. */
+  function generateStudyPedigree() {
+    if (!pedigree.els.modeStudyBtn) cachePedigreeElements();
+    const els = pedigree.els;
+    const pattern = els.patternSelect.value;
+    const individuals = generateInterestingPedigree(pattern, 30);
+
+    pedigree.currentPattern = pattern;
+    els.svgWrapper.innerHTML = renderPedigreeSvg(individuals);
+    els.infoText.innerHTML = `<strong>${PEDIGREE_PATTERN_NAMES[pattern]}:</strong> ${PEDIGREE_PATTERN_EXPLANATIONS[pattern]}`;
+    els.quizAnswersWrap.style.display = 'none';
+    els.feedback.style.display = 'none';
+  }
+
+  /** Gera um heredograma no Modo Quiz: padrão sorteado aleatoriamente, escondido até o usuário responder. */
+  function generateQuizPedigree() {
+    if (!pedigree.els.modeStudyBtn) cachePedigreeElements();
+    const els = pedigree.els;
+    const patterns = ['AD', 'AR', 'XR', 'XD'];
+    const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+    const individuals = generateInterestingPedigree(pattern, 30);
+
+    pedigree.currentPattern = pattern;
+    pedigree.answered = false;
+    els.svgWrapper.innerHTML = renderPedigreeSvg(individuals);
+    els.infoText.textContent = 'Observe o heredograma e escolha o padrão de herança abaixo.';
+    els.quizAnswersWrap.style.display = 'block';
+    els.feedback.style.display = 'none';
+    els.quizAnswersWrap.querySelectorAll('.crispr-pathway-card').forEach((btn) => {
+      btn.classList.remove('pedigree-answer-correct', 'pedigree-answer-wrong');
+      btn.disabled = false;
+    });
+  }
+
+  /** Processa a resposta do usuário no Modo Quiz: marca certo/errado nos botões e mostra o feedback explicativo. */
+  function answerPedigreeQuiz(chosenPattern) {
+    if (pedigree.answered || !pedigree.currentPattern) return;
+    pedigree.answered = true;
+    const els = pedigree.els;
+    const correct = chosenPattern === pedigree.currentPattern;
+
+    els.quizAnswersWrap.querySelectorAll('.crispr-pathway-card').forEach((btn) => {
+      btn.disabled = true;
+      if (btn.dataset.answer === pedigree.currentPattern) btn.classList.add('pedigree-answer-correct');
+      else if (btn.dataset.answer === chosenPattern)      btn.classList.add('pedigree-answer-wrong');
+    });
+
+    els.feedback.className = 'pedigree-feedback ' + (correct ? 'correct' : 'incorrect');
+    els.feedback.innerHTML = (correct
+        ? '✅ Correto! '
+        : `❌ Não foi dessa vez. O padrão correto é <strong>${PEDIGREE_PATTERN_NAMES[pedigree.currentPattern]}</strong>. `) +
+      PEDIGREE_PATTERN_EXPLANATIONS[pedigree.currentPattern];
+    els.feedback.style.display = 'block';
+  }
+
   // ─── Edição Gênica com CRISPR-Cas9 ────────────────────────────────────────────
   //
   // Módulo independente: busca um alvo (protoespaçador + PAM "NGG") na sequência
@@ -3253,6 +3525,22 @@
     if (mendelGenerateBtn) mendelGenerateBtn.addEventListener('click', generateMendelCross);
     if (mendelG1Pattern)   mendelG1Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(0));
     if (mendelG2Pattern)   mendelG2Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(1));
+
+    // Controles da ferramenta de Heredogramas
+    const pedigreeModeStudyBtn = document.getElementById('pedigree-mode-study');
+    const pedigreeModeQuizBtn  = document.getElementById('pedigree-mode-quiz');
+    const pedigreeGenerateBtn  = document.getElementById('pedigree-generate-btn');
+    const pedigreeQuizGenerateBtn = document.getElementById('pedigree-quiz-generate-btn');
+    const pedigreeQuizAnswersWrap = document.getElementById('pedigree-quiz-answers');
+    if (pedigreeModeStudyBtn)     pedigreeModeStudyBtn.addEventListener('click', () => setPedigreeMode('study'));
+    if (pedigreeModeQuizBtn)      pedigreeModeQuizBtn.addEventListener('click', () => setPedigreeMode('quiz'));
+    if (pedigreeGenerateBtn)      pedigreeGenerateBtn.addEventListener('click', generateStudyPedigree);
+    if (pedigreeQuizGenerateBtn)  pedigreeQuizGenerateBtn.addEventListener('click', generateQuizPedigree);
+    if (pedigreeQuizAnswersWrap) {
+      pedigreeQuizAnswersWrap.querySelectorAll('.crispr-pathway-card').forEach((btn) => {
+        btn.addEventListener('click', () => answerPedigreeQuiz(btn.dataset.answer));
+      });
+    }
 
     // Controles do editor CRISPR-Cas9
     const crisprLoadDemoBtn    = document.getElementById('crispr-load-demo');
