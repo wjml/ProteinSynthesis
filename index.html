@@ -48,6 +48,9 @@
                 <li class="button" id="popgen">
                     <i class="fas fa-chart-pie"></i> Genética Populacional
                 </li>
+                <li class="button" id="karyotype">
+                    <i class="fas fa-grip-lines"></i> Cariótipo
+                </li>
                 <li class="button" id="app">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
@@ -897,6 +900,94 @@
                         <div class="mendel-tally-col popgen-table-wrap" id="popgen-table-wrap"></div>
 
                         <p class="mendel-explanation" id="popgen-explanation"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="content karyotype">
+                <div class="page-header">
+                    <h2>Cariótipo e Não-disjunção</h2>
+                    <p>O cariótipo é o conjunto completo de cromossomos de uma célula, organizado por tamanho e
+                        forma. Erros na separação dos cromossomos durante a meiose — a <strong>não-disjunção</strong>
+                        — produzem gametas com número anormal de cromossomos, e podem gerar aneuploidias como a
+                        Síndrome de Down.</p>
+                </div>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-th"></i> Grupos de Denver</h3>
+                        <p>Os 23 pares de cromossomos humanos são classicamente organizados em 7 grupos (A a G) por
+                            tamanho decrescente e posição do centrômero — A (1-3, os maiores), B (4-5), C (6-12 e
+                            X), D (13-15), E (16-18), F (19-20) e G (21-22 e Y, os menores).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Trissomia e Monossomia</h3>
+                        <p>Quando a não-disjunção afeta um autossomo, o zigoto resultante tem <strong>trissomia</strong>
+                            (3 cópias, ex: Síndrome de Down = trissomia do 21) ou <strong>monossomia</strong> (1
+                            cópia — geralmente letal em autossomos). Nos cromossomos sexuais, gera condições como a
+                            Síndrome de Turner (45,X) e a Síndrome de Klinefelter (47,XXY).</p>
+                    </div>
+                </div>
+
+                <div class="pedigree-tool karyo-tool">
+                    <h4 class="mendel-gene-title"><i class="fas fa-eye"></i> Visualizador de Cariótipo</h4>
+                    <div class="mendel-grid-inputs">
+                        <label class="mendel-field">Condição
+                            <select class="mendel-input" id="karyo-condition-select">
+                                <option value="normal_f">Cariótipo Normal (Feminino)</option>
+                                <option value="normal_m">Cariótipo Normal (Masculino)</option>
+                                <option value="down">Síndrome de Down (Trissomia do 21)</option>
+                                <option value="edwards">Síndrome de Edwards (Trissomia do 18)</option>
+                                <option value="patau">Síndrome de Patau (Trissomia do 13)</option>
+                                <option value="turner">Síndrome de Turner (45,X)</option>
+                                <option value="klinefelter">Síndrome de Klinefelter (47,XXY)</option>
+                            </select>
+                        </label>
+                        <button type="button" class="btn-control mendel-generate-btn" id="karyo-view-btn"
+                            style="align-self:flex-end;">
+                            <i class="fas fa-search"></i> Visualizar
+                        </button>
+                    </div>
+
+                    <p class="karyo-notation" id="karyo-notation"></p>
+                    <div class="karyo-grid" id="karyo-grid"></div>
+                    <p class="mendel-explanation" id="karyo-description"></p>
+                </div>
+
+                <div class="pedigree-tool karyo-tool">
+                    <h4 class="mendel-gene-title"><i class="fas fa-random"></i> Simulador de Não-disjunção</h4>
+                    <p class="mendel-modal-desc">Escolha um cromossomo e em qual divisão meiótica ocorre o erro,
+                        para ver os 4 gametas resultantes.</p>
+                    <div class="mendel-grid-inputs">
+                        <label class="mendel-field">Cromossomo
+                            <select class="mendel-input" id="nondis-chr-select">
+                                <option value="21">21 (Síndrome de Down)</option>
+                                <option value="18">18 (Síndrome de Edwards)</option>
+                                <option value="13">13 (Síndrome de Patau)</option>
+                            </select>
+                        </label>
+                        <label class="mendel-field">Sexo do zigoto resultante
+                            <select class="mendel-input" id="nondis-sex-select">
+                                <option value="F">Feminino</option>
+                                <option value="M">Masculino</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="mendel-toggle-group nondis-mode-toggle">
+                        <button type="button" class="mendel-toggle-btn active" id="nondis-mode-mi" data-mode="MI"
+                            aria-pressed="true">Erro na Meiose I</button>
+                        <button type="button" class="mendel-toggle-btn" id="nondis-mode-mii" data-mode="MII"
+                            aria-pressed="false">Erro na Meiose II</button>
+                    </div>
+                    <button type="button" class="btn-control mendel-generate-btn" id="nondis-simulate-btn">
+                        <i class="fas fa-flask"></i> Simular
+                    </button>
+
+                    <div class="nondis-gametes" id="nondis-gametes" style="display:none;"></div>
+                    <p class="mendel-explanation" id="nondis-explanation" style="display:none;"></p>
+
+                    <div class="karyo-result" id="nondis-karyo-result" style="display:none;">
+                        <p class="karyo-notation" id="nondis-karyo-notation"></p>
+                        <div class="karyo-grid" id="nondis-karyo-grid"></div>
+                        <p class="mendel-explanation" id="nondis-karyo-description"></p>
                     </div>
                 </div>
             </div>

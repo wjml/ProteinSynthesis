@@ -1904,3 +1904,157 @@ button.quiz-option.quiz-option-text {
 .popgen-verdict.out-equilibrium {
     color: #991b1b;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Cariótipo e Não-disjunção
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.karyo-tool {
+    margin-bottom: 1.5rem;
+}
+
+.karyo-tool .mendel-generate-btn {
+    width: auto;
+    padding: 0.65rem 1.2rem;
+}
+
+.karyo-notation {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--colorDetailsText);
+    background: #f0fdfa;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 6px;
+    margin: 14px 0 10px;
+}
+
+.karyo-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    overflow-x: auto;
+}
+
+.karyo-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+}
+
+.karyo-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.karyo-slot-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    min-height: 70px;
+}
+
+.karyo-bar {
+    width: 12px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #64748b, #475569);
+}
+
+.karyo-bar.karyo-bar-x {
+    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+}
+
+.karyo-bar.karyo-bar-y {
+    background: linear-gradient(180deg, #5eead4, #0d9488);
+}
+
+.karyo-bar.karyo-bar-anomaly {
+    background: linear-gradient(180deg, #fb923c, #ea580c);
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.25);
+}
+
+.karyo-slot-label {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* Simulador de não-disjunção */
+.nondis-mode-toggle {
+    max-width: 420px;
+    margin: 12px 0;
+}
+
+.nondis-gametes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.nondis-gamete-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.nondis-gamete-card.abnormal {
+    border-color: #fb923c;
+    background: #fff7ed;
+}
+
+.nondis-gamete-bars {
+    display: flex;
+    gap: 3px;
+    min-height: 40px;
+    align-items: flex-end;
+}
+
+.nondis-gamete-label {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.nondis-gamete-card.abnormal .nondis-gamete-label {
+    color: #c2410c;
+}
+
+.nondis-gamete-btn {
+    background: none;
+    border: 1px solid #ea580c;
+    color: #ea580c;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.nondis-gamete-btn:hover {
+    background: #ea580c;
+    color: #fff;
+}
+
+.karyo-result {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #e2e8f0;
+}
