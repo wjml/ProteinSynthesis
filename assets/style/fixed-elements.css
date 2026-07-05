@@ -4,6 +4,20 @@
 	box-sizing: border-box;
 }
 
+/* Esconde visualmente mantendo acessível a leitores de tela — usado pelo
+   <h1> do documento, já que o título visual do app é o logo no menu lateral. */
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 :root {
 	--headerSize: 0%;
 	--footerSize: 40px;
@@ -14,6 +28,32 @@
 	   texto sobre fundo teal, ou fundo teal com texto branco em cima. */
 	--bgSidebar: #0f172a; /* Slate 900 */
 	--bgSidebarHover: #1e293b; /* Slate 800 */
+
+	/* Paleta semântica — consolida tons de feedback que antes eram repetidos
+	   (e levemente divergentes) em cada simulador: o Modo Desafio usava um
+	   verde/vermelho diferente do CRISPR, do heredograma e da genética
+	   populacional para o mesmo significado de "certo/errado". Qualquer
+	   componente novo de acerto, erro, alerta ou informação deve referenciar
+	   estas variáveis em vez de escrever um hex novo. */
+	--colorSuccess: #16a34a;       /* Green 600 — ícones e bordas de acerto */
+	--colorSuccessText: #166534;   /* Green 800 — texto sobre fundo claro (~7:1 contraste) */
+	--colorSuccessBg: #f0fdf4;     /* Green 50 — fundo sutil (mensagens/cartões) */
+	--colorSuccessBgVivid: #dcfce7;/* Green 100 — fundo vívido (opção marcada certa, diff adicionado) */
+	--colorSuccessBorder: #bbf7d0; /* Green 200 */
+
+	--colorError: #ef4444;         /* Red 500 — ícones, bordas e destaque de mutação/erro */
+	--colorErrorStrong: #dc2626;   /* Red 600 — marcadores/bordas que precisam de mais contraste */
+	--colorErrorText: #991b1b;     /* Red 800 — texto sobre fundo claro (~7:1 contraste) */
+	--colorErrorBg: #fef2f2;       /* Red 50 — fundo sutil (mensagens/cartões) */
+	--colorErrorBgVivid: #fee2e2;  /* Red 100 — fundo vívido (opção marcada errada, diff removido) */
+	--colorErrorBorder: #fecaca;   /* Red 200 */
+
+	--colorWarning: #f59e0b;       /* Amber 500 */
+	--colorWarningText: #92400e;   /* Amber 800 — texto sobre fundo claro */
+
+	--colorInfo: #2563eb;          /* Blue 600 */
+	--colorInfoText: #1e40af;      /* Blue 800 — texto sobre fundo claro */
+	--colorInfoBg: #dbeafe;        /* Blue 100 */
 }
 
 body {
@@ -90,39 +130,47 @@ nav #logo img {
 	display: flex;
 	flex-direction: column;
 	flex: 1;
+	/* Antes, a altura de cada linha vinha de proporções flex-grow ajustadas à
+	   mão (ex.: 0.15 por botão) para caber exatamente em 100% da tela. Isso
+	   é frágil: qualquer item adicionado ao menu exige recalcular todas as
+	   proporções. Agora cada linha tem altura natural (flex: 0 0 auto) e,
+	   se o conteúdo não couber num monitor baixo, a barra rola — o layout
+	   nunca mais "quebra" por causa de um item a mais. */
+	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 .sidebar .collapsible {
 	background: #090d16;
-	height: 0;
+	max-height: 0;
 	opacity: 0;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	flex: 0 0 auto;
 }
 
 .empty {
-	flex: 0.333;
-	transition: 0.3s;
+	flex: 1 1 auto;
 }
 
 .empty.active {
 	flex: 0;
-	transition: 0.3s;
 }
 
 .sidebar .collapsible.active {
-	flex: 0.533;
+	/* Teto generoso (a altura real vem do conteúdo); grande o bastante para
+	   os 4 simuladores + os 3 controles de mutação do submenu unificado. */
+	max-height: 32rem;
 	opacity: 1;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar .header-title {
-	margin-top: 4%;
-	margin-bottom: 2%;
+	margin-top: 1.5rem;
+	margin-bottom: 0.5rem;
 	padding-left: 20px;
-	flex: 0.05;
+	flex: 0 0 auto;
 	cursor: default;
 }
 
@@ -147,7 +195,8 @@ nav #logo img {
 .sidebar .button {
 	font-weight: 500;
 	color: #cbd5e1;
-	flex: 0.15;
+	flex: 0 0 auto;
+	padding: 13px 0;
 	display: flex;
 	align-items: center;
 	cursor: pointer;
@@ -182,12 +231,19 @@ nav #logo img {
 }
 
 .sidebar .collapsible .header-title {
-	flex: 0.15;
-	margin-top: 3%;
+	flex: 0 0 auto;
+	margin-top: 0.75rem;
+	margin-bottom: 0.25rem;
+}
+
+.sidebar .collapsible .header-title span {
+	font-size: 0.68rem;
 }
 
 .sidebar .collapsible .button {
-	flex: 0.3;
+	flex: 0 0 auto;
+	padding: 10px 0;
+	padding-left: 6px;
 }
 
 .button.active,
@@ -241,11 +297,42 @@ nav #logo img {
 	}
 
 	.sidebar .button#app:after {
-		display: none;
+		content: "\25BC";
+		font-size: 0.6rem;
+		position: static !important;
+		margin-left: 6px !important;
 	}
 
+	/* Antes o submenu inteiro era escondido no mobile ("para simplificar a
+	   barra"), o que também escondia os 3 controles de mutação — a única
+	   forma de simular mutações no app. Agora que o submenu carrega os 5
+	   simuladores, escondê-lo deixaria a maior parte do app inacessível no
+	   celular. Em vez disso, ele vira uma segunda fileira de chips que só
+	   aparece quando "LABORATÓRIO VIRTUAL" está aberto. */
 	.sidebar .collapsible {
-		display: none !important; /* Hide mutation sub-buttons on mobile to keep navbar simple */
+		display: none;
+		width: 100%;
+		max-height: none;
+		flex-direction: row;
+		flex-wrap: wrap;
+		background: #05070c;
+	}
+
+	.sidebar .collapsible.active {
+		display: flex;
+		max-height: none;
+	}
+
+	/* Nota: .sidebar .header-title (acima) já esconde os cabeçalhos "Simuladores"
+	   e "Mutação (Genética Molecular)" também aqui dentro do submenu — no
+	   celular os chips ficam sem separador, igual ao resto da barra. */
+	.sidebar .collapsible .button {
+		flex: 1 1 auto;
+		min-width: 46%;
+		justify-content: center;
+		padding: 10px 6px;
+		font-size: 0.78rem;
+		border-bottom: 3px solid transparent;
 	}
 
 	#visible-page {

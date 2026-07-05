@@ -149,9 +149,9 @@
 
 /* Mutated bases highlighting */
 .sequence .sequenceChar.mutated {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
-    color: #ef4444 !important;
+    border-color: var(--colorError) !important;
+    background-color: var(--colorErrorBg) !important;
+    color: var(--colorError) !important;
 }
 
 .sequence.to-mutate,
@@ -300,8 +300,8 @@
 }
 
 .aminoacid.mutated {
-    border-color: #ef4444 !important;
-    background-color: #fef2f2 !important;
+    border-color: var(--colorError) !important;
+    background-color: var(--colorErrorBg) !important;
 }
 
 .aminoacid.not-availlable {
@@ -328,8 +328,8 @@
 }
 
 .aminoacid.mutated .abbreviated-name {
-    color: #ef4444;
-    border-bottom-color: #fee2e2;
+    color: var(--colorError);
+    border-bottom-color: var(--colorErrorBgVivid);
 }
 
 .aminoacid .molecule {
@@ -765,21 +765,21 @@ button.quiz-option:disabled {
 }
 
 button.quiz-option.quiz-correct {
-    border-color: #16a34a;
-    background: #dcfce7 !important;
-    color: #166534 !important;
+    border-color: var(--colorSuccess);
+    background: var(--colorSuccessBgVivid) !important;
+    color: var(--colorSuccessText) !important;
     font-weight: 600;
 }
 
 button.quiz-option.quiz-incorrect {
-    border-color: #dc2626;
-    background: #fee2e2 !important;
-    color: #991b1b !important;
+    border-color: var(--colorErrorStrong);
+    background: var(--colorErrorBgVivid) !important;
+    color: var(--colorErrorText) !important;
     font-weight: 600;
 }
 
 button.quiz-option.quiz-correct-reveal {
-    border-color: #16a34a;
+    border-color: var(--colorSuccess);
     border-style: dashed;
     box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25) inset;
 }
@@ -792,11 +792,11 @@ button.quiz-option.quiz-correct-reveal {
 }
 
 .quiz-feedback-correct {
-    color: #16a34a;
+    color: var(--colorSuccessText);
 }
 
 .quiz-feedback-incorrect {
-    color: #dc2626;
+    color: var(--colorErrorText);
 }
 
 .quiz-gameover {
@@ -1122,22 +1122,22 @@ button.quiz-option.quiz-option-text {
    Tema CLARO (diferente do .seq-modal/.ribosome-modal escuros), consistente
    com o restante das páginas de conteúdo do app (.info-card, .step-card). */
 
-.mendel-modal {
+.lab-modal-lg {
     width: min(820px, 95vw);
     background: #ffffff;
     color: #2c3e50;
     border-color: #eef2f5;
 }
 
-.mendel-modal-close {
+.lab-modal-close {
     color: #94a3b8;
 }
 
-.mendel-modal-close:hover {
+.lab-modal-close:hover {
     color: #ef4444;
 }
 
-.mendel-modal-title {
+.lab-modal-title {
     color: #1e293b;
     display: flex;
     align-items: center;
@@ -1145,22 +1145,22 @@ button.quiz-option.quiz-option-text {
     font-size: 1.2rem;
 }
 
-.mendel-modal-title i {
+.lab-modal-title i {
     color: var(--colorDetailsText);
 }
 
-.mendel-modal-desc {
+.lab-modal-desc {
     color: #64748b;
     font-size: 0.88rem;
     line-height: 1.5;
     margin: 0 0 16px;
 }
 
-.mendel-field-group {
+.lab-field-group {
     margin-bottom: 16px;
 }
 
-.mendel-label {
+.lab-label {
     display: block;
     font-size: 0.75rem;
     font-weight: 700;
@@ -1170,12 +1170,12 @@ button.quiz-option.quiz-option-text {
     margin-bottom: 6px;
 }
 
-.mendel-toggle-group {
+.lab-toggle-group {
     display: flex;
     gap: 8px;
 }
 
-.mendel-toggle-btn {
+.lab-toggle-btn {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1192,17 +1192,17 @@ button.quiz-option.quiz-option-text {
     transition: all 0.2s ease;
 }
 
-.mendel-toggle-btn:hover {
+.lab-toggle-btn:hover {
     background: #f1f5f9;
 }
 
-.mendel-toggle-btn.active {
+.lab-toggle-btn.active {
     background: var(--colorDetailsText);
     border-color: var(--colorDetailsText);
     color: #ffffff;
 }
 
-.mendel-toggle-sub {
+.lab-toggle-sub {
     font-size: 0.72rem;
     font-weight: 400;
     opacity: 0.8;
@@ -1216,7 +1216,7 @@ button.quiz-option.quiz-option-text {
     margin-bottom: 16px;
 }
 
-.mendel-gene-title {
+.lab-section-title {
     margin: 0 0 12px;
     font-size: 1rem;
     color: var(--colorDetailsText);
@@ -1225,18 +1225,18 @@ button.quiz-option.quiz-option-text {
     gap: 6px;
 }
 
-.mendel-grid-inputs {
+.lab-grid-inputs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px;
     margin-bottom: 12px;
 }
 
-.mendel-grid-inputs:last-child {
+.lab-grid-inputs:last-child {
     margin-bottom: 0;
 }
 
-.mendel-field {
+.lab-field {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -1245,11 +1245,11 @@ button.quiz-option.quiz-option-text {
     color: #475569;
 }
 
-.mendel-field-narrow {
+.lab-field-narrow {
     max-width: 110px;
 }
 
-.mendel-input {
+.lab-input {
     padding: 8px 10px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
@@ -1260,13 +1260,13 @@ button.quiz-option.quiz-option-text {
     font-weight: 400;
 }
 
-.mendel-input:focus {
+.lab-input:focus {
     outline: none;
     border-color: var(--colorDetailsText);
     box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
 }
 
-.mendel-input-letter {
+.lab-input-letter {
     text-transform: uppercase;
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
@@ -1279,7 +1279,7 @@ button.quiz-option.quiz-option-text {
     border-top: 1px dashed #e2e8f0;
 }
 
-.mendel-generate-btn {
+.lab-action-btn {
     width: 100%;
     background: linear-gradient(135deg, var(--colorDetailsText), #14b8a6);
     color: #ffffff;
@@ -1288,7 +1288,7 @@ button.quiz-option.quiz-option-text {
     padding: 0.85rem;
 }
 
-.mendel-generate-btn:hover {
+.lab-action-btn:hover {
     filter: brightness(1.08);
 }
 
@@ -1298,7 +1298,7 @@ button.quiz-option.quiz-option-text {
     border-top: 1px solid #eef2f5;
 }
 
-.mendel-results-title {
+.lab-results-title {
     margin: 0 0 12px;
     color: #1e293b;
     font-size: 1.05rem;
@@ -1342,14 +1342,14 @@ button.quiz-option.quiz-option-text {
     font-size: 0.95rem;
 }
 
-.mendel-tally-columns {
+.lab-tally-columns {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 16px;
     margin-bottom: 14px;
 }
 
-.mendel-tally-col h5 {
+.lab-tally-col h5 {
     margin: 0 0 8px;
     font-size: 0.78rem;
     font-weight: 700;
@@ -1358,7 +1358,7 @@ button.quiz-option.quiz-option-text {
     color: #64748b;
 }
 
-.mendel-tally-col ul {
+.lab-tally-col ul {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -1367,7 +1367,7 @@ button.quiz-option.quiz-option-text {
     gap: 6px;
 }
 
-.mendel-tally-col li {
+.lab-tally-col li {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1379,19 +1379,19 @@ button.quiz-option.quiz-option-text {
     padding: 6px 10px;
 }
 
-.mendel-swatch {
+.lab-swatch {
     flex-shrink: 0;
     width: 12px;
     height: 12px;
     border-radius: 3px;
 }
 
-.mendel-tally-detail {
+.lab-tally-detail {
     color: #94a3b8;
     font-size: 0.8rem;
 }
 
-.mendel-explanation {
+.lab-explanation {
     font-size: 0.88rem;
     color: #55606d;
     line-height: 1.6;
@@ -1403,7 +1403,7 @@ button.quiz-option.quiz-option-text {
 }
 
 @media (max-width: 560px) {
-    .mendel-field-narrow {
+    .lab-field-narrow {
         max-width: none;
     }
 }
@@ -1411,7 +1411,7 @@ button.quiz-option.quiz-option-text {
 /* ═══════════════════════════════════════════════════════════════════════
    Edição Gênica com CRISPR-Cas9
    ═══════════════════════════════════════════════════════════════════════
-   Tema claro, reaproveitando a base visual do .mendel-modal (mesmos tokens
+   Tema claro, reaproveitando a base visual do .lab-modal-lg (mesmos tokens
    de formulário) — feature própria, mas sem duplicar a linguagem visual. */
 
 .crispr-modal {
@@ -1455,7 +1455,7 @@ button.quiz-option.quiz-option-text {
 
 .crispr-cut-marker {
     display: inline-block;
-    color: #dc2626;
+    color: var(--colorErrorStrong);
     font-weight: 700;
     padding: 0 2px;
     animation: crisprCutPulse 1.4s ease-in-out infinite;
@@ -1502,15 +1502,15 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-result.success {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: #166534;
+    background: var(--colorSuccessBg);
+    border: 1px solid var(--colorSuccessBorder);
+    color: var(--colorSuccessText);
 }
 
 .crispr-result.error {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
+    background: var(--colorErrorBg);
+    border: 1px solid var(--colorErrorBorder);
+    color: var(--colorErrorText);
 }
 
 .crispr-pathway-cards {
@@ -1587,15 +1587,15 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-preview-seq .crispr-diff-add {
-    color: #166534;
-    background: #dcfce7;
+    color: var(--colorSuccessText);
+    background: var(--colorSuccessBgVivid);
     border-radius: 3px;
     font-weight: 700;
 }
 
 .crispr-preview-seq .crispr-diff-remove {
-    color: #991b1b;
-    background: #fee2e2;
+    color: var(--colorErrorText);
+    background: var(--colorErrorBgVivid);
     border-radius: 3px;
     text-decoration: line-through;
     font-weight: 700;
@@ -1604,7 +1604,7 @@ button.quiz-option.quiz-option-text {
 /* ═══════════════════════════════════════════════════════════════════════
    Replicação do DNA (bolha de replicação, fita líder vs. tardia)
    ═══════════════════════════════════════════════════════════════════════
-   Tema claro, mesma base visual dos modais .mendel-modal/.crispr-modal. */
+   Tema claro, mesma base visual dos modais .lab-modal-lg/.crispr-modal. */
 
 .replication-modal {
     width: min(720px, 95vw);
@@ -1659,8 +1659,8 @@ button.quiz-option.quiz-option-text {
 
 /* Fita nova líder — verde, contínua */
 .repl-row-new-leading .repl-base {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--colorSuccessBgVivid);
+    color: var(--colorSuccessText);
 }
 
 /* Fita nova tardia — laranja enquanto fragmentada; fragmentos alternam tom p/ ficarem distinguíveis */
@@ -1674,8 +1674,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .repl-row-new-lagging .repl-base.repl-joined {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--colorSuccessBgVivid);
+    color: var(--colorSuccessText);
 }
 
 /* Bases ainda não sintetizadas — invisíveis, mas ocupam espaço p/ não saltar o layout */
@@ -1775,7 +1775,7 @@ button.quiz-option.quiz-option-text {
     max-width: 620px;
 }
 
-.popgen-mode-toggle .mendel-toggle-btn {
+.popgen-mode-toggle .lab-toggle-btn {
     font-size: 0.82rem;
 }
 
@@ -1783,7 +1783,7 @@ button.quiz-option.quiz-option-text {
     margin-bottom: 4px;
 }
 
-.popgen-mode-panel .mendel-generate-btn {
+.popgen-mode-panel .lab-action-btn {
     width: auto;
     padding: 0.65rem 1.2rem;
 }
@@ -1858,7 +1858,7 @@ button.quiz-option.quiz-option-text {
     color: #475569;
 }
 
-.popgen-bar-legend .mendel-swatch {
+.popgen-bar-legend .lab-swatch {
     margin-right: 5px;
 }
 
@@ -1898,11 +1898,11 @@ button.quiz-option.quiz-option-text {
 }
 
 .popgen-verdict.in-equilibrium {
-    color: #166534;
+    color: var(--colorSuccessText);
 }
 
 .popgen-verdict.out-equilibrium {
-    color: #991b1b;
+    color: var(--colorErrorText);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1913,7 +1913,7 @@ button.quiz-option.quiz-option-text {
     margin-bottom: 1.5rem;
 }
 
-.karyo-tool .mendel-generate-btn {
+.karyo-tool .lab-action-btn {
     width: auto;
     padding: 0.65rem 1.2rem;
 }

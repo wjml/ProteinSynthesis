@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description"
+        content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo — com modo de apresentação para uso em sala de aula.">
     <link rel="stylesheet" href="assets/style/fixed-elements.css">
     <link rel="stylesheet" href="assets/style/pages.css">
     <link rel="stylesheet" href="assets/style/app.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
         integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-    <title>Protein Synthesis</title>
+    <title>Protein Synthesis | Simulador de Genética</title>
 
 </head>
 
 <body>
+    <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
     <header></header>
     <div class="main">
         <nav>
@@ -22,7 +25,7 @@
             </div>
             <ul class="sidebar">
                 <li class="header-title" id="access-to-information">
-                    <span>Informações Educacionais</span>
+                    <span>Biologia Molecular</span>
                 </li>
                 <li class="button active" id="dna">
                     <i class="fas fa-dna"></i> DNA
@@ -39,35 +42,38 @@
                 <li class="button" id="diseases">
                     <i class="fas fa-universal-access"></i> Doenças Genéticas
                 </li>
-                <li class="button" id="mendel">
-                    <i class="fas fa-sitemap"></i> Genética Mendeliana
-                </li>
-                <li class="button" id="pedigree">
-                    <i class="fas fa-users"></i> Heredogramas
-                </li>
-                <li class="button" id="popgen">
-                    <i class="fas fa-chart-pie"></i> Genética Populacional
-                </li>
-                <li class="button" id="karyotype">
-                    <i class="fas fa-grip-lines"></i> Cariótipo
-                </li>
-                <li class="button" id="app">
+                <li class="button" id="app" data-collapsible="lab-collapsible">
                     <div class="menu-label-group">
-                        <span class="main-label"><i class="fas fa-flask"></i> SIMULADOR</span>
-                        <span class="sub-label">Laboratório Virtual</span>
+                        <span class="main-label"><i class="fas fa-flask"></i> LABORATÓRIO VIRTUAL</span>
+                        <span class="sub-label">5 simuladores interativos</span>
                     </div>
                 </li>
-                <ul class="collapsible">
-                    <li class="header-title" id="mutation">
-                        <span>MUTAÇÃO</span>
+                <ul class="collapsible" id="lab-collapsible">
+                    <li class="header-title" id="lab-tools-header">
+                        <span>Simuladores</span>
                     </li>
-                    <li class="button" id="add">
+                    <li class="button" id="mendel">
+                        <i class="fas fa-dna"></i> Genética Mendeliana
+                    </li>
+                    <li class="button" id="pedigree">
+                        <i class="fas fa-users"></i> Heredogramas
+                    </li>
+                    <li class="button" id="popgen">
+                        <i class="fas fa-chart-pie"></i> Genética Populacional
+                    </li>
+                    <li class="button" id="karyotype">
+                        <i class="fas fa-grip-lines"></i> Cariótipo
+                    </li>
+                    <li class="header-title" id="mutation">
+                        <span>Mutação (Genética Molecular)</span>
+                    </li>
+                    <li class="button" id="add" data-page="app">
                         <i class="fas fa-plus-circle"></i> Adição
                     </li>
-                    <li class="button" id="delete">
+                    <li class="button" id="delete" data-page="app">
                         <i class="fas fa-minus-circle"></i> Deleção
                     </li>
-                    <li class="button" id="replace">
+                    <li class="button" id="replace" data-page="app">
                         <i class="fas fa-sync-alt"></i> Substituição
                     </li>
                 </ul>
@@ -86,6 +92,9 @@
                 </li>
                 <li class="button" id="feedback">
                     <i class="fas fa-envelope"></i> Feedback
+                </li>
+                <li class="sidebar-toggle" id="toggle-professor">
+                    <i class="fas fa-chalkboard-teacher"></i> Modo Professor
                 </li>
                 <li class="empty"></li>
             </ul>
@@ -180,6 +189,20 @@
                             produzir uma molécula de <strong>RNA Mensageiro (RNAm)</strong>.</p>
                     </div>
                     <div class="info-card">
+                        <h3><i class="fas fa-layer-group"></i> Três Tipos de RNA</h3>
+                        <p>O RNAm não trabalha sozinho. A célula produz três tipos principais, cada um com um papel
+                            específico na fabricação de proteínas — o simulador de ribossomo, mais adiante, mostra os
+                            três atuando juntos:</p>
+                        <ul class="base-list">
+                            <li><strong>RNAm (mensageiro):</strong> copia a informação do DNA e a leva até o
+                                ribossomo.</li>
+                            <li><strong>RNAt (transportador):</strong> reconhece um trecho do RNAm pelo seu
+                                <strong>anticódon</strong> e entrega o aminoácido correspondente.</li>
+                            <li><strong>RNAr (ribossômico):</strong> compõe, junto com proteínas, a estrutura do
+                                próprio ribossomo — a "máquina" onde a tradução acontece.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
                         <h3><i class="fas fa-exchange-alt"></i> Diferenças Chave</h3>
                         <p>Diferente do DNA, o RNA:</p>
                         <ul class="base-list">
@@ -246,6 +269,18 @@
                         <p>Existem 64 códons possíveis para 20 aminoácidos, caracterizando o código genético como
                             <strong>degenerado ou redundante</strong> (múltiplos códons codificam o mesmo aminoácido).
                         </p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-project-diagram"></i> Da Sequência à Forma 3D</h3>
+                        <p>O ribossomo entrega apenas uma <strong>sequência linear</strong> de aminoácidos — a
+                            <strong>estrutura primária</strong>. A partir daí, a cadeia se dobra sozinha em formas
+                            cada vez mais complexas até virar uma proteína funcional:</p>
+                        <ul class="base-list">
+                            <li><strong>Primária:</strong> a ordem dos aminoácidos, definida pelo RNAm.</li>
+                            <li><strong>Secundária:</strong> dobras locais (α-hélices e folhas-β).</li>
+                            <li><strong>Terciária:</strong> o dobramento 3D completo de uma cadeia.</li>
+                            <li><strong>Quaternária:</strong> a união de duas ou mais cadeias, como na hemoglobina.</li>
+                        </ul>
                     </div>
                     <div class="info-card table-card">
                         <h3><i class="fas fa-list-ol"></i> Tabela dos 20 Aminoácidos</h3>
@@ -502,8 +537,26 @@
                 </div>
                 <div class="version-timeline">
                     <div class="version-card">
-                        <h3>v1.0 <span class="version-date">Junho, 2026</span></h3>
+                        <h3>v1.1 <span class="version-date">Julho, 2026</span></h3>
                         <span class="badge-active">Atual</span>
+                        <ul>
+                            <li><strong>Laboratório Virtual Unificado:</strong> Cruzamentos, Heredogramas, Genética
+                                Populacional, Cariótipo e Genética Molecular agora vivem em uma única aba do menu,
+                                com submenu colapsável — em vez de cinco itens soltos na barra lateral.</li>
+                            <li><strong>Menu Responsivo de Verdade:</strong> o submenu de simuladores (antes oculto
+                                no celular) agora também funciona em telas pequenas.</li>
+                            <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação —
+                                já existia no código, mas faltava na barra lateral — voltou a aparecer.</li>
+                            <li><strong>Conteúdo Novo:</strong> cartão sobre os três tipos de RNA (RNAm/RNAt/RNAr) e
+                                sobre os níveis de estrutura de uma proteína (primária → quaternária).</li>
+                            <li><strong>Consistência Visual:</strong> cores de acerto/erro unificadas entre Modo
+                                Desafio, CRISPR, heredogramas e genética populacional; nomes de classes CSS
+                                compartilhadas entre simuladores (antes emprestados do módulo de Mendel)
+                                renomeados para refletir esse compartilhamento.</li>
+                        </ul>
+                    </div>
+                    <div class="version-card">
+                        <h3>v1.0 <span class="version-date">Junho, 2026</span></h3>
                         <ul>
                             <li><strong>Análise de Mutações:</strong> Classificação em tempo real (Silenciosa, Missense,
                                 Nonsense, Frameshift).</li>
@@ -565,7 +618,8 @@
                         <div class="step-num">3</div>
                         <div class="step-body">
                             <h3>Simulando Mutações</h3>
-                            <p>Utilize os controles de mutação na barra lateral:</p>
+                            <p>Abra <strong>Laboratório Virtual</strong> na barra lateral: dentro do submenu, em
+                                "Mutação (Genética Molecular)", você encontra três controles:</p>
                             <ul>
                                 <li><strong>Adicionar:</strong> Insira novas bases no meio da fita.</li>
                                 <li><strong>Deletar:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
@@ -751,30 +805,30 @@
                     </div>
                 </div>
 
-                <div class="pedigree-tool">
-                    <div class="pedigree-mode-toggle mendel-toggle-group">
-                        <button type="button" class="mendel-toggle-btn active" id="pedigree-mode-study"
+                <div class="lab-tool-panel">
+                    <div class="lab-mode-switcher lab-toggle-group">
+                        <button type="button" class="lab-toggle-btn active" id="pedigree-mode-study"
                             data-mode="study" aria-pressed="true">Modo Estudo</button>
-                        <button type="button" class="mendel-toggle-btn" id="pedigree-mode-quiz" data-mode="quiz"
+                        <button type="button" class="lab-toggle-btn" id="pedigree-mode-quiz" data-mode="quiz"
                             aria-pressed="false">Modo Quiz</button>
                     </div>
 
                     <div class="pedigree-study-controls" id="pedigree-study-controls">
-                        <label class="mendel-field">Padrão de herança
-                            <select class="mendel-input" id="pedigree-pattern-select">
+                        <label class="lab-field">Padrão de herança
+                            <select class="lab-input" id="pedigree-pattern-select">
                                 <option value="AD">Autossômica Dominante</option>
                                 <option value="AR">Autossômica Recessiva</option>
                                 <option value="XR">Ligada ao X Recessiva</option>
                                 <option value="XD">Ligada ao X Dominante</option>
                             </select>
                         </label>
-                        <button type="button" class="btn-control mendel-generate-btn" id="pedigree-generate-btn">
+                        <button type="button" class="btn-control lab-action-btn" id="pedigree-generate-btn">
                             <i class="fas fa-random"></i> Gerar Heredograma
                         </button>
                     </div>
 
                     <div class="pedigree-quiz-controls" id="pedigree-quiz-controls" style="display:none;">
-                        <button type="button" class="btn-control mendel-generate-btn" id="pedigree-quiz-generate-btn">
+                        <button type="button" class="btn-control lab-action-btn" id="pedigree-quiz-generate-btn">
                             <i class="fas fa-question-circle"></i> Gerar Heredograma Misterioso
                         </button>
                     </div>
@@ -784,7 +838,7 @@
                     <p class="pedigree-info-text" id="pedigree-info-text"></p>
 
                     <div class="pedigree-quiz-answers" id="pedigree-quiz-answers" style="display:none;">
-                        <span class="mendel-label">Qual é o padrão de herança deste heredograma?</span>
+                        <span class="lab-label">Qual é o padrão de herança deste heredograma?</span>
                         <div class="crispr-pathway-cards">
                             <button type="button" class="crispr-pathway-card" data-answer="AD"><strong>Autossômica
                                 Dominante</strong></button>
@@ -826,80 +880,80 @@
                     </div>
                 </div>
 
-                <div class="pedigree-tool popgen-tool">
-                    <div class="pedigree-mode-toggle mendel-toggle-group popgen-mode-toggle">
-                        <button type="button" class="mendel-toggle-btn active" id="popgen-mode-qsquared"
-                            data-mode="qsquared" aria-pressed="true">A partir do<span class="mendel-toggle-sub">fenótipo
+                <div class="lab-tool-panel popgen-tool">
+                    <div class="lab-mode-switcher lab-toggle-group popgen-mode-toggle">
+                        <button type="button" class="lab-toggle-btn active" id="popgen-mode-qsquared"
+                            data-mode="qsquared" aria-pressed="true">A partir do<span class="lab-toggle-sub">fenótipo
                                 recessivo</span></button>
-                        <button type="button" class="mendel-toggle-btn" id="popgen-mode-p" data-mode="p"
-                            aria-pressed="false">A partir da<span class="mendel-toggle-sub">frequência alélica</span></button>
-                        <button type="button" class="mendel-toggle-btn" id="popgen-mode-test" data-mode="test"
-                            aria-pressed="false">Testar<span class="mendel-toggle-sub">equilíbrio</span></button>
+                        <button type="button" class="lab-toggle-btn" id="popgen-mode-p" data-mode="p"
+                            aria-pressed="false">A partir da<span class="lab-toggle-sub">frequência alélica</span></button>
+                        <button type="button" class="lab-toggle-btn" id="popgen-mode-test" data-mode="test"
+                            aria-pressed="false">Testar<span class="lab-toggle-sub">equilíbrio</span></button>
                     </div>
 
                     <!-- Modo 1: a partir da frequência do fenótipo recessivo -->
                     <div class="popgen-mode-panel" id="popgen-panel-qsquared">
-                        <div class="mendel-grid-inputs">
-                            <label class="mendel-field">Tamanho da população (N)
-                                <input type="number" class="mendel-input" id="popgen-n" value="10000" min="1">
+                        <div class="lab-grid-inputs">
+                            <label class="lab-field">Tamanho da população (N)
+                                <input type="number" class="lab-input" id="popgen-n" value="10000" min="1">
                             </label>
-                            <label class="mendel-field">Indivíduos afetados (fenótipo recessivo)
-                                <input type="number" class="mendel-input" id="popgen-affected" value="4" min="0">
+                            <label class="lab-field">Indivíduos afetados (fenótipo recessivo)
+                                <input type="number" class="lab-input" id="popgen-affected" value="4" min="0">
                             </label>
                         </div>
-                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-calc-qsquared-btn">
+                        <button type="button" class="btn-control lab-action-btn" id="popgen-calc-qsquared-btn">
                             <i class="fas fa-calculator"></i> Calcular
                         </button>
                     </div>
 
                     <!-- Modo 2: a partir da frequência alélica p -->
                     <div class="popgen-mode-panel" id="popgen-panel-p" style="display:none;">
-                        <div class="mendel-grid-inputs">
-                            <label class="mendel-field">Frequência do alelo dominante (p)
-                                <input type="number" class="mendel-input" id="popgen-p-input" value="0.7" min="0"
+                        <div class="lab-grid-inputs">
+                            <label class="lab-field">Frequência do alelo dominante (p)
+                                <input type="number" class="lab-input" id="popgen-p-input" value="0.7" min="0"
                                     max="1" step="0.01">
                             </label>
-                            <label class="mendel-field">Tamanho da população (N) — opcional
-                                <input type="number" class="mendel-input" id="popgen-n2" value="1000" min="1">
+                            <label class="lab-field">Tamanho da população (N) — opcional
+                                <input type="number" class="lab-input" id="popgen-n2" value="1000" min="1">
                             </label>
                         </div>
-                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-calc-p-btn">
+                        <button type="button" class="btn-control lab-action-btn" id="popgen-calc-p-btn">
                             <i class="fas fa-calculator"></i> Calcular
                         </button>
                     </div>
 
                     <!-- Modo 3: testar equilíbrio a partir de contagens observadas -->
                     <div class="popgen-mode-panel" id="popgen-panel-test" style="display:none;">
-                        <p class="mendel-modal-desc">Digite quantos indivíduos de uma amostra têm cada genótipo
+                        <p class="lab-modal-desc">Digite quantos indivíduos de uma amostra têm cada genótipo
                             (requer um marcador codominante, onde os 3 genótipos são distinguíveis — ex: grupos
                             sanguíneos MN).</p>
-                        <div class="mendel-grid-inputs">
-                            <label class="mendel-field">Genótipo AA (contagem)
-                                <input type="number" class="mendel-input" id="popgen-count-aa" value="1787" min="0">
+                        <div class="lab-grid-inputs">
+                            <label class="lab-field">Genótipo AA (contagem)
+                                <input type="number" class="lab-input" id="popgen-count-aa" value="1787" min="0">
                             </label>
-                            <label class="mendel-field">Genótipo Aa (contagem)
-                                <input type="number" class="mendel-input" id="popgen-count-het" value="3039" min="0">
+                            <label class="lab-field">Genótipo Aa (contagem)
+                                <input type="number" class="lab-input" id="popgen-count-het" value="3039" min="0">
                             </label>
-                            <label class="mendel-field">Genótipo aa (contagem)
-                                <input type="number" class="mendel-input" id="popgen-count-rec" value="1303" min="0">
+                            <label class="lab-field">Genótipo aa (contagem)
+                                <input type="number" class="lab-input" id="popgen-count-rec" value="1303" min="0">
                             </label>
                         </div>
-                        <button type="button" class="btn-control mendel-generate-btn" id="popgen-test-btn">
+                        <button type="button" class="btn-control lab-action-btn" id="popgen-test-btn">
                             <i class="fas fa-vial"></i> Testar Equilíbrio
                         </button>
                     </div>
 
                     <div class="popgen-results" id="popgen-results" style="display:none;">
-                        <h4 class="mendel-results-title">Resultado</h4>
+                        <h4 class="lab-results-title">Resultado</h4>
 
                         <div class="popgen-allele-freqs" id="popgen-allele-freqs"></div>
 
                         <div class="popgen-bar" id="popgen-bar"></div>
                         <div class="popgen-bar-legend" id="popgen-bar-legend"></div>
 
-                        <div class="mendel-tally-col popgen-table-wrap" id="popgen-table-wrap"></div>
+                        <div class="lab-tally-col popgen-table-wrap" id="popgen-table-wrap"></div>
 
-                        <p class="mendel-explanation" id="popgen-explanation"></p>
+                        <p class="lab-explanation" id="popgen-explanation"></p>
                     </div>
                 </div>
             </div>
@@ -927,11 +981,11 @@
                     </div>
                 </div>
 
-                <div class="pedigree-tool karyo-tool">
-                    <h4 class="mendel-gene-title"><i class="fas fa-eye"></i> Visualizador de Cariótipo</h4>
-                    <div class="mendel-grid-inputs">
-                        <label class="mendel-field">Condição
-                            <select class="mendel-input" id="karyo-condition-select">
+                <div class="lab-tool-panel karyo-tool">
+                    <h4 class="lab-section-title"><i class="fas fa-eye"></i> Visualizador de Cariótipo</h4>
+                    <div class="lab-grid-inputs">
+                        <label class="lab-field">Condição
+                            <select class="lab-input" id="karyo-condition-select">
                                 <option value="normal_f">Cariótipo Normal (Feminino)</option>
                                 <option value="normal_m">Cariótipo Normal (Masculino)</option>
                                 <option value="down">Síndrome de Down (Trissomia do 21)</option>
@@ -941,7 +995,7 @@
                                 <option value="klinefelter">Síndrome de Klinefelter (47,XXY)</option>
                             </select>
                         </label>
-                        <button type="button" class="btn-control mendel-generate-btn" id="karyo-view-btn"
+                        <button type="button" class="btn-control lab-action-btn" id="karyo-view-btn"
                             style="align-self:flex-end;">
                             <i class="fas fa-search"></i> Visualizar
                         </button>
@@ -949,45 +1003,45 @@
 
                     <p class="karyo-notation" id="karyo-notation"></p>
                     <div class="karyo-grid" id="karyo-grid"></div>
-                    <p class="mendel-explanation" id="karyo-description"></p>
+                    <p class="lab-explanation" id="karyo-description"></p>
                 </div>
 
-                <div class="pedigree-tool karyo-tool">
-                    <h4 class="mendel-gene-title"><i class="fas fa-random"></i> Simulador de Não-disjunção</h4>
-                    <p class="mendel-modal-desc">Escolha um cromossomo e em qual divisão meiótica ocorre o erro,
+                <div class="lab-tool-panel karyo-tool">
+                    <h4 class="lab-section-title"><i class="fas fa-random"></i> Simulador de Não-disjunção</h4>
+                    <p class="lab-modal-desc">Escolha um cromossomo e em qual divisão meiótica ocorre o erro,
                         para ver os 4 gametas resultantes.</p>
-                    <div class="mendel-grid-inputs">
-                        <label class="mendel-field">Cromossomo
-                            <select class="mendel-input" id="nondis-chr-select">
+                    <div class="lab-grid-inputs">
+                        <label class="lab-field">Cromossomo
+                            <select class="lab-input" id="nondis-chr-select">
                                 <option value="21">21 (Síndrome de Down)</option>
                                 <option value="18">18 (Síndrome de Edwards)</option>
                                 <option value="13">13 (Síndrome de Patau)</option>
                             </select>
                         </label>
-                        <label class="mendel-field">Sexo do zigoto resultante
-                            <select class="mendel-input" id="nondis-sex-select">
+                        <label class="lab-field">Sexo do zigoto resultante
+                            <select class="lab-input" id="nondis-sex-select">
                                 <option value="F">Feminino</option>
                                 <option value="M">Masculino</option>
                             </select>
                         </label>
                     </div>
-                    <div class="mendel-toggle-group nondis-mode-toggle">
-                        <button type="button" class="mendel-toggle-btn active" id="nondis-mode-mi" data-mode="MI"
+                    <div class="lab-toggle-group nondis-mode-toggle">
+                        <button type="button" class="lab-toggle-btn active" id="nondis-mode-mi" data-mode="MI"
                             aria-pressed="true">Erro na Meiose I</button>
-                        <button type="button" class="mendel-toggle-btn" id="nondis-mode-mii" data-mode="MII"
+                        <button type="button" class="lab-toggle-btn" id="nondis-mode-mii" data-mode="MII"
                             aria-pressed="false">Erro na Meiose II</button>
                     </div>
-                    <button type="button" class="btn-control mendel-generate-btn" id="nondis-simulate-btn">
+                    <button type="button" class="btn-control lab-action-btn" id="nondis-simulate-btn">
                         <i class="fas fa-flask"></i> Simular
                     </button>
 
                     <div class="nondis-gametes" id="nondis-gametes" style="display:none;"></div>
-                    <p class="mendel-explanation" id="nondis-explanation" style="display:none;"></p>
+                    <p class="lab-explanation" id="nondis-explanation" style="display:none;"></p>
 
                     <div class="karyo-result" id="nondis-karyo-result" style="display:none;">
                         <p class="karyo-notation" id="nondis-karyo-notation"></p>
                         <div class="karyo-grid" id="nondis-karyo-grid"></div>
-                        <p class="mendel-explanation" id="nondis-karyo-description"></p>
+                        <p class="lab-explanation" id="nondis-karyo-description"></p>
                     </div>
                 </div>
             </div>
@@ -1164,61 +1218,61 @@
 
     <!-- Modal: Construtor de Cruzamentos (Genética Mendeliana) -->
     <div id="mendel-modal" class="seq-modal-overlay" style="display:none;">
-        <div class="seq-modal mendel-modal">
-            <button class="seq-modal-close mendel-modal-close" id="mendel-modal-close">&times;</button>
-            <h3 class="mendel-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
-            <p class="mendel-modal-desc">Configure o(s) gene(s) e o genótipo de cada genitor para gerar o quadro de
+        <div class="seq-modal lab-modal-lg">
+            <button class="seq-modal-close lab-modal-close" id="mendel-modal-close">&times;</button>
+            <h3 class="lab-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
+            <p class="lab-modal-desc">Configure o(s) gene(s) e o genótipo de cada genitor para gerar o quadro de
                 Punnett e as proporções resultantes.</p>
 
-            <div class="mendel-field-group">
-                <span class="mendel-label">Tipo de cruzamento</span>
-                <div class="mendel-toggle-group" role="radiogroup" aria-label="Tipo de cruzamento">
-                    <button type="button" class="mendel-toggle-btn active" id="mendel-mode-mono" data-mode="mono"
-                        aria-pressed="true">Mono-híbrido <span class="mendel-toggle-sub">1 gene</span></button>
-                    <button type="button" class="mendel-toggle-btn" id="mendel-mode-di" data-mode="di"
-                        aria-pressed="false">Di-híbrido <span class="mendel-toggle-sub">2 genes</span></button>
+            <div class="lab-field-group">
+                <span class="lab-label">Tipo de cruzamento</span>
+                <div class="lab-toggle-group" role="radiogroup" aria-label="Tipo de cruzamento">
+                    <button type="button" class="lab-toggle-btn active" id="mendel-mode-mono" data-mode="mono"
+                        aria-pressed="true">Mono-híbrido <span class="lab-toggle-sub">1 gene</span></button>
+                    <button type="button" class="lab-toggle-btn" id="mendel-mode-di" data-mode="di"
+                        aria-pressed="false">Di-híbrido <span class="lab-toggle-sub">2 genes</span></button>
                 </div>
             </div>
 
             <!-- Gene 1 -->
             <div class="mendel-gene-config" id="mendel-gene-1">
-                <h4 class="mendel-gene-title"><i class="fas fa-flask"></i> Gene 1</h4>
-                <div class="mendel-grid-inputs">
-                    <label class="mendel-field">Característica
-                        <input type="text" class="mendel-input" id="mendel-g1-name" value="Cor da flor">
+                <h4 class="lab-section-title"><i class="fas fa-flask"></i> Gene 1</h4>
+                <div class="lab-grid-inputs">
+                    <label class="lab-field">Característica
+                        <input type="text" class="lab-input" id="mendel-g1-name" value="Cor da flor">
                     </label>
-                    <label class="mendel-field mendel-field-narrow">Alelo dominante
-                        <input type="text" maxlength="1" class="mendel-input mendel-input-letter" id="mendel-g1-letter" value="R">
+                    <label class="lab-field lab-field-narrow">Alelo dominante
+                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g1-letter" value="R">
                     </label>
-                    <label class="mendel-field">Padrão de herança
-                        <select class="mendel-input" id="mendel-g1-pattern">
+                    <label class="lab-field">Padrão de herança
+                        <select class="lab-input" id="mendel-g1-pattern">
                             <option value="complete">Dominância completa</option>
                             <option value="codominance">Codominância</option>
                             <option value="incomplete">Dominância incompleta</option>
                         </select>
                     </label>
                 </div>
-                <div class="mendel-grid-inputs">
-                    <label class="mendel-field">Fenótipo dominante (homozigoto)
-                        <input type="text" class="mendel-input" id="mendel-g1-domname" value="Roxa">
+                <div class="lab-grid-inputs">
+                    <label class="lab-field">Fenótipo dominante (homozigoto)
+                        <input type="text" class="lab-input" id="mendel-g1-domname" value="Roxa">
                     </label>
-                    <label class="mendel-field" id="mendel-g1-het-wrap" style="display:none;">Fenótipo do heterozigoto
-                        <input type="text" class="mendel-input" id="mendel-g1-hetname" placeholder="ex: Rosa">
+                    <label class="lab-field" id="mendel-g1-het-wrap" style="display:none;">Fenótipo do heterozigoto
+                        <input type="text" class="lab-input" id="mendel-g1-hetname" placeholder="ex: Rosa">
                     </label>
-                    <label class="mendel-field">Fenótipo recessivo (homozigoto)
-                        <input type="text" class="mendel-input" id="mendel-g1-recname" value="Branca">
+                    <label class="lab-field">Fenótipo recessivo (homozigoto)
+                        <input type="text" class="lab-input" id="mendel-g1-recname" value="Branca">
                     </label>
                 </div>
-                <div class="mendel-grid-inputs mendel-parent-genotypes">
-                    <label class="mendel-field">Genótipo — Genitor 1
-                        <select class="mendel-input" id="mendel-g1-p1">
+                <div class="lab-grid-inputs mendel-parent-genotypes">
+                    <label class="lab-field">Genótipo — Genitor 1
+                        <select class="lab-input" id="mendel-g1-p1">
                             <option value="homDom">Homozigoto dominante (RR)</option>
                             <option value="het" selected>Heterozigoto (Rr)</option>
                             <option value="homRec">Homozigoto recessivo (rr)</option>
                         </select>
                     </label>
-                    <label class="mendel-field">Genótipo — Genitor 2
-                        <select class="mendel-input" id="mendel-g1-p2">
+                    <label class="lab-field">Genótipo — Genitor 2
+                        <select class="lab-input" id="mendel-g1-p2">
                             <option value="homDom">Homozigoto dominante (RR)</option>
                             <option value="het" selected>Heterozigoto (Rr)</option>
                             <option value="homRec">Homozigoto recessivo (rr)</option>
@@ -1229,43 +1283,43 @@
 
             <!-- Gene 2 (só aparece no modo di-híbrido) -->
             <div class="mendel-gene-config" id="mendel-gene-2" style="display:none;">
-                <h4 class="mendel-gene-title"><i class="fas fa-flask"></i> Gene 2</h4>
-                <div class="mendel-grid-inputs">
-                    <label class="mendel-field">Característica
-                        <input type="text" class="mendel-input" id="mendel-g2-name" value="Textura da semente">
+                <h4 class="lab-section-title"><i class="fas fa-flask"></i> Gene 2</h4>
+                <div class="lab-grid-inputs">
+                    <label class="lab-field">Característica
+                        <input type="text" class="lab-input" id="mendel-g2-name" value="Textura da semente">
                     </label>
-                    <label class="mendel-field mendel-field-narrow">Alelo dominante
-                        <input type="text" maxlength="1" class="mendel-input mendel-input-letter" id="mendel-g2-letter" value="Y">
+                    <label class="lab-field lab-field-narrow">Alelo dominante
+                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g2-letter" value="Y">
                     </label>
-                    <label class="mendel-field">Padrão de herança
-                        <select class="mendel-input" id="mendel-g2-pattern">
+                    <label class="lab-field">Padrão de herança
+                        <select class="lab-input" id="mendel-g2-pattern">
                             <option value="complete">Dominância completa</option>
                             <option value="codominance">Codominância</option>
                             <option value="incomplete">Dominância incompleta</option>
                         </select>
                     </label>
                 </div>
-                <div class="mendel-grid-inputs">
-                    <label class="mendel-field">Fenótipo dominante (homozigoto)
-                        <input type="text" class="mendel-input" id="mendel-g2-domname" value="Lisa">
+                <div class="lab-grid-inputs">
+                    <label class="lab-field">Fenótipo dominante (homozigoto)
+                        <input type="text" class="lab-input" id="mendel-g2-domname" value="Lisa">
                     </label>
-                    <label class="mendel-field" id="mendel-g2-het-wrap" style="display:none;">Fenótipo do heterozigoto
-                        <input type="text" class="mendel-input" id="mendel-g2-hetname" placeholder="ex: Semi-lisa">
+                    <label class="lab-field" id="mendel-g2-het-wrap" style="display:none;">Fenótipo do heterozigoto
+                        <input type="text" class="lab-input" id="mendel-g2-hetname" placeholder="ex: Semi-lisa">
                     </label>
-                    <label class="mendel-field">Fenótipo recessivo (homozigoto)
-                        <input type="text" class="mendel-input" id="mendel-g2-recname" value="Rugosa">
+                    <label class="lab-field">Fenótipo recessivo (homozigoto)
+                        <input type="text" class="lab-input" id="mendel-g2-recname" value="Rugosa">
                     </label>
                 </div>
-                <div class="mendel-grid-inputs mendel-parent-genotypes">
-                    <label class="mendel-field">Genótipo — Genitor 1
-                        <select class="mendel-input" id="mendel-g2-p1">
+                <div class="lab-grid-inputs mendel-parent-genotypes">
+                    <label class="lab-field">Genótipo — Genitor 1
+                        <select class="lab-input" id="mendel-g2-p1">
                             <option value="homDom">Homozigoto dominante (YY)</option>
                             <option value="het" selected>Heterozigoto (Yy)</option>
                             <option value="homRec">Homozigoto recessivo (yy)</option>
                         </select>
                     </label>
-                    <label class="mendel-field">Genótipo — Genitor 2
-                        <select class="mendel-input" id="mendel-g2-p2">
+                    <label class="lab-field">Genótipo — Genitor 2
+                        <select class="lab-input" id="mendel-g2-p2">
                             <option value="homDom">Homozigoto dominante (YY)</option>
                             <option value="het" selected>Heterozigoto (Yy)</option>
                             <option value="homRec">Homozigoto recessivo (yy)</option>
@@ -1274,47 +1328,47 @@
                 </div>
             </div>
 
-            <button class="btn-control mendel-generate-btn" id="mendel-generate-btn">
+            <button class="btn-control lab-action-btn" id="mendel-generate-btn">
                 <i class="fas fa-magic"></i> Gerar Quadro de Punnett
             </button>
 
             <div class="mendel-results" id="mendel-results" style="display:none;">
-                <h4 class="mendel-results-title">Resultado do Cruzamento</h4>
+                <h4 class="lab-results-title">Resultado do Cruzamento</h4>
                 <div class="mendel-punnett-wrapper" id="mendel-punnett-wrapper"></div>
-                <div class="mendel-tally-columns">
-                    <div class="mendel-tally-col">
+                <div class="lab-tally-columns">
+                    <div class="lab-tally-col">
                         <h5>Proporção Genotípica</h5>
                         <ul id="mendel-genotype-tally"></ul>
                     </div>
-                    <div class="mendel-tally-col">
+                    <div class="lab-tally-col">
                         <h5>Proporção Fenotípica</h5>
                         <ul id="mendel-phenotype-tally"></ul>
                     </div>
                 </div>
-                <p class="mendel-explanation" id="mendel-explanation"></p>
+                <p class="lab-explanation" id="mendel-explanation"></p>
             </div>
         </div>
     </div>
 
     <!-- Modal: Edição Gênica com CRISPR-Cas9 -->
     <div id="crispr-modal" class="seq-modal-overlay" style="display:none;">
-        <div class="seq-modal mendel-modal crispr-modal">
-            <button class="seq-modal-close mendel-modal-close" id="crispr-modal-close">&times;</button>
-            <h3 class="mendel-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
-            <p class="mendel-modal-desc">A Cas9 corta o DNA num ponto guiado por um RNA guia seguido de um PAM
+        <div class="seq-modal lab-modal-lg crispr-modal">
+            <button class="seq-modal-close lab-modal-close" id="crispr-modal-close">&times;</button>
+            <h3 class="lab-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
+            <p class="lab-modal-desc">A Cas9 corta o DNA num ponto guiado por um RNA guia seguido de um PAM
                 ("NGG"). Depois, a célula repara o corte por uma de duas vias: <strong>NHEJ</strong> (rápida, mas
                 sujeita a erros) ou <strong>HDR</strong> (mais lenta, porém precisa — se você fornecer um molde).</p>
 
             <div class="crispr-step">
-                <span class="mendel-label">Sequência de DNA atual (fita ativa do simulador)</span>
+                <span class="lab-label">Sequência de DNA atual (fita ativa do simulador)</span>
                 <div class="crispr-sequence-display" id="crispr-sequence-display"></div>
                 <button type="button" class="crispr-link-btn" id="crispr-load-demo">Carregar sequência de
                     exemplo com alvo válido</button>
             </div>
 
             <div class="crispr-step">
-                <label class="mendel-field">RNA guia (protoespaçador, escrito em bases de DNA)
-                    <input type="text" class="mendel-input" id="crispr-guide-input" placeholder="ex: TACCTCATT">
+                <label class="lab-field">RNA guia (protoespaçador, escrito em bases de DNA)
+                    <input type="text" class="lab-input" id="crispr-guide-input" placeholder="ex: TACCTCATT">
                 </label>
                 <button type="button" class="btn-control crispr-search-btn" id="crispr-search-btn">
                     <i class="fas fa-crosshairs"></i> Buscar Alvo (PAM)
@@ -1324,7 +1378,7 @@
             <div class="crispr-result" id="crispr-result" style="display:none;"></div>
 
             <div class="crispr-pathways" id="crispr-pathways" style="display:none;">
-                <span class="mendel-label">Via de reparo</span>
+                <span class="lab-label">Via de reparo</span>
                 <div class="crispr-pathway-cards">
                     <button type="button" class="crispr-pathway-card" id="crispr-pathway-nhej" data-pathway="nhej">
                         <i class="fas fa-dice"></i>
@@ -1341,8 +1395,8 @@
             </div>
 
             <div class="crispr-hdr-donor" id="crispr-hdr-donor" style="display:none;">
-                <label class="mendel-field">Sequência-molde (donor)
-                    <input type="text" class="mendel-input" id="crispr-donor-input" placeholder="ex: GAA">
+                <label class="lab-field">Sequência-molde (donor)
+                    <input type="text" class="lab-input" id="crispr-donor-input" placeholder="ex: GAA">
                 </label>
                 <button type="button" class="btn-control crispr-search-btn" id="crispr-hdr-generate-btn">
                     <i class="fas fa-eye"></i> Gerar Prévia do Reparo HDR
@@ -1351,7 +1405,7 @@
 
             <div class="crispr-preview" id="crispr-preview" style="display:none;"></div>
 
-            <button type="button" class="btn-control mendel-generate-btn" id="crispr-apply-btn" style="display:none;">
+            <button type="button" class="btn-control lab-action-btn" id="crispr-apply-btn" style="display:none;">
                 <i class="fas fa-check"></i> Aplicar Edição no Simulador
             </button>
         </div>
@@ -1359,10 +1413,10 @@
 
     <!-- Modal: Replicação do DNA -->
     <div id="replication-modal" class="seq-modal-overlay" style="display:none;">
-        <div class="seq-modal mendel-modal replication-modal">
-            <button class="seq-modal-close mendel-modal-close" id="replication-modal-close">&times;</button>
-            <h3 class="mendel-modal-title"><i class="fas fa-clone"></i> Replicação do DNA</h3>
-            <p class="mendel-modal-desc">A dupla-hélice se abre e cada fita antiga serve de molde para uma fita
+        <div class="seq-modal lab-modal-lg replication-modal">
+            <button class="seq-modal-close lab-modal-close" id="replication-modal-close">&times;</button>
+            <h3 class="lab-modal-title"><i class="fas fa-clone"></i> Replicação do DNA</h3>
+            <p class="lab-modal-desc">A dupla-hélice se abre e cada fita antiga serve de molde para uma fita
                 nova — por isso a replicação é <strong>semiconservativa</strong>. Como a DNA polimerase só
                 sintetiza no sentido 5'→3', uma fita nova cresce continuamente (fita <strong>líder</strong>)
                 enquanto a outra cresce em pedaços curtos — os <strong>fragmentos de Okazaki</strong> (fita

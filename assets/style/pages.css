@@ -545,11 +545,11 @@
 }
 
 .codon-item.base-acid {
-	background-color: #fee2e2;
+	background-color: var(--colorErrorBgVivid);
 	/* Red 100 */
-	border-left: 3px solid #dc2626;
+	border-left: 3px solid var(--colorErrorStrong);
 	/* Red 600 */
-	color: #991b1b;
+	color: var(--colorErrorText);
 }
 
 .codon-item.codon-start {
@@ -900,7 +900,7 @@
    Heredogramas
    ═══════════════════════════════════════════════════════════════════════ */
 
-.pedigree-tool {
+.lab-tool-panel {
 	background: #ffffff;
 	border-radius: 12px;
 	padding: 1.5rem;
@@ -908,7 +908,7 @@
 	border: 1px solid #eef2f5;
 }
 
-.pedigree-mode-toggle {
+.lab-mode-switcher {
 	max-width: 360px;
 	margin-bottom: 1.25rem;
 }
@@ -922,12 +922,12 @@
 	margin-bottom: 1.25rem;
 }
 
-.pedigree-study-controls .mendel-field {
+.pedigree-study-controls .lab-field {
 	min-width: 220px;
 }
 
-.pedigree-study-controls .mendel-generate-btn,
-.pedigree-quiz-controls .mendel-generate-btn {
+.pedigree-study-controls .lab-action-btn,
+.pedigree-quiz-controls .lab-action-btn {
 	width: auto;
 	flex: 0 0 auto;
 	padding: 0.6rem 1.1rem;
@@ -994,23 +994,23 @@
 }
 
 .pedigree-feedback.correct {
-	background: #f0fdf4;
-	border: 1px solid #bbf7d0;
-	color: #166534;
+	background: var(--colorSuccessBg);
+	border: 1px solid var(--colorSuccessBorder);
+	color: var(--colorSuccessText);
 }
 
 .pedigree-feedback.incorrect {
-	background: #fef2f2;
-	border: 1px solid #fecaca;
-	color: #991b1b;
+	background: var(--colorErrorBg);
+	border: 1px solid var(--colorErrorBorder);
+	color: var(--colorErrorText);
 }
 
 .crispr-pathway-card.pedigree-answer-correct {
-	border-color: #22c55e;
-	background: #f0fdf4;
+	border-color: var(--colorSuccess);
+	background: var(--colorSuccessBg);
 }
 
 .crispr-pathway-card.pedigree-answer-wrong {
-	border-color: #ef4444;
-	background: #fef2f2;
+	border-color: var(--colorError);
+	background: var(--colorErrorBg);
 }

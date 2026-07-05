@@ -1815,7 +1815,7 @@
       const li = document.createElement('li');
       if (withColor) {
         const swatch = document.createElement('span');
-        swatch.className = 'mendel-swatch';
+        swatch.className = 'lab-swatch';
         swatch.style.background = colorForPhenotype(label);
         li.appendChild(swatch);
       }
@@ -1825,7 +1825,7 @@
       text.appendChild(strong);
       text.append(` parte(s) — ${label} `);
       const detail = document.createElement('span');
-      detail.className = 'mendel-tally-detail';
+      detail.className = 'lab-tally-detail';
       detail.textContent = `(${count}/${total} · ${percent}%)`;
       text.appendChild(detail);
       li.appendChild(text);
@@ -2259,7 +2259,7 @@
       `${s.pct >= 8 ? s.pct.toFixed(1) + '%' : ''}</div>`
     ).join('');
     popgen.els.barLegend.innerHTML = segments.map(s =>
-      `<span class="legend-item"><span class="mendel-swatch" style="background:${s.color};"></span>${s.label} (${s.pct.toFixed(2)}%)</span>`
+      `<span class="legend-item"><span class="lab-swatch" style="background:${s.color};"></span>${s.label} (${s.pct.toFixed(2)}%)</span>`
     ).join('');
   }
 
