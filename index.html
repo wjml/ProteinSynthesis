@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description"
-        content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo — com modo de apresentação para uso em sala de aula.">
+        content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo.">
+    <link rel="icon" href="assets/images/icon-beta.png" type="image">
     <link rel="stylesheet" href="assets/style/fixed-elements.css">
     <link rel="stylesheet" href="assets/style/pages.css">
     <link rel="stylesheet" href="assets/style/app.css">
@@ -17,7 +18,6 @@
 
 <body>
     <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
-    <header></header>
     <div class="main">
         <nav>
             <div id="logo">
@@ -724,7 +724,7 @@
                             <h3><i class="fas fa-tint"></i> Anemia Falciforme</h3>
                             <span class="mutation-type-badge missense">Sentido Trocado (Missense)</span>
                         </div>
-                        <p class="disease-gene"><strong>Gene:</strong> HBB (Hemoglobina Beta) — códon 6</p>
+                        <p class="disease-gene"><strong>Gene:</strong> <em>HBB</em> (Hemoglobina Beta) — códon 6</p>
                         <p>Uma única base trocada substitui o ácido glutâmico (hidrofílico) por valina (hidrofóbico)
                             na cadeia da hemoglobina. Sob baixa concentração de oxigênio, as moléculas alteradas se
                             agregam em fibras longas, deformando as hemácias no característico formato de foice.</p>
@@ -737,7 +737,7 @@
                             <h3><i class="fas fa-lungs"></i> Beta-Talassemia</h3>
                             <span class="mutation-type-badge nonsense">Sem Sentido (Nonsense)</span>
                         </div>
-                        <p class="disease-gene"><strong>Gene:</strong> HBB (Hemoglobina Beta) — códon 39</p>
+                        <p class="disease-gene"><strong>Gene:</strong> <em>HBB</em> (Hemoglobina Beta) — códon 39</p>
                         <p>Uma substituição de base transforma um códon de glutamina em um <strong>códon de parada
                                 prematuro</strong>. A tradução é interrompida muito antes do esperado, produzindo uma
                             beta-globina truncada e não funcional — uma das causas mais comuns de talassemia na bacia
@@ -751,7 +751,7 @@
                             <h3><i class="fas fa-brain"></i> Doença de Tay-Sachs</h3>
                             <span class="mutation-type-badge frameshift">Deslocamento de Leitura (Frameshift)</span>
                         </div>
-                        <p class="disease-gene"><strong>Gene:</strong> HEXA (Hexosaminidase A)</p>
+                        <p class="disease-gene"><strong>Gene:</strong> <em>HEXA</em> (Hexosaminidase A)</p>
                         <p>A inserção de 4 bases — mutação real conhecida como <strong>1278insTATC</strong> — desloca
                             toda a janela de leitura a partir do ponto de inserção. A enzima resultante é
                             completamente diferente e não-funcional, levando ao acúmulo tóxico de gangliosídeos GM2
@@ -765,7 +765,7 @@
                             <h3><i class="fas fa-shield-alt"></i> Mutação Silenciosa</h3>
                             <span class="mutation-type-badge silent">Silenciosa (Sinônima)</span>
                         </div>
-                        <p class="disease-gene"><strong>Gene:</strong> HBB — variação hipotética, mesmo códon 6</p>
+                        <p class="disease-gene"><strong>Gene:</strong> <em>HBB</em> — variação hipotética, mesmo códon 6</p>
                         <p>Exemplo ilustrativo: ao contrário da Anemia Falciforme, esta troca atinge a
                             <strong>terceira posição</strong> do mesmo códon (GAG → GAA). Como o código genético é
                             degenerado, ambos ainda especificam ácido glutâmico — a proteína permanece idêntica e
@@ -1099,37 +1099,36 @@
                 <div class="educational-grid">
                     <div class="info-card">
                         <h3><i class="fas fa-paper-plane"></i> Enviar Mensagem</h3>
-                        <!-- O formulário usa mailto: para abrir o app de e-mail do usuário -->
-                        <form action="mailto:willianj16@gmail.com" method="GET" enctype="text/plain"
-                            style="margin-top: 15px;">
+                        <!-- O formulário usa mailto: para abrir o app de e-mail do usuário. Limitação conhecida
+                             dessa abordagem: sem servidor próprio, depende de o navegador/SO ter um cliente de
+                             e-mail padrão configurado, e mensagens muito longas podem esbarrar no limite de
+                             tamanho de uma URL mailto:. -->
+                        <form action="mailto:willianj16@gmail.com" method="GET" enctype="text/plain" class="feedback-form">
 
-                            <div style="margin-bottom: 15px;">
-                                <label for="nome"
-                                    style="display: block; font-weight: bold; margin-bottom: 5px;">Nome:</label>
-                                <input type="text" id="nome" name="Nome"
-                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    required>
+                            <div class="lab-field-group">
+                                <label for="nome" class="lab-label">Nome</label>
+                                <input type="text" id="nome" name="Nome" class="lab-input feedback-input" required>
                             </div>
 
-                            <div style="margin-bottom: 15px;">
-                                <span style="display: block; font-weight: bold; margin-bottom: 5px;">Você é:</span>
-                                <label style="margin-right: 15px;">
-                                    <input type="radio" name="Perfil" value="Professor" required> Professor
-                                </label>
-                                <label style="margin-right: 15px;">
-                                    <input type="radio" name="Perfil" value="Aluno"> Aluno
-                                </label>
-                                <label>
-                                    <input type="radio" name="Perfil" value="Entusiasta"> Entusiasta
-                                </label>
-                            </div>
+                            <fieldset class="lab-field-group feedback-fieldset">
+                                <legend class="lab-label">Você é</legend>
+                                <div class="feedback-radio-group">
+                                    <label class="feedback-radio-option">
+                                        <input type="radio" name="Perfil" value="Professor" required> Professor
+                                    </label>
+                                    <label class="feedback-radio-option">
+                                        <input type="radio" name="Perfil" value="Aluno"> Aluno
+                                    </label>
+                                    <label class="feedback-radio-option">
+                                        <input type="radio" name="Perfil" value="Entusiasta"> Entusiasta
+                                    </label>
+                                </div>
+                            </fieldset>
 
-                            <div style="margin-bottom: 15px;">
-                                <label for="mensagem"
-                                    style="display: block; font-weight: bold; margin-bottom: 5px;">Mensagem:</label>
+                            <div class="lab-field-group">
+                                <label for="mensagem" class="lab-label">Mensagem</label>
                                 <textarea id="mensagem" name="Mensagem" rows="5"
-                                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
-                                    required></textarea>
+                                    class="lab-input feedback-input" required></textarea>
                             </div>
 
                             <button type="submit" class="btn-control"><i class="fas fa-envelope"></i> Enviar por
@@ -1139,7 +1138,6 @@
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <!-- Drawer de detalhes do aminoácido -->
@@ -1170,10 +1168,11 @@
     </div>
 
     <!-- Modal: Exportar sequência -->
-    <div id="export-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="export-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="export-modal-title">
         <div class="seq-modal">
             <button class="seq-modal-close" id="export-modal-close">&times;</button>
-            <h3><i class="fas fa-file-export"></i> Exportar Sequência</h3>
+            <h3 id="export-modal-title"><i class="fas fa-file-export"></i> Exportar Sequência</h3>
             <p class="seq-modal-desc">Copie a sequência de DNA atual ou um link de compartilhamento para distribuir
                 exatamente esta cadeia para a turma.</p>
 
@@ -1192,10 +1191,11 @@
     </div>
 
     <!-- Modal: Importar sequência -->
-    <div id="import-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="import-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="import-modal-title">
         <div class="seq-modal">
             <button class="seq-modal-close" id="import-modal-close">&times;</button>
-            <h3><i class="fas fa-file-import"></i> Importar Sequência</h3>
+            <h3 id="import-modal-title"><i class="fas fa-file-import"></i> Importar Sequência</h3>
             <p class="seq-modal-desc">Cole uma sequência de DNA (bases A, T, C, G) para carregá-la no simulador. A
                 sequência atual será substituída.</p>
 
@@ -1208,10 +1208,11 @@
     </div>
 
     <!-- Modal: Animação do Ribossomo -->
-    <div id="ribosome-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="ribosome-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="ribosome-modal-title">
         <div class="seq-modal ribosome-modal">
             <button class="seq-modal-close" id="ribosome-modal-close">&times;</button>
-            <h3><i class="fas fa-atom"></i> Ribossomo em Ação</h3>
+            <h3 id="ribosome-modal-title"><i class="fas fa-atom"></i> Ribossomo em Ação</h3>
             <p class="seq-modal-desc" id="ribosome-empty-msg">
                 Nenhum <strong>códon de início (AUG)</strong> foi encontrado na sequência atual.
                 Insira uma sequência de DNA que produza um início de tradução válido — ou clique em
@@ -1263,10 +1264,11 @@
     </div>
 
     <!-- Modal: Construtor de Cruzamentos (Genética Mendeliana) -->
-    <div id="mendel-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="mendel-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="mendel-modal-title">
         <div class="seq-modal lab-modal-lg">
             <button class="seq-modal-close lab-modal-close" id="mendel-modal-close">&times;</button>
-            <h3 class="lab-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
+            <h3 class="lab-modal-title" id="mendel-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
             <p class="lab-modal-desc">Configure o(s) gene(s) e o genótipo de cada genitor para gerar o quadro de
                 Punnett e as proporções resultantes.</p>
 
@@ -1397,10 +1399,11 @@
     </div>
 
     <!-- Modal: Edição Gênica com CRISPR-Cas9 -->
-    <div id="crispr-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="crispr-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="crispr-modal-title">
         <div class="seq-modal lab-modal-lg crispr-modal">
             <button class="seq-modal-close lab-modal-close" id="crispr-modal-close">&times;</button>
-            <h3 class="lab-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
+            <h3 class="lab-modal-title" id="crispr-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
             <p class="lab-modal-desc">A Cas9 corta o DNA num ponto guiado por um RNA guia seguido de um PAM
                 ("NGG"). Depois, a célula repara o corte por uma de duas vias: <strong>NHEJ</strong> (rápida, mas
                 sujeita a erros) ou <strong>HDR</strong> (mais lenta, porém precisa — se você fornecer um molde).</p>
@@ -1458,10 +1461,11 @@
     </div>
 
     <!-- Modal: Replicação do DNA -->
-    <div id="replication-modal" class="seq-modal-overlay" style="display:none;">
+    <div id="replication-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="replication-modal-title">
         <div class="seq-modal lab-modal-lg replication-modal">
             <button class="seq-modal-close lab-modal-close" id="replication-modal-close">&times;</button>
-            <h3 class="lab-modal-title"><i class="fas fa-clone"></i> Replicação do DNA</h3>
+            <h3 class="lab-modal-title" id="replication-modal-title"><i class="fas fa-clone"></i> Replicação do DNA</h3>
             <p class="lab-modal-desc">A dupla-hélice se abre e cada fita antiga serve de molde para uma fita
                 nova — por isso a replicação é <strong>semiconservativa</strong>. Como a DNA polimerase só
                 sintetiza no sentido 5'→3', uma fita nova cresce continuamente (fita <strong>líder</strong>)
@@ -1513,10 +1517,9 @@
         <span>© 2026 Protein Synthesis</span>
     </footer>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+    <script src="assets/js/dom.js"></script>
+    <script src="assets/js/script.js"></script>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
-<script src="assets/js/dom.js"></script>
-<script src="assets/js/script.js"></script>
 
 </html>

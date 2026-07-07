@@ -252,6 +252,24 @@
     }
   }
 
+  /** Elemento que tinha o foco antes do modal atual abrir — usado para devolver o foco ao fechar. */
+  let modalOpenerElement = null;
+
+  /**
+   * Abre um modal seq-modal-overlay (Exportar, Importar, Ribossomo, Mendel, CRISPR, Replicação):
+   * lembra quem tinha o foco para restaurar ao fechar (ver closeModal, na vinculação de eventos)
+   * e move o foco para dentro do modal — para `focusTarget`, se informado, ou para o botão de
+   * fechar como alvo padrão. Sem isso, o foco do teclado ficava "preso" atrás do modal, numa
+   * página que o usuário não consegue mais ver.
+   */
+  function openModalDialog(modal, focusTarget) {
+    if (!modal) return;
+    modalOpenerElement = document.activeElement;
+    modal.style.display = 'flex';
+    const target = focusTarget || modal.querySelector('.seq-modal-close');
+    if (target) target.focus();
+  }
+
   // ─── Criação de elementos DOM ─────────────────────────────────────────────────
 
   /**
@@ -868,7 +886,7 @@
 
     if (hasSteps) renderRibosomeTrack();
 
-    els.modal.style.display = 'flex';
+    openModalDialog(els.modal);
   }
 
   /** Garante que os elementos do modal já foram cacheados (defensivo, caso a ordem de init mude). */
@@ -1412,7 +1430,7 @@
       feedback.classList.toggle('error', !dnaSeq);
     }
 
-    modal.style.display = 'flex';
+    openModalDialog(modal);
   }
 
   /**
@@ -1457,8 +1475,7 @@
       feedback.classList.remove('error');
     }
 
-    modal.style.display = 'flex';
-    if (input) input.focus();
+    openModalDialog(modal, input);
   }
 
   /** Valida o texto colado no modal de importação e, se houver bases válidas, carrega a sequência. */
@@ -1765,7 +1782,7 @@
   function openMendelModal() {
     if (!mendel.els.modal) cacheMendelElements();
     if (!mendel.els.modal) return;
-    mendel.els.modal.style.display = 'flex';
+    openModalDialog(mendel.els.modal);
   }
 
   /** Lê a configuração de um gene (índice 0 ou 1) a partir dos campos do formulário. */
@@ -2808,7 +2825,7 @@
     if (!crispr.els.modal) return;
     crispr.currentDna = readSequence(dnaSequenceChars);
     resetCrisprDownstreamState();
-    crispr.els.modal.style.display = 'flex';
+    openModalDialog(crispr.els.modal);
   }
 
   /** Carrega a sequência de exemplo (com alvo CRISPR garantidamente válido) no simulador. */
@@ -3104,7 +3121,7 @@
     replication.strand1 = dna.toUpperCase();
     replication.strand2 = complementStrand(replication.strand1);
     resetReplicationAnimation();
-    replication.els.modal.style.display = 'flex';
+    openModalDialog(replication.els.modal);
   }
 
   /**
@@ -3979,11 +3996,22 @@
 
     // A animação do ribossomo e a de replicação precisam parar seus timers ao
     // fechar; os demais modais não têm estado de animação e só precisam de display:none.
+    // Também devolve o foco a quem abriu o modal (ver openModalDialog, nos Utilitários) —
+    // com uma ressalva: Exportar/Importar/CRISPR/Replicar vivem dentro do menu "Mais
+    // ações", que já se escondeu (dom.js fecha o dropdown assim que um item é escolhido,
+    // ver closeMoreActions) quando o modal é fechado depois. Um elemento display:none
+    // não é focável, então nesses casos cai para o próprio botão "Mais ações".
     const closeModal = (modal) => {
       if (!modal) return;
       if (modal === ribosomeModal) { pauseRibosome(); }
       if (modal === replicationModal) { pauseReplication(); }
       modal.style.display = 'none';
+
+      const isFocusable = (el) => !!el && typeof el.focus === 'function' && el.offsetParent !== null;
+      const fallback = document.getElementById('more-actions-toggle');
+      const focusTarget = isFocusable(modalOpenerElement) ? modalOpenerElement : fallback;
+      if (isFocusable(focusTarget)) focusTarget.focus();
+      modalOpenerElement = null;
     };
 
     if (exportCloseBtn)      exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
@@ -3994,22 +4022,42 @@
     if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    [exportModal, importModal, ribosomeModal, mendelModal, crisprModal, replicationModal].forEach((modal) => {
+    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, crisprModal, replicationModal];
+    allSeqModals.forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal(modal);
       });
     });
 
-    // Fecha todos os modais com a tecla Esc
+    // Seletor de elementos focáveis, para prender o Tab dentro do modal aberto (ver abaixo).
+    const FOCUSABLE_IN_MODAL = 'a[href], button:not([disabled]), textarea:not([disabled]), ' +
+      'input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    // Esc fecha só o modal que estiver aberto no momento; Tab/Shift+Tab ficam presos
+    // dentro dele enquanto estiver aberto, para o foco do teclado não escapar para
+    // a página por trás (WCAG 2.4.3 — ordem de foco / dialog pattern).
     document.addEventListener('keydown', (event) => {
+      const activeModal = allSeqModals.find((modal) => modal && modal.style.display !== 'none');
+      if (!activeModal) return;
+
       if (event.key === 'Escape') {
-        closeModal(exportModal);
-        closeModal(importModal);
-        closeModal(ribosomeModal);
-        closeModal(mendelModal);
-        closeModal(crisprModal);
-        closeModal(replicationModal);
+        closeModal(activeModal);
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = Array.from(activeModal.querySelectorAll(FOCUSABLE_IN_MODAL));
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     });
 

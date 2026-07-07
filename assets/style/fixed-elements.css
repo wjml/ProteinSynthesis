@@ -1,7 +1,40 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono&family=Roboto:wght@400;500;700&display=swap");
+/* Sistema tipográfico com três papéis bem diferenciados, no espírito do próprio
+   assunto do app (a genética é feita de sistemas/códigos precisos):
+   - IBM Plex Serif nos títulos e textos explicativos — a "voz professoral"
+     de quem está ensinando um conceito.
+   - Work Sans na interface (nav, botões, labels, formulários) — a "voz de
+     controle" de quem está operando o simulador. Neutra o bastante pra não
+     competir com a serifada nos títulos.
+   - IBM Plex Mono nas sequências de bases, códons e qualquer dado técnico —
+     já era usada parcialmente (só trocou de família); ver --font-mono. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
 
 *, *::before, *::after {
 	box-sizing: border-box;
+}
+
+/* Todo heading do site — de títulos de página a título de card a título de
+   modal — usa a serifada, não importa em qual arquivo/seletor mais específico
+   ele também apareça estilizado. Um único lugar para essa decisão, em vez de
+   repetir font-family em cada .page-header h2 / .info-card h3 / h3 de modal
+   / etc. individualmente. */
+h1, h2, h3, h4 {
+	font-family: var(--font-serif);
+	overflow-wrap: break-word;
+}
+
+/* Respeita a preferência do sistema por menos movimento (comum em quem tem
+   sensibilidade vestibular). Em vez de caçar cada `transition`/`animation`
+   uma a uma pelas 3 folhas de estilo, esta regra universal reduz qualquer
+   uma delas a essencialmente instantânea quando o usuário pediu isso —
+   os elementos ainda mudam de estado, só sem a animação de transição. */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 /* Esconde visualmente mantendo acessível a leitores de tela — usado pelo
@@ -19,6 +52,12 @@
 }
 
 :root {
+	/* ===== Tipografia — três papéis, três famílias. Ver o @import no topo
+	   do arquivo para as origens/pesos carregados de cada uma. */
+	--font-serif: "IBM Plex Serif", Georgia, serif; /* títulos e texto explicativo */
+	--font-sans: "Work Sans", "Segoe UI", sans-serif; /* interface: nav, botões, labels, formulários */
+	--font-mono: "IBM Plex Mono", "Roboto Mono", monospace; /* sequências, códons, dados técnicos */
+
 	/* ===== Escala de breakpoints — só existem estes dois valores no projeto
 	   inteiro. Antes eram 5 números soltos (480/540/560/640/768px) decididos
 	   individualmente por quem escreveu cada regra. CSS puro não permite
@@ -27,13 +66,14 @@
 	   empilhar grid, remover max-width, reduzir padding) ou 768px (a troca
 	   estrutural do layout: sidebar vira barra horizontal). Não introduza um
 	   terceiro valor sem um motivo documentado. */
-	--headerSize: 0%;
 	--footerSize: 40px;
 	--sidebarSize: 260px;
 	--colorDetails: #14b8a6; /* Modern Teal — usar para bordas, ícones e fundos decorativos */
 	--colorDetailsText: #0f766e; /* Teal 700 — variante escura de --colorDetails, ~5,5:1 de contraste
 	   contra branco (WCAG AA). Usar sempre que a cor carregar texto: headings, badges com texto,
-	   texto sobre fundo teal, ou fundo teal com texto branco em cima. */
+	   texto sobre fundo teal, ou fundo teal com texto branco em cima. Fica fixo nos dois temas de
+	   propósito — ver a nota em body.dark-theme sobre por que os títulos de card usam uma
+	   sobrescrita PONTUAL em vez deste token mudar de valor. */
 	--bgSidebar: #0f172a; /* Slate 900 */
 	--bgSidebarHover: #1e293b; /* Slate 800 */
 
@@ -162,7 +202,8 @@
 
 body {
 	margin: 0;
-	font-family: "Inter", "Roboto", sans-serif;
+	font-family: var(--font-sans);
+	color: var(--slate800);
 	display: flex;
 	flex-direction: column;
 	width: 100vw;
@@ -213,6 +254,33 @@ body.dark-theme {
 	--slate900: #f8fafc;
 }
 
+/* --colorDetailsText foi calibrado pra ~5,5:1 contra fundo BRANCO (ver o
+   comentário na declaração da variável) — ótimo pra texto normal, mas ruim
+   quando o "fundo branco" em questão é --white/--slate50 e portanto vira
+   ESCURO no modo escuro (a maioria dos outros ~26 usos do token não tem
+   esse problema: são ícones, bordas, ou fundos com texto branco em cima,
+   que quase sempre PRECISAM que o teal continue escuro). Os dois títulos
+   abaixo são os únicos casos confirmados de "texto colorDetailsText direto
+   sobre um cartão que inverte" — corrigir só eles em vez de mudar o valor
+   do token evita destimbrar os outros ~26 usos por tabela.  */
+body.dark-theme .info-card h3,
+body.dark-theme .lab-section-title {
+	color: var(--colorDetails);
+}
+
+/* Mesma história do --colorDetailsText acima, mas --colorInfoTextStrong só
+   tem ESSE único uso no projeto inteiro (o código do códon no Quiz, que
+   também fica sobre --white) — sem outros usos concorrentes, dá pra
+   sobrescrever a variável em si com segurança, sem precisar do mesmo
+   contorno seletor-a-seletor. */
+body.dark-theme {
+	--colorInfoTextStrong: #60a5fa; /* Blue 400 — ~5,75:1 contra o card escuro do app */
+}
+
+body.dark-theme .quiz-score-item strong {
+	color: #60a5fa;
+}
+
 /* A barra lateral já era escura nos dois temas — não deve reagir à
    inversão acima. Redeclarar aqui os valores ORIGINAIS de --slate* restaura
    o comportamento de sempre só dentro do <nav>; o restante da página (fora
@@ -223,12 +291,6 @@ body.dark-theme nav {
 	--slate500: #64748b;
 	--slate600: #475569;
 	--slate800: #1e293b;
-}
-
-header {
-	display: none;
-	background: var(--slate800);
-	height: var(--headerSize);
 }
 
 footer {
@@ -276,7 +338,7 @@ nav #logo img {
 .main {
 	display: flex;
 	flex-direction: row;
-	height: calc(100% - var(--footerSize) - var(--headerSize));
+	height: calc(100% - var(--footerSize));
 	overflow: hidden;
 }
 

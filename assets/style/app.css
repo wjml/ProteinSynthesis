@@ -11,7 +11,7 @@
     flex: 0 0 auto;
     flex-direction: column;
     width: 90%;
-    background: white;
+    background: var(--white);
     padding: 2%;
     margin: auto;
     border: 2px solid var(--colorDetails);
@@ -87,7 +87,7 @@
 
 /* Sequence Nucleotide Character Inputs */
 .sequence .sequenceChar {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     text-align: center;
     border: 1px solid var(--slate300) !important;
     font-size: 24px;
@@ -319,7 +319,7 @@
     flex: 0.8;
     font-size: 1.15rem;
     font-weight: 700;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     text-align: center;
     border-bottom: 1px solid var(--slate200);
     padding: 2px 0;
@@ -464,7 +464,7 @@
     align-items: center;
     width: 90%;
     margin: 0.5rem auto 1.5rem auto;
-    background: white;
+    background: var(--white);
     padding: 1rem 1.5rem;
     border-radius: 12px;
     border: 1px solid var(--slate200);
@@ -491,7 +491,7 @@
 .counter-item strong {
     color: var(--colorDetailsText);
     font-size: 1.25rem;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
 }
 
 .action-buttons {
@@ -687,7 +687,7 @@
 }
 
 .quiz-subtitle {
-    color: var(--slate500);
+    color: var(--slate600);
     font-size: 0.9rem;
     margin: 0 0 1.25rem;
 }
@@ -731,7 +731,7 @@
 }
 
 .quiz-seq-value {
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
     letter-spacing: 2px;
     font-weight: 600;
     word-break: break-all;
@@ -739,7 +739,7 @@
 }
 
 .quiz-codon-display {
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-size: 2rem;
     font-weight: 700;
     text-align: center;
@@ -790,7 +790,7 @@ button.quiz-option:disabled {
 }
 
 .quiz-panel .codon-item.quiz-option .codon-name {
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 1.1rem;
 }
@@ -900,7 +900,7 @@ button.quiz-option.quiz-option-text {
 
 .ribo-utr-label {
     flex-shrink: 0;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--slate500);
@@ -917,7 +917,7 @@ button.quiz-option.quiz-option-text {
 
 .ribo-codon {
     flex: 0 0 auto;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.82rem;
     padding: 6px 9px;
@@ -1023,7 +1023,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .ribo-trna-anticodon {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 800;
     font-size: 0.7rem;
     color: var(--colorWarningTextStrong);
@@ -1164,7 +1164,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .lab-modal-close {
-    color: var(--slate400);
+    color: var(--slate500);
 }
 
 .lab-modal-close:hover {
@@ -1302,9 +1302,53 @@ button.quiz-option.quiz-option-text {
 
 .lab-input-letter {
     text-transform: uppercase;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     text-align: center;
+}
+
+/* Formulário de Feedback — antes usava estilos inline (cores fixas, sem dark mode);
+   agora reaproveita os mesmos tokens .lab-* do resto do laboratório virtual. */
+.feedback-form {
+    margin-top: 15px;
+}
+
+.feedback-form .feedback-input {
+    width: 100%;
+}
+
+.feedback-form textarea.feedback-input {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.feedback-fieldset {
+    border: 0;
+    padding: 0;
+}
+
+.feedback-fieldset legend.lab-label {
+    padding: 0;
+}
+
+.feedback-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.feedback-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--slate700);
+    cursor: pointer;
+}
+
+.feedback-radio-option input {
+    accent-color: var(--colorDetailsText);
 }
 
 .mendel-parent-genotypes {
@@ -1351,7 +1395,7 @@ button.quiz-option.quiz-option-text {
 .mendel-punnett-table th {
     background: var(--slate100);
     color: var(--slate700);
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.85rem;
     padding: 8px 12px;
@@ -1371,7 +1415,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .mendel-cell-genotype {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.95rem;
 }
@@ -1421,7 +1465,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .lab-tally-detail {
-    color: var(--slate400);
+    color: var(--slate500);
     font-size: 0.8rem;
 }
 
@@ -1457,7 +1501,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-sequence-display {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 1rem;
     letter-spacing: 0.03em;
     background: var(--slate50);
@@ -1613,7 +1657,7 @@ button.quiz-option.quiz-option-text {
 
 .crispr-preview-seq {
     display: block;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.95rem;
     margin: 6px 0;
     overflow-x: auto;
@@ -1656,7 +1700,7 @@ button.quiz-option.quiz-option-text {
 .repl-ends-row {
     display: flex;
     justify-content: space-between;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.75rem;
     color: var(--slate400);
@@ -1677,7 +1721,7 @@ button.quiz-option.quiz-option-text {
     width: 22px;
     height: 22px;
     flex-shrink: 0;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.85rem;
     border-radius: 4px;
@@ -1796,7 +1840,7 @@ button.quiz-option.quiz-option-text {
 
 .popgen-eq {
     display: inline-block;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     background: var(--colorDetailsBg);
     color: var(--colorDetailsText);
@@ -1849,12 +1893,12 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--slate400);
+    color: var(--slate500);
     margin-bottom: 4px;
 }
 
 .popgen-stat-card .popgen-stat-value {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 1.4rem;
     font-weight: 700;
     color: var(--colorDetailsText);
@@ -1877,7 +1921,7 @@ button.quiz-option.quiz-option-text {
     color: white;
     font-size: 0.78rem;
     font-weight: 700;
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     white-space: nowrap;
     overflow: hidden;
     transition: width 0.4s ease;
@@ -1953,7 +1997,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .karyo-notation {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 1rem;
     color: var(--colorDetailsText);
@@ -2017,7 +2061,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .karyo-slot-label {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 0.72rem;
     font-weight: 700;
     color: var(--slate500);
@@ -2061,7 +2105,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .nondis-gamete-label {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-weight: 700;
     font-size: 0.9rem;
     color: var(--slate700);

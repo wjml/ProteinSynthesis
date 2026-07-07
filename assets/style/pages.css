@@ -1,7 +1,23 @@
 #visible-page {
-	width: calc(100% - var(--sidebarSize));
 	height: 100%;
 	background: var(--bgPage);
+}
+
+/* O desconto da largura da sidebar só faz sentido quando ela fica AO LADO do
+   conteúdo (desktop). Isso precisa ficar atrás do mesmo min-width que serve de
+   complemento ao breakpoint de 768px do projeto (ver o comentário sobre a
+   convenção de breakpoints em fixed-elements.css) — sem isso, esta regra
+   (sem media query, então sempre ativa) empatava em especificidade com o
+   `#visible-page { width: 100% }` de dentro do @media (max-width: 768px) de
+   fixed-elements.css, e vencia por vir depois na ordem dos <link> do HTML.
+   Resultado: no mobile, onde .main empilha a sidebar ACIMA do conteúdo (ver
+   fixed-elements.css), o conteúdo ainda tentava caber em "100% − 260px" —
+   numa tela de 375px isso sobrava só ~115px, espremendo todo o texto numa
+   coluna estreitíssima. */
+@media (min-width: 769px) {
+	#visible-page {
+		width: calc(100% - var(--sidebarSize));
+	}
 }
 
 .content {
@@ -35,11 +51,13 @@
 	color: var(--slate700);
 	font-size: 2.2rem;
 	font-weight: 700;
+	letter-spacing: -0.015em;
+	line-height: 1.15;
 }
 
 .page-header p {
 	margin: 0;
-	color: var(--slate500);
+	color: var(--slate600);
 	font-size: 1.1rem;
 }
 
@@ -70,6 +88,8 @@
 	margin: 0 0 1rem 0;
 	color: var(--colorDetailsText);
 	font-size: 1.3rem;
+	font-weight: 600;
+	letter-spacing: -0.01em;
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
@@ -106,7 +126,7 @@
 	border-radius: 6px;
 	font-weight: bold;
 	color: white;
-	font-family: 'Roboto Mono', monospace;
+	font-family: var(--font-mono);
 	font-size: 0.9rem;
 }
 
@@ -142,7 +162,7 @@
 	padding: 0.8rem;
 	border-left: 4px solid var(--colorDetails);
 	border-radius: 0 8px 8px 0;
-	font-family: 'Roboto Mono', monospace;
+	font-family: var(--font-mono);
 	font-size: 1.1rem;
 	color: var(--slate700);
 	margin: 0.5rem 0;
@@ -159,7 +179,7 @@
 }
 
 .version-card {
-	background: white;
+	background: var(--white);
 	border-radius: 12px;
 	padding: 1.5rem;
 	border: 1px solid var(--slate100);
@@ -178,7 +198,7 @@
 
 .version-date {
 	font-size: 0.9rem;
-	color: var(--slate400);
+	color: var(--slate500);
 	font-weight: normal;
 }
 
@@ -214,7 +234,7 @@
 .step-card {
 	display: flex;
 	gap: 1.5rem;
-	background: white;
+	background: var(--white);
 	border-radius: 12px;
 	padding: 1.5rem;
 	border: 1px solid var(--slate100);
@@ -424,11 +444,11 @@
 	padding: 8px 12px;
 	text-align: left;
 	border-bottom: 1px solid var(--slate200);
+	color: var(--slate800);
 }
 
 .amino-table th {
 	background-color: var(--slate300);
-	color: var(--slate800);
 	font-weight: 600;
 	position: sticky;
 	top: 0;
@@ -451,7 +471,7 @@
 .codon-table-responsive {
 	width: 100%;
 	overflow-x: auto;
-	background: white;
+	background: var(--white);
 	border-radius: 12px;
 	border: 1px solid var(--slate200);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -492,7 +512,7 @@
 	border-radius: 4px;
 	cursor: pointer;
 	transition: all 0.2s ease;
-	font-family: 'Roboto Mono', monospace;
+	font-family: var(--font-mono);
 	font-weight: 600;
 }
 
@@ -511,7 +531,7 @@
 }
 
 .codon-name {
-	color: var(--slate800);
+	font-weight: 700;
 }
 
 .codon-aa {
@@ -605,7 +625,7 @@
 	right: -360px;
 	width: 360px;
 	height: 100%;
-	background-color: white;
+	background-color: var(--white);
 	box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
 	z-index: 1050;
 	transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -695,7 +715,7 @@
 }
 
 #drawer-codons {
-	font-family: 'Roboto Mono', monospace;
+	font-family: var(--font-mono);
 	font-weight: 600;
 	color: var(--colorDetailsText);
 }
@@ -760,7 +780,7 @@
 	border: 1px solid var(--slate200);
 	border-radius: 8px;
 	color: var(--slate700);
-	font-family: 'Courier New', monospace;
+	font-family: var(--font-mono);
 	font-size: 0.9rem;
 	letter-spacing: 0.03em;
 	padding: 10px 12px;
@@ -797,7 +817,7 @@
 	right: 14px;
 	background: none;
 	border: none;
-	color: var(--slate400);
+	color: var(--slate500);
 	font-size: 1.4rem;
 	line-height: 1;
 	cursor: pointer;
@@ -969,7 +989,7 @@
 }
 
 .pedigree-label {
-	font-family: 'Roboto Mono', monospace;
+	font-family: var(--font-mono);
 	font-size: 11px;
 	fill: var(--slate500);
 	text-anchor: middle;
