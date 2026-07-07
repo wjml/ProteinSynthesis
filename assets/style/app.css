@@ -980,6 +980,11 @@ button.quiz-option.quiz-option-text {
     background: linear-gradient(180deg, var(--slate500), var(--slate700));
 }
 
+.ribo-stage {
+    display: flex;
+    flex-direction: column;
+}
+
 /* Palco onde o tRNA entra, pareia e sai */
 .ribo-stage-area {
     position: relative;

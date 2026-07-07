@@ -19,7 +19,12 @@
 <body>
     <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
     <div class="main">
-        <nav>
+        <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-expanded="false"
+            aria-controls="app-sidebar-nav" aria-label="Abrir menu de navegação">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
+        <nav id="app-sidebar-nav">
             <div id="logo">
                 <img src="assets/images/Logo.svg" alt="Logo Protein Synthesis">
             </div>
@@ -36,11 +41,23 @@
                 <li class="button" id="aminoacids">
                     <i class="fas fa-cubes"></i> Proteínas
                 </li>
-                <li class="button" id="codon-table">
-                    <i class="fas fa-table"></i> Tabela de Códons
-                </li>
                 <li class="button" id="diseases">
                     <i class="fas fa-universal-access"></i> Doenças Genéticas
+                </li>
+                <li class="header-title" id="classical-genetics-header">
+                    <span>Genética Clássica</span>
+                </li>
+                <li class="button" id="mendel-theory">
+                    <i class="fas fa-seedling"></i> Genética Mendeliana
+                </li>
+                <li class="button" id="pedigree-theory">
+                    <i class="fas fa-users"></i> Heredogramas
+                </li>
+                <li class="button" id="popgen-theory">
+                    <i class="fas fa-chart-pie"></i> Genética Populacional
+                </li>
+                <li class="button" id="karyotype-theory">
+                    <i class="fas fa-th"></i> Cariótipo
                 </li>
                 <li class="button" id="lab-toggle" data-collapsible="lab-collapsible">
                     <div class="menu-label-group">
@@ -52,17 +69,17 @@
                     <li class="button" id="app">
                         <i class="fas fa-vial"></i> Genética Molecular
                     </li>
-                    <li class="button" id="mendel">
+                    <li class="button" id="mendel-lab">
                         <i class="fas fa-dna"></i> Genética Mendeliana
                     </li>
-                    <li class="button" id="pedigree">
+                    <li class="button" id="pedigree-lab">
                         <i class="fas fa-users"></i> Heredogramas
                     </li>
-                    <li class="button" id="popgen">
+                    <li class="button" id="popgen-lab">
                         <i class="fas fa-chart-pie"></i> Genética Populacional
                     </li>
-                    <li class="button" id="karyotype">
-                        <i class="fas fa-grip-lines"></i> Cariótipo
+                    <li class="button" id="karyotype-lab">
+                        <i class="fas fa-th"></i> Cariótipo
                     </li>
                 </ul>
 
@@ -72,11 +89,8 @@
                 <li class="header-title" id="about">
                     <span>Sobre o Aplicativo</span>
                 </li>
-                <li class="button" id="versions">
-                    <i class="fas fa-info-circle"></i> Versões
-                </li>
-                <li class="button" id="tutorial">
-                    <i class="fas fa-question-circle"></i> Tutorial
+                <li class="button" id="app-info">
+                    <i class="fas fa-info-circle"></i> Sobre &amp; Tutorial
                 </li>
                 <li class="button" id="feedback">
                     <i class="fas fa-envelope"></i> Feedback
@@ -114,6 +128,21 @@
                         <p>As duas fitas de DNA se unem por meio de ligações de hidrogênio seguindo a regra de
                             pareamento específico:</p>
                         <p class="pairing-rule"><strong>A ⇄ T</strong><br><strong>C ⇄ G</strong></p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-layer-group"></i> Empacotamento do DNA</h3>
+                        <p>Os ~2 metros de DNA de uma célula humana só cabem no núcleo porque ficam enrolados: a
+                            fita se enrola em torno de proteínas <strong>histonas</strong> formando
+                            <strong>nucleossomos</strong> ("colar de contas"), que se condensam em
+                            <strong>cromatina</strong> e, na divisão celular, se compactam ao máximo formando os
+                            <strong>cromossomos</strong> visíveis ao microscópio.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-clone"></i> Replicação Semiconservativa</h3>
+                        <p>Antes da célula se dividir, a dupla-hélice se abre e cada fita antiga serve de molde
+                            para uma fita nova — por isso cada molécula-filha tem uma fita original e uma nova.
+                            Veja a animação completa no <strong>Laboratório Virtual → Genética Molecular → Mais
+                                ações → Replicar DNA</strong>.</p>
                     </div>
                     <div class="info-card helix-card">
                         <h3><i class="fas fa-circle-notch fa-spin"></i> Dupla Hélice 3D</h3>
@@ -207,6 +236,22 @@
                         <p class="pairing-rule"><strong>A ➜ U</strong> | <strong>T ➜ A</strong><br><strong>C ➜
                                 G</strong> | <strong>G ➜ C</strong></p>
                     </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-cut"></i> Splicing (Éxons e Íntrons)</h3>
+                        <p>Em eucariotos, o RNAm recém-transcrito (pré-RNAm) contém trechos que codificam proteína
+                            (<strong>éxons</strong>) intercalados com trechos não-codificantes
+                            (<strong>íntrons</strong>). O <strong>splicing</strong> remove os íntrons e une os
+                            éxons antes do RNAm sair do núcleo — e o <strong>splicing alternativo</strong> permite
+                            que um único gene produza várias proteínas diferentes, combinando éxons de formas
+                            distintas.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-microchip"></i> RNA Não-Codificante</h3>
+                        <p>Nem todo RNA vira proteína. <strong>microRNAs (miRNA)</strong> e
+                            <strong>siRNAs</strong> são pequenas moléculas que se ligam a RNAm específicos e
+                            silenciam sua tradução, regulando quais genes ficam realmente ativos numa célula — um
+                            mecanismo central da <strong>interferência por RNA (RNAi)</strong>.</p>
+                    </div>
                     <div class="info-card transcription-card">
                         <h3><i class="fas fa-cogs"></i> Etapas da Transcrição</h3>
                         <div class="transcription-steps-container">
@@ -253,12 +298,6 @@
                             liberando a fita de proteína.</p>
                     </div>
                     <div class="info-card">
-                        <h3><i class="fas fa-dna"></i> Tabela de Códons</h3>
-                        <p>Existem 64 códons possíveis para 20 aminoácidos, caracterizando o código genético como
-                            <strong>degenerado ou redundante</strong> (múltiplos códons codificam o mesmo aminoácido).
-                        </p>
-                    </div>
-                    <div class="info-card">
                         <h3><i class="fas fa-project-diagram"></i> Da Sequência à Forma 3D</h3>
                         <p>O ribossomo entrega apenas uma <strong>sequência linear</strong> de aminoácidos — a
                             <strong>estrutura primária</strong>. A partir daí, a cadeia se dobra sozinha em formas
@@ -270,8 +309,35 @@
                             <li><strong>Quaternária:</strong> a união de duas ou mais cadeias, como na hemoglobina.</li>
                         </ul>
                     </div>
-                    <div class="info-card table-card">
-                        <h3><i class="fas fa-list-ol"></i> Tabela dos 20 Aminoácidos</h3>
+                    <div class="info-card">
+                        <h3><i class="fas fa-magic"></i> Modificações Pós-Traducionais</h3>
+                        <p>Depois de pronta, a cadeia ainda pode ser alterada quimicamente: <strong>fosforilação</strong>
+                            (liga/desliga a atividade da proteína), <strong>glicosilação</strong> (adiciona açúcares,
+                            comum em proteínas de membrana) e <strong>clivagem proteolítica</strong> (corta um
+                            precursor maior até a forma ativa, como na insulina).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-cube"></i> Enovelamento e Chaperonas</h3>
+                        <p>A sequência de aminoácidos determina como a cadeia se dobra, guiada pelas interações
+                            químicas entre os resíduos (hidrofóbicos se escondem no núcleo, por exemplo). Proteínas
+                            auxiliares chamadas <strong>chaperonas moleculares</strong> ajudam nesse processo e evitam
+                            agregados mal-formados — erros de enovelamento estão ligados a doenças como Alzheimer e
+                            Parkinson.</p>
+                    </div>
+                </div>
+
+                <div class="content-tabs" id="protein-reference-tabs">
+                    <div class="content-tabs-nav" role="tablist" aria-label="Referências de proteínas">
+                        <button type="button" class="content-tab-btn active" id="protein-tab-btn-amino"
+                            data-tab-target="protein-tab-panel-amino" role="tab" aria-selected="true">
+                            <i class="fas fa-list-ol"></i> Tabela de Aminoácidos
+                        </button>
+                        <button type="button" class="content-tab-btn" id="protein-tab-btn-codon"
+                            data-tab-target="protein-tab-panel-codon" role="tab" aria-selected="false">
+                            <i class="fas fa-table"></i> Tabela de Códons (RNAm)
+                        </button>
+                    </div>
+                    <div class="content-tab-panel active" id="protein-tab-panel-amino" role="tabpanel">
                         <div class="table-wrapper">
                             <table class="amino-table">
                                 <thead>
@@ -283,126 +349,150 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                            <tr>
+                                <td>Alanina</td>
+                                <td>ALA</td>
+                                <td>A</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Arginina</td>
+                                <td>ARG</td>
+                                <td>R</td>
+                                <td>Básico</td>
+                            </tr>
+                            <tr>
+                                <td>Asparagina</td>
+                                <td>ASN</td>
+                                <td>N</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Ácido Aspártico</td>
+                                <td>ASP</td>
+                                <td>D</td>
+                                <td>Ácido</td>
+                            </tr>
+                            <tr>
+                                <td>Cisteína</td>
+                                <td>CYS</td>
+                                <td>C</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Glutamina</td>
+                                <td>GLN</td>
+                                <td>Q</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Ácido Glutâmico</td>
+                                <td>GLU</td>
+                                <td>E</td>
+                                <td>Ácido</td>
+                            </tr>
+                            <tr>
+                                <td>Glicina</td>
+                                <td>GLY</td>
+                                <td>G</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Histidina</td>
+                                <td>HIS</td>
+                                <td>H</td>
+                                <td>Básico</td>
+                            </tr>
+                            <tr>
+                                <td>Isoleucina</td>
+                                <td>ILE</td>
+                                <td>I</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Leucina</td>
+                                <td>LEU</td>
+                                <td>L</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Lisina</td>
+                                <td>LYS</td>
+                                <td>K</td>
+                                <td>Básico</td>
+                            </tr>
+                            <tr>
+                                <td>Metionina</td>
+                                <td>MET</td>
+                                <td>M</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Fenilalanina</td>
+                                <td>PHE</td>
+                                <td>F</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Prolina</td>
+                                <td>PRO</td>
+                                <td>P</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Serina</td>
+                                <td>SER</td>
+                                <td>S</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Treonina</td>
+                                <td>THR</td>
+                                <td>T</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Triptofano</td>
+                                <td>TRP</td>
+                                <td>W</td>
+                                <td>Apolar</td>
+                            </tr>
+                            <tr>
+                                <td>Tirosina</td>
+                                <td>TYR</td>
+                                <td>Y</td>
+                                <td>Polar</td>
+                            </tr>
+                            <tr>
+                                <td>Valina</td>
+                                <td>VAL</td>
+                                <td>V</td>
+                                <td>Apolar</td>
+                            </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="content-tab-panel" id="protein-tab-panel-codon" role="tabpanel" hidden>
+                        <p class="tab-panel-note">Clique em qualquer códon para preencher automaticamente o
+                            simulador de Genética Molecular. As cores agrupam os aminoácidos por propriedades
+                            químicas.</p>
+                        <div class="codon-table-responsive">
+                            <table class="codon-matrix">
+                                <thead>
                                     <tr>
-                                        <td>Alanina</td>
-                                        <td>ALA</td>
-                                        <td>A</td>
-                                        <td>Apolar</td>
+                                        <th>1ª Base</th>
+                                        <th>2ª Base: U</th>
+                                        <th>2ª Base: C</th>
+                                        <th>2ª Base: A</th>
+                                        <th>2ª Base: G</th>
+                                        <th>3ª Base</th>
                                     </tr>
-                                    <tr>
-                                        <td>Arginina</td>
-                                        <td>ARG</td>
-                                        <td>R</td>
-                                        <td>Básico</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Asparagina</td>
-                                        <td>ASN</td>
-                                        <td>N</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Ácido Aspártico</td>
-                                        <td>ASP</td>
-                                        <td>D</td>
-                                        <td>Ácido</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Cisteína</td>
-                                        <td>CYS</td>
-                                        <td>C</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Glutamina</td>
-                                        <td>GLN</td>
-                                        <td>Q</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Ácido Glutâmico</td>
-                                        <td>GLU</td>
-                                        <td>E</td>
-                                        <td>Ácido</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Glicina</td>
-                                        <td>GLY</td>
-                                        <td>G</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Histidina</td>
-                                        <td>HIS</td>
-                                        <td>H</td>
-                                        <td>Básico</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Isoleucina</td>
-                                        <td>ILE</td>
-                                        <td>I</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Leucina</td>
-                                        <td>LEU</td>
-                                        <td>L</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Lisina</td>
-                                        <td>LYS</td>
-                                        <td>K</td>
-                                        <td>Básico</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Metionina</td>
-                                        <td>MET</td>
-                                        <td>M</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Fenilalanina</td>
-                                        <td>PHE</td>
-                                        <td>F</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Prolina</td>
-                                        <td>PRO</td>
-                                        <td>P</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Serina</td>
-                                        <td>SER</td>
-                                        <td>S</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Treonina</td>
-                                        <td>THR</td>
-                                        <td>T</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Triptofano</td>
-                                        <td>TRP</td>
-                                        <td>W</td>
-                                        <td>Apolar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Tirosina</td>
-                                        <td>TYR</td>
-                                        <td>Y</td>
-                                        <td>Polar</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Valina</td>
-                                        <td>VAL</td>
-                                        <td>V</td>
-                                        <td>Apolar</td>
-                                    </tr>
+                                </thead>
+                                <tbody id="codon-matrix-body">
+                                    <!-- Gerado dinamicamente por buildCodonTable() em script.js,
+                                         a partir de CODON_TABLE e AMINOACIDS_DB — fonte única de verdade,
+                                         evitando que a tabela visual e a lógica de tradução divirjam. -->
                                 </tbody>
                             </table>
                         </div>
@@ -538,107 +628,14 @@
                 </div>
             </div>
 
-            <div class="content versions">
+            <div class="content app-info">
                 <div class="page-header">
-                    <h2>Histórico de Versões</h2>
-                    <p>A evolução do projeto Protein Synthesis ao longo do tempo.</p>
+                    <h2>Sobre &amp; Tutorial</h2>
+                    <p>O Protein Synthesis é um simulador didático de Biologia Molecular e Genética — transcrição,
+                        tradução, mutações, CRISPR, herança mendeliana, heredogramas, genética populacional e
+                        cariótipo, tudo em um só lugar.</p>
                 </div>
-                <div class="version-timeline">
-                    <div class="version-card">
-                        <h3>v1.2 <span class="version-date">Julho, 2026</span></h3>
-                        <span class="badge-active">Atual</span>
-                        <ul>
-                            <li><strong>Modo Claro/Escuro:</strong> alternador no rodapé da barra lateral, com
-                                preferência salva no navegador. Todas as superfícies do app agora respondem ao
-                                tema — inclusive os modais, que até esta versão eram parcialmente escuros.</li>
-                            <li><strong>Modo Professor Removido:</strong> a funcionalidade acumulava sobreposição
-                                com o novo Modo Escuro sem cobrir um uso real distinto; removida para simplificar
-                                o menu lateral.</li>
-                            <li><strong>Um Único Tema de Modal:</strong> Exportar/Importar e Ribossomo em Ação
-                                eram os dois únicos modais ainda no tema escuro original; agora seguem a mesma
-                                base clara de Mendel/CRISPR/Replicação.</li>
-                            <li><strong>Uma Única Família de Cinza:</strong> as paletas <code>--textContent*</code>
-                                e <code>--textFlat*</code> — quase idênticas a <code>--slate*</code>, mas mantidas
-                                separadas — foram unificadas num só conjunto de tokens.</li>
-                            <li><strong>Barra do Simulador Reorganizada:</strong> Editar com CRISPR, Replicar DNA,
-                                Exportar e Importar saíram da fileira de 7 botões e viraram um menu "Mais ações".</li>
-                            <li><strong>Terminologia Padronizada:</strong> a fita de mutação chamava a saída de
-                                "Peptídeo"; agora usa "Proteína" em todo o simulador, igual à fita original.</li>
-                            <li><strong>Acessibilidade:</strong> os painéis de resultado do Mendel, CRISPR,
-                                Heredograma e Genética Populacional passaram a anunciar mudanças a leitores de
-                                tela (<code>aria-live</code>), no mesmo padrão já usado pelo Quiz e pelo Ribossomo.</li>
-                            <li><strong>Escala de Breakpoints:</strong> os 5 valores de <code>@media</code>
-                                espalhados pelo CSS (480/540/560/640/768px) viraram 2 (640px e 768px).</li>
-                            <li><strong>dom.js Encapsulado:</strong> alinhado ao padrão de script.js — nada mais
-                                é exposto no escopo global.</li>
-                        </ul>
-                    </div>
-                    <div class="version-card">
-                        <h3>v1.1 <span class="version-date">Julho, 2026</span></h3>
-                        <ul>
-                            <li><strong>Laboratório Virtual Unificado:</strong> Genética Molecular, Genética
-                                Mendeliana, Heredogramas, Genética Populacional e Cariótipo agora vivem em uma única
-                                aba do menu, com submenu colapsável — em vez de cinco itens soltos na barra lateral.
-                            </li>
-                            <li><strong>Sistema de Cores Completo:</strong> as ~80 cores que apareciam soltas e
-                                repetidas nas três folhas de estilo foram substituídas por um único conjunto de
-                                variáveis CSS (100 tokens) — bases nitrogenadas, tipos de mutação, propriedades de
-                                aminoácidos, estados de acerto/erro/aviso/informação e a paleta neutra da interface.
-                                Mesma aparência visual, uma só fonte da verdade no código.</li>
-                            <li><strong>Mutação Dentro do Simulador:</strong> Adição, Deleção e Substituição
-                                deixaram de ser itens de menu e agora são um seletor de modo dentro da própria
-                                página de Genética Molecular — igual ao padrão já usado por Heredogramas e Genética
-                                Populacional.</li>
-                            <li><strong>Menu Responsivo de Verdade:</strong> o submenu de simuladores (antes oculto
-                                no celular) agora também funciona em telas pequenas.</li>
-                            <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação —
-                                já existia no código, mas faltava na barra lateral — voltou a aparecer.</li>
-                            <li><strong>Conteúdo Novo:</strong> cartão sobre os três tipos de RNA (RNAm/RNAt/RNAr) e
-                                sobre os níveis de estrutura de uma proteína (primária → quaternária).</li>
-                            <li><strong>Nomenclatura Compartilhada:</strong> classes CSS reaproveitadas por vários
-                                simuladores (antes emprestadas do módulo de Mendel, ex. <code>.mendel-input</code>)
-                                renomeadas para um prefixo neutro (<code>.lab-input</code>), refletindo que já eram
-                                compartilhadas.</li>
-                        </ul>
-                    </div>
-                    <div class="version-card">
-                        <h3>v1.0 <span class="version-date">Junho, 2026</span></h3>
-                        <ul>
-                            <li><strong>Análise de Mutações:</strong> Classificação em tempo real (Silenciosa, Missense,
-                                Nonsense, Frameshift).</li>
-                            <li><strong>Interface Premium:</strong> Tema científico moderno, cores personalizadas por
-                                base nitrogenada, responsividade melhorada e micro-transições.</li>
-                            <li><strong>Didática Completa:</strong> Conclusão das páginas educativas de DNA, RNA e
-                                Proteínas.</li>
-                            <li><strong>Refatorações Técnicas:</strong> Correção de bug no controle global de eventos e
-                                comparação de arrays.</li>
-                        </ul>
-                    </div>
-                    <div class="version-card">
-                        <h3>v0.2 <span class="version-date">Maio, 2019</span></h3>
-                        <ul>
-                            <li><strong>Módulos de Mutação:</strong> Adicionados botões para Adicionar, Deletar e
-                                Substituir bases.</li>
-                            <li><strong>Detecção de Diferenças:</strong> Marcação em vermelho para bases e aminoácidos
-                                alterados na fita mutada.</li>
-                        </ul>
-                    </div>
-                    <div class="version-card">
-                        <h3>v0.1 <span class="version-date">Março, 2019</span></h3>
-                        <ul>
-                            <li><strong>Estrutura Básica:</strong> Transcrição e tradução em tempo real de DNA para RNAm
-                                e proteína.</li>
-                            <li><strong>Imagens Moleculares:</strong> Exibição gráfica das fórmulas 2D dos aminoácidos
-                                traduzidos.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="content tutorial">
-                <div class="page-header">
-                    <h2>Tutorial do Simulador</h2>
-                    <p>Aprenda a interagir e simular mutações no laboratório virtual.</p>
-                </div>
+
                 <div class="tutorial-steps">
                     <div class="step-card">
                         <div class="step-num">1</div>
@@ -665,45 +662,105 @@
                         <div class="step-body">
                             <h3>Simulando Mutações</h3>
                             <p>Abra <strong>Laboratório Virtual → Genética Molecular</strong> na barra lateral. Logo
-                                acima da fita de DNA, o controle <strong>Mutação</strong> oferece três modos:</p>
-                            <ul>
-                                <li><strong>Adição:</strong> Insira novas bases no meio da fita.</li>
-                                <li><strong>Deleção:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
-                                <li><strong>Substituição:</strong> Substitua uma base por outra na mesma posição.</li>
-                            </ul>
-                            <p>A fita inferior mutada se abrirá para comparar os resultados de forma gráfica e apontar a
-                                mutação em vermelho.</p>
+                                acima da fita de DNA, o controle <strong>Mutação</strong> oferece três modos:
+                                <strong>Adição</strong>, <strong>Deleção</strong> e <strong>Substituição</strong>. A
+                                fita inferior mutada se abre para comparar os resultados e apontar a mutação em
+                                vermelho.</p>
                         </div>
                     </div>
                 </div>
+
+                <h3 class="app-info-subheading"><i class="fas fa-history"></i> Histórico de Versões</h3>
+                <div class="version-timeline">
+                    <details class="version-card" open>
+                        <summary>v1.2 <span class="version-date">Julho, 2026</span> <span class="badge-active">Atual</span></summary>
+                        <ul>
+                            <li><strong>Menu Reestruturado:</strong> conteúdo teórico e simuladores agora vivem em
+                                páginas separadas — cada simulador tem sua página de teoria correspondente, e a
+                                Tabela de Códons passou a ser uma aba dentro de Proteínas.</li>
+                            <li><strong>Menu Retrátil no Mobile:</strong> a barra lateral virou uma gaveta deslizante
+                                acionada por um botão de menu, no lugar da fileira de chips que quebrava linha.</li>
+                            <li><strong>Sobre o Aplicativo Mais Enxuto:</strong> Versões e Tutorial unificados numa
+                                única página, com o histórico de versões em formato retrátil.</li>
+                            <li><strong>Feedback sem E-mail Manual:</strong> o formulário de feedback agora envia
+                                diretamente, sem abrir o app de e-mail do usuário.</li>
+                            <li><strong>Modo Claro/Escuro:</strong> alternador no rodapé da barra lateral, com
+                                preferência salva no navegador. Todas as superfícies do app agora respondem ao
+                                tema — inclusive os modais, que até esta versão eram parcialmente escuros.</li>
+                            <li><strong>Modo Professor Removido:</strong> a funcionalidade acumulava sobreposição
+                                com o novo Modo Escuro sem cobrir um uso real distinto; removida para simplificar
+                                o menu lateral.</li>
+                            <li><strong>Barra do Simulador Reorganizada:</strong> Editar com CRISPR, Replicar DNA,
+                                Exportar e Importar saíram da fileira de 7 botões e viraram um menu "Mais ações".</li>
+                            <li><strong>Acessibilidade:</strong> os painéis de resultado do Mendel, CRISPR,
+                                Heredograma e Genética Populacional passaram a anunciar mudanças a leitores de
+                                tela (<code>aria-live</code>), no mesmo padrão já usado pelo Quiz e pelo Ribossomo.</li>
+                            <li><strong>dom.js Encapsulado:</strong> alinhado ao padrão de script.js — nada mais
+                                é exposto no escopo global.</li>
+                        </ul>
+                    </details>
+                    <details class="version-card">
+                        <summary>v1.1 <span class="version-date">Julho, 2026</span></summary>
+                        <ul>
+                            <li><strong>Laboratório Virtual Unificado:</strong> Genética Molecular, Genética
+                                Mendeliana, Heredogramas, Genética Populacional e Cariótipo agora vivem em uma única
+                                aba do menu, com submenu colapsável — em vez de cinco itens soltos na barra lateral.
+                            </li>
+                            <li><strong>Sistema de Cores Completo:</strong> as ~80 cores que apareciam soltas e
+                                repetidas nas três folhas de estilo foram substituídas por um único conjunto de
+                                variáveis CSS (100 tokens) — bases nitrogenadas, tipos de mutação, propriedades de
+                                aminoácidos, estados de acerto/erro/aviso/informação e a paleta neutra da interface.
+                                Mesma aparência visual, uma só fonte da verdade no código.</li>
+                            <li><strong>Mutação Dentro do Simulador:</strong> Adição, Deleção e Substituição
+                                deixaram de ser itens de menu e agora são um seletor de modo dentro da própria
+                                página de Genética Molecular — igual ao padrão já usado por Heredogramas e Genética
+                                Populacional.</li>
+                            <li><strong>Menu Responsivo de Verdade:</strong> o submenu de simuladores (antes oculto
+                                no celular) agora também funciona em telas pequenas.</li>
+                            <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação —
+                                já existia no código, mas faltava na barra lateral — voltou a aparecer.</li>
+                            <li><strong>Conteúdo Novo:</strong> cartão sobre os três tipos de RNA (RNAm/RNAt/RNAr) e
+                                sobre os níveis de estrutura de uma proteína (primária → quaternária).</li>
+                            <li><strong>Nomenclatura Compartilhada:</strong> classes CSS reaproveitadas por vários
+                                simuladores (antes emprestadas do módulo de Mendel, ex. <code>.mendel-input</code>)
+                                renomeadas para um prefixo neutro (<code>.lab-input</code>), refletindo que já eram
+                                compartilhadas.</li>
+                        </ul>
+                    </details>
+                    <details class="version-card">
+                        <summary>v1.0 <span class="version-date">Junho, 2026</span></summary>
+                        <ul>
+                            <li><strong>Análise de Mutações:</strong> Classificação em tempo real (Silenciosa, Missense,
+                                Nonsense, Frameshift).</li>
+                            <li><strong>Interface Premium:</strong> Tema científico moderno, cores personalizadas por
+                                base nitrogenada, responsividade melhorada e micro-transições.</li>
+                            <li><strong>Didática Completa:</strong> Conclusão das páginas educativas de DNA, RNA e
+                                Proteínas.</li>
+                            <li><strong>Refatorações Técnicas:</strong> Correção de bug no controle global de eventos e
+                                comparação de arrays.</li>
+                        </ul>
+                    </details>
+                    <details class="version-card">
+                        <summary>v0.2 <span class="version-date">Maio, 2019</span></summary>
+                        <ul>
+                            <li><strong>Módulos de Mutação:</strong> Adicionados botões para Adicionar, Deletar e
+                                Substituir bases.</li>
+                            <li><strong>Detecção de Diferenças:</strong> Marcação em vermelho para bases e aminoácidos
+                                alterados na fita mutada.</li>
+                        </ul>
+                    </details>
+                    <details class="version-card">
+                        <summary>v0.1 <span class="version-date">Março, 2019</span></summary>
+                        <ul>
+                            <li><strong>Estrutura Básica:</strong> Transcrição e tradução em tempo real de DNA para RNAm
+                                e proteína.</li>
+                            <li><strong>Imagens Moleculares:</strong> Exibição gráfica das fórmulas 2D dos aminoácidos
+                                traduzidos.</li>
+                        </ul>
+                    </details>
+                </div>
             </div>
 
-            <div class="content codon-table">
-                <div class="page-header">
-                    <h2>Tabela de Códons (RNAm)</h2>
-                    <p>Clique em qualquer códon para preencher automaticamente o simulador. As cores agrupam os
-                        aminoácidos por propriedades químicas.</p>
-                </div>
-                <div class="codon-table-responsive">
-                    <table class="codon-matrix">
-                        <thead>
-                            <tr>
-                                <th>1ª Base</th>
-                                <th>2ª Base: U</th>
-                                <th>2ª Base: C</th>
-                                <th>2ª Base: A</th>
-                                <th>2ª Base: G</th>
-                                <th>3ª Base</th>
-                            </tr>
-                        </thead>
-                        <tbody id="codon-matrix-body">
-                            <!-- Gerado dinamicamente por buildCodonTable() em script.js,
-                                 a partir de CODON_TABLE e AMINOACIDS_DB — fonte única de verdade,
-                                 evitando que a tabela visual e a lógica de tradução divirjam. -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
             <div class="content diseases">
                 <div class="page-header">
                     <h2>Doenças Genéticas Reais</h2>
@@ -718,6 +775,14 @@
                             simulador, já com a análise de mutação calculada. As sequências foram simplificadas para
                             fins didáticos, mas a posição e o tipo da mutação correspondem à alteração real descrita
                             na literatura científica.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-radiation"></i> Como Surgem as Mutações</h3>
+                        <p>Mutações podem ser espontâneas (erros raros da DNA polimerase durante a replicação) ou
+                            induzidas por <strong>agentes mutagênicos</strong>: radiação UV e ionizante (danifica
+                            diretamente as bases), agentes químicos (alteram a estrutura das bases) e certos vírus.
+                            A maioria é corrigida por sistemas de reparo do DNA — as doenças abaixo são exemplos de
+                            mutações que escaparam do reparo e se tornaram permanentes.</p>
                     </div>
                     <div class="info-card disease-card">
                         <div class="disease-card-header">
@@ -778,7 +843,7 @@
                     </div>
                 </div>
             </div>
-            <div class="content mendel">
+            <div class="content mendel-theory">
                 <div class="page-header">
                     <h2>Genética Mendeliana</h2>
                     <p>Além da biologia molecular: como as características são herdadas dos pais para os filhos,
@@ -791,6 +856,14 @@
                             gene), um herdado de cada genitor. Na formação dos gametas, esse par se <strong>separa
                                 (segrega)</strong>, e cada gameta carrega apenas um dos dois alelos — daí o nome "Lei
                             da Segregação".</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-random"></i> 2ª Lei de Mendel</h3>
+                        <p>A <strong>Lei da Segregação Independente</strong> diz que, para duas ou mais
+                            características diferentes, os alelos de um gene se separam de forma independente dos
+                            alelos de outro gene durante a formação dos gametas — desde que os genes estejam em
+                            cromossomos diferentes (ou bem distantes no mesmo cromossomo). É essa lei que gera a
+                            proporção 9:3:3:1 nos cruzamentos di-híbridos.</p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-table"></i> Quadro de Punnett</h3>
@@ -813,21 +886,54 @@
                             simultaneamente e independentes entre si (ex: cor e textura da semente), gerando uma
                             grade de 4×4 e a clássica proporção fenotípica 9:3:3:1.</p>
                     </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-vial"></i> Cruzamento-Teste (Testcross)</h3>
+                        <p>Como saber se um indivíduo de fenótipo dominante é homozigoto (AA) ou heterozigoto (Aa)?
+                            Cruza-se ele com um homozigoto recessivo (aa). Se toda a descendência tiver o fenótipo
+                            dominante, o indivíduo era <strong>AA</strong>; se ~metade tiver o fenótipo recessivo, ele
+                            era <strong>Aa</strong>.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-calculator"></i> Regras de Probabilidade</h3>
+                        <p>Duas regras simplificam previsões sem desenhar o quadro inteiro: a <strong>regra do
+                                E</strong> (multiplicar probabilidades de eventos independentes, ex: chance de dois
+                            filhos serem meninas) e a <strong>regra do OU</strong> (somar probabilidades de eventos
+                            mutuamente exclusivos, ex: chance de um filho ser Aa OU aa).</p>
+                    </div>
                 </div>
 
-                <div class="mendel-cta-card">
-                    <div class="mendel-cta-text">
+                <div class="content-cta-card">
+                    <div class="content-cta-text">
                         <h3><i class="fas fa-flask"></i> Construtor de Cruzamentos</h3>
-                        <p>Monte seu próprio cruzamento — escolha o padrão de dominância, os genótipos dos genitores,
-                            e veja o quadro de Punnett, as proporções genotípicas e fenotípicas calculadas
-                            automaticamente.</p>
+                        <p>Monte seu próprio cruzamento e veja o quadro de Punnett calculado automaticamente, com as
+                            proporções genotípicas e fenotípicas.</p>
                     </div>
-                    <button class="btn-control mendel-cta-btn" id="btn-open-mendel">
+                    <button type="button" class="btn-control content-cta-btn" data-navigate-to="mendel-lab">
+                        <i class="fas fa-play-circle"></i> Abrir Simulador
+                    </button>
+                </div>
+            </div>
+            <div class="content mendel-lab">
+                <button type="button" class="back-to-theory-link" data-navigate-to="mendel-theory">
+                    <i class="fas fa-arrow-left"></i> Ver teoria de Genética Mendeliana
+                </button>
+                <div class="page-header">
+                    <h2>Laboratório: Genética Mendeliana</h2>
+                    <p>Construtor de cruzamentos — monte seu cruzamento e veja o quadro de Punnett calculado na
+                        hora.</p>
+                </div>
+                <div class="content-cta-card">
+                    <div class="content-cta-text">
+                        <h3><i class="fas fa-flask"></i> Construtor de Cruzamentos</h3>
+                        <p>Escolha o padrão de dominância, os genótipos dos genitores, e veja o quadro de Punnett, as
+                            proporções genotípicas e fenotípicas calculadas automaticamente.</p>
+                    </div>
+                    <button class="btn-control content-cta-btn" id="btn-open-mendel">
                         <i class="fas fa-play-circle"></i> Abrir Construtor
                     </button>
                 </div>
             </div>
-            <div class="content pedigree">
+            <div class="content pedigree-theory">
                 <div class="page-header">
                     <h2>Heredogramas</h2>
                     <p>Árvores genealógicas que registram a ocorrência de uma característica através das gerações
@@ -849,8 +955,49 @@
                             <strong>Ligada ao X dominante:</strong> pai afetado transmite a característica para
                             100% das filhas e 0% dos filhos.</p>
                     </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-shoe-prints"></i> Como Deduzir o Padrão</h3>
+                        <p>Um roteiro rápido: (1) A característica pula gerações? Se sim, é <strong>recessiva</strong>;
+                            se aparece em toda geração, é <strong>dominante</strong>. (2) Homens afetados passam a
+                            característica para todas as filhas mas nenhum filho? É <strong>ligada ao X</strong>.
+                            (3) Compare a proporção entre homens e mulheres afetados — desequilíbrio forte sugere
+                            herança ligada ao X.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-bolt"></i> Herança Mitocondrial</h3>
+                        <p>O DNA mitocondrial é herdado quase exclusivamente da <strong>mãe</strong>, já que o óvulo
+                            contribui com as mitocôndrias do zigoto. No heredograma, isso aparece como: mãe afetada
+                            transmite para <strong>todos</strong> os filhos, de ambos os sexos, enquanto pai afetado
+                            não transmite para nenhum filho.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-adjust"></i> Penetrância Incompleta</h3>
+                        <p>Nem todo indivíduo com o genótipo "certo" manifesta o fenótipo esperado — isso é
+                            <strong>penetrância incompleta</strong>. Quando o fenótipo varia em intensidade entre os
+                            afetados, chama-se <strong>expressividade variável</strong>. Os dois fenômenos explicam
+                            heredogramas que parecem "pular" uma geração mesmo em heranças dominantes.</p>
+                    </div>
                 </div>
 
+                <div class="content-cta-card">
+                    <div class="content-cta-text">
+                        <h3><i class="fas fa-users"></i> Gerador de Heredogramas</h3>
+                        <p>Gere heredogramas para os 4 padrões de herança, ou teste-se no modo quiz identificando o
+                            padrão a partir da árvore.</p>
+                    </div>
+                    <button type="button" class="btn-control content-cta-btn" data-navigate-to="pedigree-lab">
+                        <i class="fas fa-play-circle"></i> Abrir Simulador
+                    </button>
+                </div>
+            </div>
+            <div class="content pedigree-lab">
+                <button type="button" class="back-to-theory-link" data-navigate-to="pedigree-theory">
+                    <i class="fas fa-arrow-left"></i> Ver teoria de Heredogramas
+                </button>
+                <div class="page-header">
+                    <h2>Laboratório: Heredogramas</h2>
+                    <p>Gere heredogramas para os 4 padrões de herança clássicos, ou teste-se no Modo Quiz.</p>
+                </div>
                 <div class="lab-tool-panel">
                     <div class="lab-mode-switcher lab-toggle-group">
                         <button type="button" class="lab-toggle-btn active" id="pedigree-mode-study"
@@ -900,7 +1047,7 @@
                     <p class="pedigree-feedback" id="pedigree-feedback" aria-live="polite" style="display:none;"></p>
                 </div>
             </div>
-            <div class="content popgen">
+            <div class="content popgen-theory">
                 <div class="page-header">
                     <h2>Genética Populacional</h2>
                     <p>O Princípio de Hardy-Weinberg descreve as frequências alélicas e genotípicas esperadas numa
@@ -924,8 +1071,50 @@
                             <strong>(5)</strong> a população for infinitamente grande (sem deriva genética).
                             Quando qualquer uma dessas condições é violada, a população evolui.</p>
                     </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-random"></i> Deriva Genética</h3>
+                        <p>Mudanças aleatórias nas frequências alélicas por puro acaso amostral — mais fortes em
+                            populações pequenas. Dois casos extremos: <strong>efeito fundador</strong> (uma pequena
+                            população se estabelece isolada, carregando só uma amostra dos alelos da população
+                            original) e <strong>efeito gargalo</strong> (a população despenca drasticamente e perde
+                            variabilidade genética, mesmo que se recupere em número depois).</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-arrows-alt-h"></i> Fluxo Gênico</h3>
+                        <p>A migração de indivíduos entre populações introduz novos alelos ou muda as frequências
+                            existentes. Seu efeito principal é <strong>homogeneizar</strong> populações vizinhas,
+                            reduzindo as diferenças genéticas entre elas — o oposto da deriva genética, que tende a
+                            diferenciá-las.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-crosshairs"></i> Seleção Natural</h3>
+                        <p>Quando indivíduos com certos genótipos sobrevivem ou se reproduzem mais que outros, suas
+                            frequências alélicas aumentam na geração seguinte — é o único mecanismo evolutivo que
+                            gera <strong>adaptação</strong>, e não apenas mudança aleatória. Pode ser
+                            <strong>direcional</strong> (favorece um extremo), <strong>estabilizadora</strong>
+                            (favorece o intermediário) ou <strong>disruptiva</strong> (favorece os dois extremos).</p>
+                    </div>
                 </div>
 
+                <div class="content-cta-card">
+                    <div class="content-cta-text">
+                        <h3><i class="fas fa-chart-pie"></i> Calculadora de Hardy-Weinberg</h3>
+                        <p>Calcule frequências alélicas e genotípicas a partir do fenótipo recessivo, da frequência
+                            alélica, ou teste se uma população está em equilíbrio.</p>
+                    </div>
+                    <button type="button" class="btn-control content-cta-btn" data-navigate-to="popgen-lab">
+                        <i class="fas fa-play-circle"></i> Abrir Simulador
+                    </button>
+                </div>
+            </div>
+            <div class="content popgen-lab">
+                <button type="button" class="back-to-theory-link" data-navigate-to="popgen-theory">
+                    <i class="fas fa-arrow-left"></i> Ver teoria de Genética Populacional
+                </button>
+                <div class="page-header">
+                    <h2>Laboratório: Genética Populacional</h2>
+                    <p>Calculadora de Hardy-Weinberg — três formas de calcular frequências alélicas e genotípicas.</p>
+                </div>
                 <div class="lab-tool-panel popgen-tool">
                     <div class="lab-mode-switcher lab-toggle-group popgen-mode-toggle">
                         <button type="button" class="lab-toggle-btn active" id="popgen-mode-qsquared"
@@ -1003,7 +1192,7 @@
                     </div>
                 </div>
             </div>
-            <div class="content karyotype">
+            <div class="content karyotype-theory">
                 <div class="page-header">
                     <h2>Cariótipo e Não-disjunção</h2>
                     <p>O cariótipo é o conjunto completo de cromossomos de uma célula, organizado por tamanho e
@@ -1025,8 +1214,43 @@
                             cópia — geralmente letal em autossomos). Nos cromossomos sexuais, gera condições como a
                             Síndrome de Turner (45,X) e a Síndrome de Klinefelter (47,XXY).</p>
                     </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-microscope"></i> Técnicas de Obtenção</h3>
+                        <p>O cariótipo é obtido cultivando células (geralmente linfócitos do sangue), parando-as em
+                            metáfase e corando os cromossomos — o <strong>bandeamento G</strong> é a técnica mais
+                            comum, gerando um padrão de bandas claras/escuras único para cada par. Em pré-natal, as
+                            células vêm de <strong>amniocentese</strong> (líquido amniótico) ou <strong>biópsia de
+                                vilo corial</strong>.</p>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-puzzle-piece"></i> Translocações e Mosaicismo</h3>
+                        <p>Numa <strong>translocação</strong>, um pedaço de cromossomo se quebra e se junta a outro
+                            cromossomo — se nenhum material é perdido (translocação balanceada), o portador costuma
+                            ser saudável, mas pode gerar gametas desbalanceados. Já o <strong>mosaicismo</strong>
+                            ocorre quando um erro mitótico após a fecundação faz o indivíduo ter duas ou mais linhagens
+                            celulares com cariótipos diferentes.</p>
+                    </div>
                 </div>
 
+                <div class="content-cta-card">
+                    <div class="content-cta-text">
+                        <h3><i class="fas fa-th"></i> Visualizador e Simulador</h3>
+                        <p>Visualize cariótipos normais e de síndromes cromossômicas, e simule como a não-disjunção
+                            na meiose I ou II gera cada um deles.</p>
+                    </div>
+                    <button type="button" class="btn-control content-cta-btn" data-navigate-to="karyotype-lab">
+                        <i class="fas fa-play-circle"></i> Abrir Simulador
+                    </button>
+                </div>
+            </div>
+            <div class="content karyotype-lab">
+                <button type="button" class="back-to-theory-link" data-navigate-to="karyotype-theory">
+                    <i class="fas fa-arrow-left"></i> Ver teoria de Cariótipo
+                </button>
+                <div class="page-header">
+                    <h2>Laboratório: Cariótipo</h2>
+                    <p>Visualizador de cariótipos e simulador de não-disjunção meiótica.</p>
+                </div>
                 <div class="lab-tool-panel karyo-tool">
                     <h4 class="lab-section-title"><i class="fas fa-eye"></i> Visualizador de Cariótipo</h4>
                     <div class="lab-grid-inputs">
@@ -1099,15 +1323,16 @@
                 <div class="educational-grid">
                     <div class="info-card">
                         <h3><i class="fas fa-paper-plane"></i> Enviar Mensagem</h3>
-                        <!-- O formulário usa mailto: para abrir o app de e-mail do usuário. Limitação conhecida
-                             dessa abordagem: sem servidor próprio, depende de o navegador/SO ter um cliente de
-                             e-mail padrão configurado, e mensagens muito longas podem esbarrar no limite de
-                             tamanho de uma URL mailto:. -->
-                        <form action="mailto:willianj16@gmail.com" method="GET" enctype="text/plain" class="feedback-form">
+                        <form id="feedback-form" action="https://formspree.io/f/mbdveydj" method="POST"
+                            class="feedback-form">
 
                             <div class="lab-field-group">
                                 <label for="nome" class="lab-label">Nome</label>
                                 <input type="text" id="nome" name="Nome" class="lab-input feedback-input" required>
+                            </div>
+                            <div class="lab-field-group">
+                                <label for="email" class="lab-label">Email</label>
+                                <input type="email" id="email" name="Email" class="lab-input feedback-input" required>
                             </div>
 
                             <fieldset class="lab-field-group feedback-fieldset">
@@ -1131,8 +1356,10 @@
                                     class="lab-input feedback-input" required></textarea>
                             </div>
 
-                            <button type="submit" class="btn-control"><i class="fas fa-envelope"></i> Enviar por
-                                E-mail</button>
+                            <button type="submit" class="btn-control" id="feedback-submit-btn">
+                                <i class="fas fa-envelope"></i> Enviar
+                            </button>
+                            <p class="feedback-status" id="feedback-status" role="status" aria-live="polite"></p>
                         </form>
                     </div>
                 </div>

@@ -68,6 +68,10 @@
       }
 
       this.classList.add('active');
+
+      // No mobile, o menu é uma gaveta retrátil — depois de escolher uma
+      // página, fecha a gaveta automaticamente (função definida mais abaixo).
+      closeMobileDrawer();
     });
   });
 
@@ -158,6 +162,149 @@
 
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') closeMoreActions();
+    });
+  }
+
+  /**
+   * Menu retrátil no mobile — a <nav> inteira (logo + sidebar) desliza como
+   * uma gaveta (off-canvas), acionada por um botão de hambúrguer fixo e
+   * fechada por um backdrop escurecido, pela tecla Esc, ou ao escolher
+   * qualquer item do menu (ver closeMobileDrawer() chamada acima).
+   */
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const appNav = document.getElementById('app-sidebar-nav');
+  const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+  function closeMobileDrawer() {
+    if (!appNav) return;
+    appNav.classList.remove('nav-open');
+    if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    if (sidebarBackdrop) sidebarBackdrop.hidden = true;
+  }
+
+  function openMobileDrawer() {
+    if (!appNav) return;
+    appNav.classList.add('nav-open');
+    if (mobileMenuBtn) mobileMenuBtn.setAttribute('aria-expanded', 'true');
+    if (sidebarBackdrop) sidebarBackdrop.hidden = false;
+  }
+
+  if (mobileMenuBtn && appNav) {
+    mobileMenuBtn.addEventListener('click', function () {
+      const isOpen = appNav.classList.contains('nav-open');
+      if (isOpen) closeMobileDrawer(); else openMobileDrawer();
+    });
+  }
+
+  if (sidebarBackdrop) {
+    sidebarBackdrop.addEventListener('click', closeMobileDrawer);
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeMobileDrawer();
+  });
+
+  /**
+   * Links genéricos de navegação cruzada entre teoria e simulador
+   * (atributo data-navigate-to="algum-id-do-menu"). Em vez de duplicar a
+   * lógica de troca de página, simplesmente clica no botão correspondente
+   * do menu lateral — reaproveitando destaque de item ativo, abertura do
+   * submenu "SIMULADORES" etc.
+   */
+  document.addEventListener('click', function (event) {
+    const trigger = event.target.closest('[data-navigate-to]');
+    if (!trigger) return;
+    const targetId = trigger.getAttribute('data-navigate-to');
+    const targetBtn = document.getElementById(targetId);
+    if (targetBtn) targetBtn.click();
+    // Rola para o topo da página de destino — útil em telas menores, onde
+    // o clique pode ter ocorrido no meio de uma página longa.
+    const visiblePage = document.getElementById('visible-page');
+    if (visiblePage) visiblePage.scrollTop = 0;
+  });
+
+  /**
+   * Abas de conteúdo genéricas (ex.: Tabela de Aminoácidos / Tabela de
+   * Códons, na página de Proteínas). Estrutura esperada:
+   *   .content-tabs > .content-tabs-nav > .content-tab-btn[data-tab-target]
+   *   .content-tabs > .content-tab-panel[id]
+   */
+  Array.from(document.getElementsByClassName('content-tab-btn')).forEach(function (tabBtn) {
+    tabBtn.addEventListener('click', function () {
+      const wrapper = this.closest('.content-tabs');
+      if (!wrapper) return;
+      const targetId = this.getAttribute('data-tab-target');
+
+      Array.from(wrapper.getElementsByClassName('content-tab-btn')).forEach(function (btn) {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      Array.from(wrapper.getElementsByClassName('content-tab-panel')).forEach(function (panel) {
+        panel.classList.remove('active');
+        panel.hidden = true;
+      });
+
+      this.classList.add('active');
+      this.setAttribute('aria-selected', 'true');
+      const targetPanel = document.getElementById(targetId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+        targetPanel.hidden = false;
+      }
+    });
+  });
+
+  /**
+   * Formulário de Feedback — envia via fetch() para um backend de
+   * formulários (Formspree por padrão; ver comentário no HTML sobre como
+   * configurar a URL). Substitui o antigo action="mailto:", que dependia de
+   * o usuário ter um cliente de e-mail configurado no sistema.
+   */
+  const feedbackForm = document.getElementById('feedback-form');
+  const feedbackStatus = document.getElementById('feedback-status');
+  const feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      const actionUrl = feedbackForm.getAttribute('action') || '';
+      if (!actionUrl || actionUrl.indexOf('SEU_FORM_ID_AQUI') !== -1) {
+        if (feedbackStatus) {
+          feedbackStatus.textContent = 'Formulário ainda não configurado — veja o comentário no HTML (crie uma conta em formspree.io e cole a URL do formulário no atributo "action").';
+          feedbackStatus.className = 'feedback-status feedback-status-error';
+        }
+        return;
+      }
+
+      if (feedbackSubmitBtn) feedbackSubmitBtn.disabled = true;
+      if (feedbackStatus) {
+        feedbackStatus.textContent = 'Enviando...';
+        feedbackStatus.className = 'feedback-status';
+      }
+
+      fetch(actionUrl, {
+        method: 'POST',
+        body: new FormData(feedbackForm),
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
+        if (response.ok) {
+          if (feedbackStatus) {
+            feedbackStatus.textContent = 'Mensagem enviada com sucesso — obrigado pelo feedback!';
+            feedbackStatus.className = 'feedback-status feedback-status-success';
+          }
+          feedbackForm.reset();
+        } else {
+          throw new Error('Falha no envio');
+        }
+      }).catch(function () {
+        if (feedbackStatus) {
+          feedbackStatus.textContent = 'Não foi possível enviar agora. Tente novamente em instantes.';
+          feedbackStatus.className = 'feedback-status feedback-status-error';
+        }
+      }).finally(function () {
+        if (feedbackSubmitBtn) feedbackSubmitBtn.disabled = false;
+      });
     });
   }
 

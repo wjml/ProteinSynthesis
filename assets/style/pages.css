@@ -860,8 +860,11 @@
 	width: 100%;
 	justify-content: center;
 }
-/* ===== Genética Mendeliana — cartão de chamada para o construtor ===== */
-.mendel-cta-card {
+/* ===== Cartão de chamada reutilizável (teoria → simulador, simulador → abrir
+   ferramenta). Usado nas 4 páginas de teoria de Genética Clássica e no
+   gatilho do Construtor de Cruzamentos de Mendel. Antes só existia como
+   ".mendel-cta-card"; generalizado para não duplicar essa regra 4x. ===== */
+.content-cta-card {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -872,9 +875,10 @@
 	border-radius: 12px;
 	padding: 1.5rem 1.75rem;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	margin-top: 1.5rem;
 }
 
-.mendel-cta-text h3 {
+.content-cta-text h3 {
 	margin: 0 0 0.4rem 0;
 	color: var(--colorDetailsText);
 	font-size: 1.25rem;
@@ -883,7 +887,7 @@
 	gap: 0.5rem;
 }
 
-.mendel-cta-text p {
+.content-cta-text p {
 	margin: 0;
 	color: var(--slate600);
 	line-height: 1.6;
@@ -891,7 +895,7 @@
 	max-width: 46ch;
 }
 
-.mendel-cta-btn {
+.content-cta-btn {
 	flex: 0 0 auto;
 	width: auto;
 	margin-top: 0;
@@ -900,19 +904,41 @@
 	background: var(--colorDetailsText);
 	color: white;
 	border-color: transparent;
+	cursor: pointer;
 }
 
-.mendel-cta-btn:hover {
+.content-cta-btn:hover {
 	filter: brightness(1.1);
 }
 
+/* Link discreto "← Ver teoria" no topo das páginas de laboratório (-lab) */
+.back-to-theory-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-bottom: 1.25rem;
+	padding: 0;
+	background: none;
+	border: none;
+	color: var(--colorDetailsText);
+	font-family: var(--font-sans);
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.back-to-theory-link:hover {
+	text-decoration: underline;
+}
+
 @media (max-width: 640px) {
-	.mendel-cta-card {
+	.content-cta-card {
 		flex-direction: column;
 		align-items: stretch;
 		text-align: center;
 	}
-	.mendel-cta-text p {
+	.content-cta-text p {
 		max-width: none;
 	}
 }
@@ -1034,4 +1060,133 @@
 .crispr-pathway-card.pedigree-answer-wrong {
 	border-color: var(--colorError);
 	background: var(--colorErrorBg);
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   Abas de conteúdo genéricas (ex.: Proteínas → Tabela de Aminoácidos /
+   Tabela de Códons). Comportamento em dom.js.
+   ═══════════════════════════════════════════════════════════════════════ */
+.content-tabs {
+	margin-top: 0.5rem;
+}
+
+.content-tabs-nav {
+	display: flex;
+	gap: 0.5rem;
+	border-bottom: 2px solid var(--slate200);
+	margin-bottom: 1.25rem;
+	flex-wrap: wrap;
+}
+
+.content-tab-btn {
+	background: none;
+	border: none;
+	border-bottom: 3px solid transparent;
+	padding: 0.7rem 1rem;
+	font-family: var(--font-sans);
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--slate500);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin-bottom: -2px;
+}
+
+.content-tab-btn:hover {
+	color: var(--colorDetailsText);
+}
+
+.content-tab-btn.active {
+	color: var(--colorDetailsText);
+	border-bottom-color: var(--colorDetailsText);
+}
+
+.content-tab-panel {
+	animation: contentTabFadeIn 0.2s ease-in-out;
+}
+
+@keyframes contentTabFadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.tab-panel-note {
+	color: var(--slate600);
+	font-size: 0.9rem;
+	margin: 0 0 1rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Página "Sobre & Tutorial" — subtítulo interno e histórico de versões
+   como acordeão (<details>/<summary> nativos: só v1.2 vem aberta).
+   ═══════════════════════════════════════════════════════════════════════ */
+.app-info-subheading {
+	margin: 2rem 0 1rem 0;
+	color: var(--slate700);
+	font-size: 1.3rem;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+}
+
+details.version-card summary {
+	margin: 0;
+	font-size: 1.1rem;
+	color: var(--slate700);
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	cursor: pointer;
+	list-style: none;
+}
+
+details.version-card summary::-webkit-details-marker {
+	display: none;
+}
+
+details.version-card summary::before {
+	content: "\f054"; /* fa-chevron-right */
+	font-family: "Font Awesome 6 Free";
+	font-weight: 900;
+	font-size: 0.75rem;
+	color: var(--slate400);
+	transition: transform 0.15s ease-in-out;
+	flex: 0 0 auto;
+}
+
+details.version-card[open] summary::before {
+	transform: rotate(90deg);
+}
+
+details.version-card .badge-active {
+	margin-bottom: 0;
+}
+
+details.version-card[open] summary {
+	margin-bottom: 0.8rem;
+}
+
+details.version-card ul {
+	margin-top: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Status de envio do formulário de Feedback
+   ═══════════════════════════════════════════════════════════════════════ */
+.feedback-status {
+	margin: 0.75rem 0 0 0;
+	font-size: 0.9rem;
+	min-height: 1.2em;
+	color: var(--slate600);
+}
+
+.feedback-status-success {
+	color: var(--colorSuccessText);
+	font-weight: 600;
+}
+
+.feedback-status-error {
+	color: var(--colorErrorText);
+	font-weight: 600;
 }

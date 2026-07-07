@@ -474,107 +474,85 @@ nav #logo img {
 	transition: all 0.2s ease-in;
 }
 
-/* Responsiveness for Smaller Screens */
+/* ═══════════════════════════════════════════════════════════════════════
+   Menu retrátil no mobile (gaveta off-canvas)
+   ═══════════════════════════════════════════════════════════════════════
+   Antes desta versão, a barra lateral virava uma fileira de "chips" que
+   quebrava linha no celular — funcionava com ~16 itens, mas com a
+   reestruturação do menu (conteúdo e simuladores separados, 4 novas
+   páginas de teoria) o total passou de ~20 itens, o que deixaria essa
+   fileira enorme e didaticamente confusa.
+
+   A troca: no mobile, <nav> (logo + sidebar, incluindo cabeçalhos de
+   categoria) sai do fluxo normal (position: fixed) e fica escondida fora
+   da tela a esquerda. Um botão de hambúrguer fixo a abre por cima do
+   conteúdo, com um backdrop escurecido atrás — a mesma barra vertical do
+   desktop, sem nenhuma variação de layout a manter. */
+
+.mobile-menu-btn {
+	display: none;
+	position: fixed;
+	top: 12px;
+	left: 12px;
+	z-index: 1001;
+	width: 42px;
+	height: 42px;
+	align-items: center;
+	justify-content: center;
+	background: var(--bgSidebar);
+	color: white;
+	border: 1px solid var(--slate800);
+	border-radius: 10px;
+	font-size: 1.1rem;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.mobile-menu-btn:hover {
+	background: var(--bgSidebarHover);
+}
+
+.sidebar-backdrop {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+}
+
 @media (max-width: 768px) {
 	.main {
-		flex-direction: column;
 		height: calc(100% - var(--footerSize));
-		overflow-y: auto;
+	}
+
+	.mobile-menu-btn {
+		display: flex;
+	}
+
+	.sidebar-backdrop:not([hidden]) {
+		display: block;
 	}
 
 	nav {
-		height: auto;
-		border-right: none;
-		border-bottom: 1px solid var(--slate800);
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: min(var(--sidebarSize), 85vw);
+		z-index: 1000;
+		transform: translateX(-100%);
+		transition: transform 0.25s ease-in-out;
+		box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
 	}
 
-	nav #logo {
-		padding: 0.8rem 0;
-	}
-
-	.sidebar {
-		width: 100%;
-		flex-direction: row;
-		flex-wrap: wrap;
-	}
-
-	.sidebar .header-title,
-	.sidebar .empty {
-		display: none !important;
-	}
-
-	.sidebar .button {
-		flex: 1 1 auto;
-		padding: 12px 15px;
-		justify-content: center;
-		border-left: none;
-		border-bottom: 3px solid transparent;
-		font-size: 0.85rem;
-	}
-
-	.sidebar .button i {
-		margin: 0 8px 0 0;
-	}
-
-	.sidebar .button#lab-toggle:after {
-		content: "\25BC";
-		font-size: 0.6rem;
-		position: static !important;
-		margin-left: 6px !important;
-	}
-
-	/* Antes o submenu inteiro era escondido no mobile ("para simplificar a
-	   barra"), o que também escondia os 3 controles de mutação — a única
-	   forma de simular mutações no app. Agora que o submenu carrega os 5
-	   simuladores, escondê-lo deixaria a maior parte do app inacessível no
-	   celular. Em vez disso, ele vira uma segunda fileira de chips que só
-	   aparece quando "LABORATÓRIO VIRTUAL" está aberto. */
-	.sidebar .collapsible {
-		display: none;
-		width: 100%;
-		max-height: none;
-		flex-direction: row;
-		flex-wrap: wrap;
-		background: var(--bgDarkestMobile);
-	}
-
-	.sidebar .collapsible.active {
-		display: flex;
-		max-height: none;
-	}
-
-	/* Nota: .sidebar .header-title (acima) já esconde os cabeçalhos "Simuladores"
-	   e "Mutação (Genética Molecular)" também aqui dentro do submenu — no
-	   celular os chips ficam sem separador, igual ao resto da barra. */
-	.sidebar .collapsible .button {
-		flex: 1 1 auto;
-		min-width: 46%;
-		justify-content: center;
-		padding: 10px 6px;
-		font-size: 0.78rem;
-		border-bottom: 3px solid transparent;
+	nav.nav-open {
+		transform: translateX(0);
 	}
 
 	#visible-page {
 		width: 100%;
 		height: auto;
 		flex-grow: 1;
-	}
-
-	.button.active,
-	.button.active:hover {
-		border-left: none;
-		border-bottom: 3px solid var(--colorDetailsHover);
-	}
-
-	.sidebar-toggle {
-		flex: 1 1 auto;
-		padding: 12px 15px;
-		justify-content: center;
-		border-top: none;
-		border-bottom: 3px solid transparent;
-		font-size: 0.85rem;
-		margin: 0;
 	}
 }
 
