@@ -42,15 +42,15 @@
                 <li class="button" id="diseases">
                     <i class="fas fa-universal-access"></i> Doenças Genéticas
                 </li>
-                <li class="button" id="app" data-collapsible="lab-collapsible">
+                <li class="button" id="lab-toggle" data-collapsible="lab-collapsible">
                     <div class="menu-label-group">
-                        <span class="main-label"><i class="fas fa-flask"></i> LABORATÓRIO VIRTUAL</span>
-                        <span class="sub-label">5 simuladores interativos</span>
+                        <span class="main-label"><i class="fas fa-flask"></i> SIMULADORES</span>
+                        <span class="sub-label">Laboratório Virtual</span>
                     </div>
                 </li>
                 <ul class="collapsible" id="lab-collapsible">
-                    <li class="header-title" id="lab-tools-header">
-                        <span>Simuladores</span>
+                    <li class="button" id="app">
+                        <i class="fas fa-vial"></i> Genética Molecular
                     </li>
                     <li class="button" id="mendel">
                         <i class="fas fa-dna"></i> Genética Mendeliana
@@ -63,18 +63,6 @@
                     </li>
                     <li class="button" id="karyotype">
                         <i class="fas fa-grip-lines"></i> Cariótipo
-                    </li>
-                    <li class="header-title" id="mutation">
-                        <span>Mutação (Genética Molecular)</span>
-                    </li>
-                    <li class="button" id="add" data-page="app">
-                        <i class="fas fa-plus-circle"></i> Adição
-                    </li>
-                    <li class="button" id="delete" data-page="app">
-                        <i class="fas fa-minus-circle"></i> Deleção
-                    </li>
-                    <li class="button" id="replace" data-page="app">
-                        <i class="fas fa-sync-alt"></i> Substituição
                     </li>
                 </ul>
 
@@ -93,8 +81,8 @@
                 <li class="button" id="feedback">
                     <i class="fas fa-envelope"></i> Feedback
                 </li>
-                <li class="sidebar-toggle" id="toggle-professor">
-                    <i class="fas fa-chalkboard-teacher"></i> Modo Professor
+                <li class="sidebar-toggle" id="theme-toggle" role="button" tabindex="0" aria-pressed="false">
+                    <i class="fas fa-moon" id="theme-toggle-icon"></i> <span id="theme-toggle-label">Modo Escuro</span>
                 </li>
                 <li class="empty"></li>
             </ul>
@@ -433,14 +421,22 @@
                             aleatória</button>
                         <button id="btn-animate" class="btn-control"><i class="fas fa-play-circle"></i> Animar
                             Tradução</button>
-                        <button id="btn-crispr" class="btn-control"><i class="fas fa-cut"></i> Editar com
-                            CRISPR</button>
-                        <button id="btn-replicate" class="btn-control"><i class="fas fa-clone"></i> Replicar
-                            DNA</button>
-                        <button id="btn-export" class="btn-control"><i class="fas fa-file-export"></i>
-                            Exportar</button>
-                        <button id="btn-import" class="btn-control"><i class="fas fa-file-import"></i>
-                            Importar</button>
+                        <div class="more-actions" id="more-actions">
+                            <button type="button" class="btn-control" id="more-actions-toggle"
+                                aria-haspopup="true" aria-expanded="false" aria-controls="more-actions-menu">
+                                <i class="fas fa-ellipsis-h"></i> Mais ações
+                            </button>
+                            <div class="more-actions-menu" id="more-actions-menu" role="menu" hidden>
+                                <button id="btn-crispr" class="more-actions-item" role="menuitem"><i
+                                        class="fas fa-cut"></i> Editar com CRISPR</button>
+                                <button id="btn-replicate" class="more-actions-item" role="menuitem"><i
+                                        class="fas fa-clone"></i> Replicar DNA</button>
+                                <button id="btn-export" class="more-actions-item" role="menuitem"><i
+                                        class="fas fa-file-export"></i> Exportar</button>
+                                <button id="btn-import" class="more-actions-item" role="menuitem"><i
+                                        class="fas fa-file-import"></i> Importar</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="base-input-buttons">
                         <span class="button-label">Inserir Base:</span>
@@ -448,6 +444,18 @@
                         <button class="btn-base base-T" data-base="T">T</button>
                         <button class="btn-base base-C" data-base="C">C</button>
                         <button class="btn-base base-G" data-base="G">G</button>
+                    </div>
+                    <div class="control-row">
+                        <span class="button-label">Mutação:</span>
+                        <div class="lab-toggle-group">
+                            <button type="button" class="lab-toggle-btn" id="add" data-mode="add"
+                                aria-pressed="false">Adição <span class="lab-toggle-sub">inserir base</span></button>
+                            <button type="button" class="lab-toggle-btn" id="delete" data-mode="delete"
+                                aria-pressed="false">Deleção <span class="lab-toggle-sub">remover base</span></button>
+                            <button type="button" class="lab-toggle-btn" id="replace" data-mode="replace"
+                                aria-pressed="false">Substituição <span class="lab-toggle-sub">trocar
+                                    base</span></button>
+                        </div>
                     </div>
                 </div>
                 <div class="sequence">
@@ -462,7 +470,7 @@
                     </div>
 
                     <div class="textbox-rna"></div>
-                    <div class="label">Estrutura Primária do Peptídeo (Sequência de Aminoácidos)
+                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)
                         <div class="process-box">
                             <span>↓ TRADUÇÃO </span>
                         </div>
@@ -480,8 +488,8 @@
                 <div class="mutation-panel" style="display: none;">
                     <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
                     <div class="mutation-analysis-result">
-                        <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação no menu
-                            lateral para começar.</span>
+                        <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação acima
+                            para começar.</span>
                         <div class="mutation-details" style="display: none;">
                             <span class="mutation-type-badge">Silenciosa</span>
                             <p class="mutation-description">Ocorreu uma alteração em uma base, mas a sequência de
@@ -537,22 +545,60 @@
                 </div>
                 <div class="version-timeline">
                     <div class="version-card">
-                        <h3>v1.1 <span class="version-date">Julho, 2026</span></h3>
+                        <h3>v1.2 <span class="version-date">Julho, 2026</span></h3>
                         <span class="badge-active">Atual</span>
                         <ul>
-                            <li><strong>Laboratório Virtual Unificado:</strong> Cruzamentos, Heredogramas, Genética
-                                Populacional, Cariótipo e Genética Molecular agora vivem em uma única aba do menu,
-                                com submenu colapsável — em vez de cinco itens soltos na barra lateral.</li>
+                            <li><strong>Modo Claro/Escuro:</strong> alternador no rodapé da barra lateral, com
+                                preferência salva no navegador. Todas as superfícies do app agora respondem ao
+                                tema — inclusive os modais, que até esta versão eram parcialmente escuros.</li>
+                            <li><strong>Modo Professor Removido:</strong> a funcionalidade acumulava sobreposição
+                                com o novo Modo Escuro sem cobrir um uso real distinto; removida para simplificar
+                                o menu lateral.</li>
+                            <li><strong>Um Único Tema de Modal:</strong> Exportar/Importar e Ribossomo em Ação
+                                eram os dois únicos modais ainda no tema escuro original; agora seguem a mesma
+                                base clara de Mendel/CRISPR/Replicação.</li>
+                            <li><strong>Uma Única Família de Cinza:</strong> as paletas <code>--textContent*</code>
+                                e <code>--textFlat*</code> — quase idênticas a <code>--slate*</code>, mas mantidas
+                                separadas — foram unificadas num só conjunto de tokens.</li>
+                            <li><strong>Barra do Simulador Reorganizada:</strong> Editar com CRISPR, Replicar DNA,
+                                Exportar e Importar saíram da fileira de 7 botões e viraram um menu "Mais ações".</li>
+                            <li><strong>Terminologia Padronizada:</strong> a fita de mutação chamava a saída de
+                                "Peptídeo"; agora usa "Proteína" em todo o simulador, igual à fita original.</li>
+                            <li><strong>Acessibilidade:</strong> os painéis de resultado do Mendel, CRISPR,
+                                Heredograma e Genética Populacional passaram a anunciar mudanças a leitores de
+                                tela (<code>aria-live</code>), no mesmo padrão já usado pelo Quiz e pelo Ribossomo.</li>
+                            <li><strong>Escala de Breakpoints:</strong> os 5 valores de <code>@media</code>
+                                espalhados pelo CSS (480/540/560/640/768px) viraram 2 (640px e 768px).</li>
+                            <li><strong>dom.js Encapsulado:</strong> alinhado ao padrão de script.js — nada mais
+                                é exposto no escopo global.</li>
+                        </ul>
+                    </div>
+                    <div class="version-card">
+                        <h3>v1.1 <span class="version-date">Julho, 2026</span></h3>
+                        <ul>
+                            <li><strong>Laboratório Virtual Unificado:</strong> Genética Molecular, Genética
+                                Mendeliana, Heredogramas, Genética Populacional e Cariótipo agora vivem em uma única
+                                aba do menu, com submenu colapsável — em vez de cinco itens soltos na barra lateral.
+                            </li>
+                            <li><strong>Sistema de Cores Completo:</strong> as ~80 cores que apareciam soltas e
+                                repetidas nas três folhas de estilo foram substituídas por um único conjunto de
+                                variáveis CSS (100 tokens) — bases nitrogenadas, tipos de mutação, propriedades de
+                                aminoácidos, estados de acerto/erro/aviso/informação e a paleta neutra da interface.
+                                Mesma aparência visual, uma só fonte da verdade no código.</li>
+                            <li><strong>Mutação Dentro do Simulador:</strong> Adição, Deleção e Substituição
+                                deixaram de ser itens de menu e agora são um seletor de modo dentro da própria
+                                página de Genética Molecular — igual ao padrão já usado por Heredogramas e Genética
+                                Populacional.</li>
                             <li><strong>Menu Responsivo de Verdade:</strong> o submenu de simuladores (antes oculto
                                 no celular) agora também funciona em telas pequenas.</li>
                             <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação —
                                 já existia no código, mas faltava na barra lateral — voltou a aparecer.</li>
                             <li><strong>Conteúdo Novo:</strong> cartão sobre os três tipos de RNA (RNAm/RNAt/RNAr) e
                                 sobre os níveis de estrutura de uma proteína (primária → quaternária).</li>
-                            <li><strong>Consistência Visual:</strong> cores de acerto/erro unificadas entre Modo
-                                Desafio, CRISPR, heredogramas e genética populacional; nomes de classes CSS
-                                compartilhadas entre simuladores (antes emprestados do módulo de Mendel)
-                                renomeados para refletir esse compartilhamento.</li>
+                            <li><strong>Nomenclatura Compartilhada:</strong> classes CSS reaproveitadas por vários
+                                simuladores (antes emprestadas do módulo de Mendel, ex. <code>.mendel-input</code>)
+                                renomeadas para um prefixo neutro (<code>.lab-input</code>), refletindo que já eram
+                                compartilhadas.</li>
                         </ul>
                     </div>
                     <div class="version-card">
@@ -618,12 +664,12 @@
                         <div class="step-num">3</div>
                         <div class="step-body">
                             <h3>Simulando Mutações</h3>
-                            <p>Abra <strong>Laboratório Virtual</strong> na barra lateral: dentro do submenu, em
-                                "Mutação (Genética Molecular)", você encontra três controles:</p>
+                            <p>Abra <strong>Laboratório Virtual → Genética Molecular</strong> na barra lateral. Logo
+                                acima da fita de DNA, o controle <strong>Mutação</strong> oferece três modos:</p>
                             <ul>
-                                <li><strong>Adicionar:</strong> Insira novas bases no meio da fita.</li>
-                                <li><strong>Deletar:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
-                                <li><strong>Substituir:</strong> Substitua uma base por outra na mesma posição.</li>
+                                <li><strong>Adição:</strong> Insira novas bases no meio da fita.</li>
+                                <li><strong>Deleção:</strong> Remova bases usando as teclas Backspace ou Delete.</li>
+                                <li><strong>Substituição:</strong> Substitua uma base por outra na mesma posição.</li>
                             </ul>
                             <p>A fita inferior mutada se abrirá para comparar os resultados de forma gráfica e apontar a
                                 mutação em vermelho.</p>
@@ -835,7 +881,7 @@
 
                     <div class="pedigree-svg-wrapper" id="pedigree-svg-wrapper"></div>
 
-                    <p class="pedigree-info-text" id="pedigree-info-text"></p>
+                    <p class="pedigree-info-text" id="pedigree-info-text" role="status" aria-live="polite"></p>
 
                     <div class="pedigree-quiz-answers" id="pedigree-quiz-answers" style="display:none;">
                         <span class="lab-label">Qual é o padrão de herança deste heredograma?</span>
@@ -851,7 +897,7 @@
                         </div>
                     </div>
 
-                    <p class="pedigree-feedback" id="pedigree-feedback" style="display:none;"></p>
+                    <p class="pedigree-feedback" id="pedigree-feedback" aria-live="polite" style="display:none;"></p>
                 </div>
             </div>
             <div class="content popgen">
@@ -943,7 +989,7 @@
                         </button>
                     </div>
 
-                    <div class="popgen-results" id="popgen-results" style="display:none;">
+                    <div class="popgen-results" id="popgen-results" aria-live="polite" style="display:none;">
                         <h4 class="lab-results-title">Resultado</h4>
 
                         <div class="popgen-allele-freqs" id="popgen-allele-freqs"></div>
@@ -1332,7 +1378,7 @@
                 <i class="fas fa-magic"></i> Gerar Quadro de Punnett
             </button>
 
-            <div class="mendel-results" id="mendel-results" style="display:none;">
+            <div class="mendel-results" id="mendel-results" aria-live="polite" style="display:none;">
                 <h4 class="lab-results-title">Resultado do Cruzamento</h4>
                 <div class="mendel-punnett-wrapper" id="mendel-punnett-wrapper"></div>
                 <div class="lab-tally-columns">
@@ -1375,7 +1421,7 @@
                 </button>
             </div>
 
-            <div class="crispr-result" id="crispr-result" style="display:none;"></div>
+            <div class="crispr-result" id="crispr-result" aria-live="polite" style="display:none;"></div>
 
             <div class="crispr-pathways" id="crispr-pathways" style="display:none;">
                 <span class="lab-label">Via de reparo</span>
@@ -1403,7 +1449,7 @@
                 </button>
             </div>
 
-            <div class="crispr-preview" id="crispr-preview" style="display:none;"></div>
+            <div class="crispr-preview" id="crispr-preview" aria-live="polite" style="display:none;"></div>
 
             <button type="button" class="btn-control lab-action-btn" id="crispr-apply-btn" style="display:none;">
                 <i class="fas fa-check"></i> Aplicar Edição no Simulador
@@ -1469,8 +1515,8 @@
 
 
 </body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 <script src="assets/js/dom.js"></script>
 <script src="assets/js/script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
 
 </html>

@@ -48,13 +48,13 @@
     opacity: 1;
     margin: 0;
     padding: 1.5%;
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--slate300);
 }
 
 .sequence .label {
     flex: none;
     font-weight: 700;
-    color: #475569;
+    color: var(--slate600);
     font-size: 0.85rem;
     letter-spacing: 0.05em;
     display: flex;
@@ -71,32 +71,32 @@
     padding: 4px;
     border-radius: 4px;
     font-size: 0.75rem;
-    background-color: #14b8a630;
+    background-color: var(--colorDetailsBgAlpha);
     color: var(--colorDetailsText);
 }
 
 .process-box #transcription {
-    background-color: #f3e8ff;
-    color: #6b21a8;
+    background-color: var(--colorPurpleBg);
+    color: var(--colorPurpleText);
 }
 
 .process-box #translation {
-    background-color: #fef3c7;
-    color: #92400e;
+    background-color: var(--colorWarningBgVivid);
+    color: var(--colorWarningText);
 }
 
 /* Sequence Nucleotide Character Inputs */
 .sequence .sequenceChar {
     font-family: 'Roboto Mono', monospace;
     text-align: center;
-    border: 1px solid #cbd5e1 !important;
+    border: 1px solid var(--slate300) !important;
     font-size: 24px;
     width: 40px;
     height: 40px;
     outline: none;
     margin: 2px 0;
     border-radius: 6px;
-    background: #ffffff;
+    background: var(--white);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
     transition: all 0.15s ease;
     box-sizing: border-box;
@@ -104,7 +104,7 @@
 
 .sequence .sequenceChar:focus {
     border-color: var(--colorDetails) !important;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+    box-shadow: 0 0 0 3px rgba(var(--colorDetailsRgb), 0.2);
 }
 
 /* Codon Triplet Grouping Spacing — 8 px gap aligns with amino acid cards */
@@ -118,32 +118,32 @@
 .sequence .textbox-rna .sequenceChar,
 .sequence.to-mutate .textbox-dna,
 .sequence.to-mutate .textbox-dna .sequenceChar {
-    background: #f8fafc;
+    background: var(--slate50);
 }
 
 /* Base specific text coloring */
 .sequence .sequenceChar.base-A {
-    color: #1e88e5;
+    color: var(--baseA);
     font-weight: bold;
 }
 
 .sequence .sequenceChar.base-T {
-    color: #f57c00;
+    color: var(--baseT);
     font-weight: bold;
 }
 
 .sequence .sequenceChar.base-C {
-    color: #43a047;
+    color: var(--baseC);
     font-weight: bold;
 }
 
 .sequence .sequenceChar.base-G {
-    color: #e53935;
+    color: var(--baseG);
     font-weight: bold;
 }
 
 .sequence .sequenceChar.base-U {
-    color: #8e24aa;
+    color: var(--baseU);
     font-weight: bold;
 }
 
@@ -177,7 +177,7 @@
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     overflow-x: auto;
     padding: 6px;
@@ -214,15 +214,15 @@
 }
 
 .codon-label-start {
-    background: rgba(2, 132, 199, 0.10);
-    color: #0369a1;
-    border: 1px solid rgba(2, 132, 199, 0.28);
+    background: rgba(var(--colorSkyRgb), 0.10);
+    color: var(--colorSkyText);
+    border: 1px solid rgba(var(--colorSkyRgb), 0.28);
 }
 
 .codon-label-stop {
-    background: rgba(220, 38, 38, 0.08);
-    color: #b91c1c;
-    border: 1px solid rgba(220, 38, 38, 0.22);
+    background: rgba(var(--colorErrorStrongRgb), 0.08);
+    color: var(--colorErrorTextAlt);
+    border: 1px solid rgba(var(--colorErrorStrongRgb), 0.22);
 }
 
 /* Ensure inputs don't grow/shrink inside the flex row */
@@ -239,7 +239,7 @@
     gap: 8px;
     justify-content: start;
     align-items: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     /* scrollbar hidden — driven by DNA row via JS */
     overflow-x: hidden;
@@ -281,8 +281,8 @@
     min-width: 120px;
     max-width: 120px;
     height: 160px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+    background: var(--white);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
@@ -305,8 +305,8 @@
 }
 
 .aminoacid.not-availlable {
-    border: 1px dashed #cbd5e1;
-    background: #f8fafc;
+    border: 1px dashed var(--slate300);
+    background: var(--slate50);
 }
 
 .aminoacid.not-availlable .abbreviated-name,
@@ -321,9 +321,9 @@
     font-weight: 700;
     font-family: 'Roboto Mono', monospace;
     text-align: center;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--slate200);
     padding: 2px 0;
-    color: #334155;
+    color: var(--slate700);
     width: 100%;
 }
 
@@ -361,16 +361,16 @@
 }
 
 .aminoacid.mutated .full-name {
-    color: #ef4444;
+    color: var(--colorError);
 }
 
 /* Mutation Analysis Panel Styling */
 .mutation-panel {
     width: 90%;
     margin: 1.5rem auto 0 auto;
-    background: #ffffff;
+    background: var(--white);
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     padding: 1.5rem;
     box-sizing: border-box;
@@ -382,7 +382,7 @@
 
 .mutation-panel h3 {
     margin: 0 0 1rem 0;
-    color: #1e293b;
+    color: var(--slate800);
     font-size: 1.15rem;
     display: flex;
     align-items: center;
@@ -396,8 +396,8 @@
 .mutation-analysis-result {
     display: flex;
     align-items: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     padding: 1rem;
     min-height: 60px;
@@ -405,7 +405,7 @@
 }
 
 .no-mutation-msg {
-    color: #64748b;
+    color: var(--slate500);
     font-style: italic;
     font-size: 0.95rem;
 }
@@ -430,29 +430,29 @@
 
 /* Mutation Badge Colors */
 .mutation-type-badge.silent {
-    background-color: #0ea5e9;
+    background-color: var(--colorSilent);
 }
 
 /* Blue */
 .mutation-type-badge.missense {
-    background-color: #f59e0b;
+    background-color: var(--colorWarning);
 }
 
 /* Orange */
 .mutation-type-badge.nonsense {
-    background-color: #ef4444;
+    background-color: var(--colorError);
 }
 
 /* Red */
 .mutation-type-badge.frameshift {
-    background-color: #8b5cf6;
+    background-color: var(--colorFrameshift);
 }
 
 /* Purple */
 
 .mutation-description {
     margin: 0;
-    color: #475569;
+    color: var(--slate600);
     font-size: 0.9rem;
     line-height: 1.5;
 }
@@ -467,7 +467,7 @@
     background: white;
     padding: 1rem 1.5rem;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     flex-wrap: wrap;
     gap: 1rem;
@@ -485,7 +485,7 @@
 
 .counter-item {
     font-size: 0.95rem;
-    color: #475569;
+    color: var(--slate600);
 }
 
 .counter-item strong {
@@ -497,12 +497,70 @@
 .action-buttons {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ===== Menu "Mais ações" — agrupa CRISPR/Replicar/Exportar/Importar, que
+   antes eram 4 dos 7 botões soltos nesta barra. Mantém os mesmos ids
+   (btn-crispr, btn-replicate, btn-export, btn-import) que script.js já
+   escuta; só a apresentação visual mudou, de botão para item de menu. ===== */
+.more-actions {
+    position: relative;
+    display: inline-flex;
+}
+
+.more-actions-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    min-width: 200px;
+    background: var(--white);
+    border: 1px solid var(--slate200);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.more-actions-menu[hidden] {
+    display: none;
+}
+
+.more-actions-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    color: var(--slate700);
+    font-size: 0.85rem;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.more-actions-item i {
+    width: 16px;
+    text-align: center;
+    color: var(--slate500);
+}
+
+.more-actions-item:hover,
+.more-actions-item:focus-visible {
+    background: var(--slate100);
+    outline: none;
 }
 
 .btn-control {
-    background-color: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    color: #475569;
+    background-color: var(--slate100);
+    border: 1px solid var(--slate300);
+    color: var(--slate600);
     padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
@@ -515,14 +573,14 @@
 }
 
 .btn-control:hover {
-    background-color: #cbd5e1;
-    color: #1e293b;
+    background-color: var(--slate300);
+    color: var(--slate800);
 }
 
 #btn-clear:hover {
-    background-color: #fee2e2;
-    border-color: #fca5a5;
-    color: #b91c1c;
+    background-color: var(--colorErrorBgVivid);
+    border-color: var(--colorErrorBorderVivid);
+    color: var(--colorErrorTextAlt);
 }
 
 .base-input-buttons {
@@ -531,10 +589,22 @@
     gap: 8px;
 }
 
+.control-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.control-row .lab-toggle-group {
+    max-width: 460px;
+}
+
 .button-label {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #475569;
+    color: var(--slate600);
 }
 
 .btn-base {
@@ -556,58 +626,19 @@
 }
 
 .btn-base.base-A {
-    background-color: #1e88e5;
+    background-color: var(--baseA);
 }
 
 .btn-base.base-T {
-    background-color: #f57c00;
+    background-color: var(--baseT);
 }
 
 .btn-base.base-C {
-    background-color: #43a047;
+    background-color: var(--baseC);
 }
 
 .btn-base.base-G {
-    background-color: #e53935;
-}
-
-/* Presentation Mode overrides for Simulator */
-body.presentation-mode .sequence .sequenceChar {
-    width: 48px;
-    height: 48px;
-    font-size: 28px;
-}
-
-/* textbox-dna/rna are flexbox — no grid-auto-columns needed here */
-body.presentation-mode .sequence .textbox-dna,
-body.presentation-mode .sequence .textbox-rna {
-    min-height: 62px;
-}
-
-/* Amino acid width = 3 × 48px = 144px to align with larger codon inputs */
-body.presentation-mode .sequence .output-aminoacids {
-    grid-auto-columns: 144px;
-    gap: 8px;
-    min-height: 210px;
-}
-
-body.presentation-mode .aminoacid {
-    width: 144px;
-    min-width: 144px;
-    max-width: 144px;
-    height: 195px;
-}
-
-body.presentation-mode .aminoacid .molecule {
-    max-height: 130px;
-}
-
-body.presentation-mode .aminoacid .abbreviated-name {
-    font-size: 1.3rem;
-}
-
-body.presentation-mode .aminoacid .full-name {
-    font-size: 0.85rem;
+    background-color: var(--baseG);
 }
 
 .quiz-panel {
@@ -638,7 +669,7 @@ body.presentation-mode .aminoacid .full-name {
 }
 
 .quiz-score-item strong {
-    color: #2563eb;
+    color: var(--colorInfo);
 }
 
 .quiz-exit-btn {
@@ -647,23 +678,23 @@ body.presentation-mode .aminoacid .full-name {
     font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--slate500);
     padding: 0.1rem 0.5rem;
 }
 
 .quiz-exit-btn:hover {
-    color: #111827;
+    color: var(--slate900);
 }
 
 .quiz-subtitle {
-    color: #6b7280;
+    color: var(--slate500);
     font-size: 0.9rem;
     margin: 0 0 1.25rem;
 }
 
 .quiz-question-area {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 12px;
     padding: 1.5rem;
 }
@@ -672,7 +703,7 @@ body.presentation-mode .aminoacid .full-name {
     font-weight: 600;
     margin: 0 0 1rem;
     font-size: 1.05rem;
-    color: #111827;
+    color: var(--slate900);
 }
 
 .quiz-seq-compare {
@@ -686,8 +717,8 @@ body.presentation-mode .aminoacid .full-name {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: var(--white);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
     flex-wrap: wrap;
@@ -695,7 +726,7 @@ body.presentation-mode .aminoacid .full-name {
 
 .quiz-seq-label {
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--slate500);
     min-width: 90px;
 }
 
@@ -704,7 +735,7 @@ body.presentation-mode .aminoacid .full-name {
     letter-spacing: 2px;
     font-weight: 600;
     word-break: break-all;
-    color: #111827;
+    color: var(--slate900);
 }
 
 .quiz-codon-display {
@@ -713,12 +744,12 @@ body.presentation-mode .aminoacid .full-name {
     font-weight: 700;
     text-align: center;
     letter-spacing: 4px;
-    background: #fff;
-    border: 2px solid #2563eb;
+    background: var(--white);
+    border: 2px solid var(--colorInfo);
     border-radius: 10px;
     padding: 0.75rem;
     margin-bottom: 1.25rem;
-    color: #1e3a8a;
+    color: var(--colorInfoTextStrong);
 }
 
 .quiz-options {
@@ -733,8 +764,8 @@ body.presentation-mode .aminoacid .full-name {
 
 button.quiz-option {
     cursor: pointer;
-    border: 2px solid #e5e7eb;
-    background: #fff;
+    border: 2px solid var(--slate200);
+    background: var(--white);
     border-radius: 8px;
     padding: 0.65rem 0.5rem;
     font-size: 0.95rem;
@@ -744,7 +775,7 @@ button.quiz-option {
 }
 
 button.quiz-option:hover:not(:disabled) {
-    border-color: #2563eb;
+    border-color: var(--colorInfo);
     transform: translateY(-1px);
 }
 
@@ -781,7 +812,7 @@ button.quiz-option.quiz-incorrect {
 button.quiz-option.quiz-correct-reveal {
     border-color: var(--colorSuccess);
     border-style: dashed;
-    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25) inset;
+    box-shadow: 0 0 0 2px rgba(var(--colorSuccessRgb), 0.25) inset;
 }
 
 .quiz-feedback {
@@ -801,8 +832,8 @@ button.quiz-option.quiz-correct-reveal {
 
 .quiz-gameover {
     text-align: center;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 12px;
     padding: 2rem 1.5rem;
 }
@@ -810,7 +841,7 @@ button.quiz-option.quiz-correct-reveal {
 .quiz-gameover h4 {
     margin: 0 0 0.75rem;
     font-size: 1.3rem;
-    color: #111827;
+    color: var(--slate900);
 }
 
 .quiz-gameover-actions {
@@ -833,25 +864,28 @@ button.quiz-option.quiz-option-text {
     min-height: 3.2rem;
 }
 
-@media (max-width: 540px) {
+@media (max-width: 640px) {
     .quiz-options-conceptual {
         grid-template-columns: 1fr;
     }
 }
 
 .btn-quiz-start {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #fff;
+    background: linear-gradient(135deg, var(--colorWarning), var(--colorWarningBorder));
+    color: white;
     border-color: transparent;
 }
 /* ═══════════════════════════════════════════════════════════════════════
    Animação do Ribossomo (Ribossomo em Ação)
    ═══════════════════════════════════════════════════════════════════════
-   Tema escuro, consistente com o modal de exportar/importar (.seq-modal,
-   definido em pages.css). Reaproveita newAminoacid() e a delegação de
-   eventos já existente (bindAminoacidOutputEvents) dando à cadeia
-   polipeptídica a classe "output-aminoacids" — mesma acessibilidade e
-   comportamento de clique/teclado do simulador principal, sem código novo. */
+   Tema claro, unificado com o resto dos modais (.seq-modal agora é claro
+   por padrão). A trilha de códons e a cadeia de aminoácidos (.ribo-codons,
+   .ribo-chain) permanecem propositalmente escuras — um bloco "estilo
+   terminal" contido, com fundo próprio, o mesmo padrão de um bloco de
+   código destacado numa página clara. Reaproveita newAminoacid() e a
+   delegação de eventos já existente (bindAminoacidOutputEvents) dando à
+   cadeia polipeptídica a classe "output-aminoacids" — mesma acessibilidade
+   e comportamento de clique/teclado do simulador principal, sem código novo. */
 
 .ribosome-modal {
     width: min(760px, 94vw);
@@ -869,7 +903,7 @@ button.quiz-option.quiz-option-text {
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
     font-size: 0.85rem;
-    color: #7d8696;
+    color: var(--slate500);
 }
 
 .ribo-codons {
@@ -888,29 +922,29 @@ button.quiz-option.quiz-option-text {
     font-size: 0.82rem;
     padding: 6px 9px;
     border-radius: 6px;
-    background: #1c2431;
-    color: #7d8696;
+    background: var(--colorCodeBgLight);
+    color: var(--slate500);
     border: 1px solid rgba(255, 255, 255, 0.08);
     transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .ribo-codon.is-current {
-    background: rgba(20, 184, 166, 0.18);
-    color: #5eead4;
-    border-color: #14b8a6;
-    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+    background: rgba(var(--colorDetailsRgb), 0.18);
+    color: var(--colorDetailsLight);
+    border-color: var(--colorDetails);
+    box-shadow: 0 0 0 3px rgba(var(--colorDetailsRgb), 0.15);
 }
 
 .ribo-codon.is-done {
-    color: #4ade80;
-    border-color: rgba(74, 222, 128, 0.35);
+    color: var(--colorSuccessOnDark);
+    border-color: rgba(var(--colorSuccessOnDarkRgb), 0.35);
 }
 
 .ribo-codon.is-stop.is-current {
-    background: rgba(248, 113, 113, 0.18);
-    color: #f87171;
-    border-color: #f87171;
-    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+    background: rgba(var(--colorErrorLightRgb), 0.18);
+    color: var(--colorErrorLight);
+    border-color: var(--colorErrorLight);
+    box-shadow: 0 0 0 3px rgba(var(--colorErrorLightRgb), 0.15);
 }
 
 /* Ribossomo: duas subunidades sobrepostas, posicionado em cima do códon atual */
@@ -935,7 +969,7 @@ button.quiz-option.quiz-option-text {
     top: 0;
     width: 44px;
     height: 24px;
-    background: linear-gradient(180deg, #475569, #1e293b);
+    background: linear-gradient(180deg, var(--slate600), var(--slate800));
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
@@ -943,7 +977,7 @@ button.quiz-option.quiz-option-text {
     bottom: 0;
     width: 32px;
     height: 15px;
-    background: linear-gradient(180deg, #64748b, #334155);
+    background: linear-gradient(180deg, var(--slate500), var(--slate700));
 }
 
 /* Palco onde o tRNA entra, pareia e sai */
@@ -980,7 +1014,7 @@ button.quiz-option.quiz-option-text {
 .ribo-trna-body {
     width: 52px;
     height: 42px;
-    background: linear-gradient(180deg, #fbbf24, #f59e0b);
+    background: linear-gradient(180deg, var(--colorWarningLight), var(--colorWarning));
     clip-path: polygon(50% 0%, 100% 32%, 100% 100%, 0% 100%, 0% 32%);
     display: flex;
     align-items: center;
@@ -992,15 +1026,15 @@ button.quiz-option.quiz-option-text {
     font-family: 'Roboto Mono', monospace;
     font-weight: 800;
     font-size: 0.7rem;
-    color: #78350f;
+    color: var(--colorWarningTextStrong);
     letter-spacing: 0.02em;
 }
 
 .ribo-trna-cargo {
     font-size: 0.72rem;
     font-weight: 700;
-    color: #e6e9ef;
-    background: rgba(255, 255, 255, 0.08);
+    color: var(--slate700);
+    background: var(--slate100);
     padding: 2px 9px;
     border-radius: 10px;
     white-space: nowrap;
@@ -1013,7 +1047,7 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #7d8696;
+    color: var(--slate500);
 }
 
 /* .output-aminoacids traz o comportamento (delegação de clique/teclado do
@@ -1025,7 +1059,7 @@ button.quiz-option.quiz-option-text {
     gap: 8px;
     min-height: 70px;
     padding: 10px;
-    background: #0d1117;
+    background: var(--colorCodeBg);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
 }
@@ -1037,7 +1071,7 @@ button.quiz-option.quiz-option-text {
     min-width: 60px;
     max-width: 60px;
     height: 80px;
-    background: #1c2431;
+    background: var(--colorCodeBgLight);
     border-color: rgba(255, 255, 255, 0.1);
     padding: 4px;
     animation: riboChainPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1054,7 +1088,7 @@ button.quiz-option.quiz-option-text {
 
 .ribo-chain .aminoacid .abbreviated-name {
     font-size: 0.75rem;
-    color: #e6e9ef;
+    color: var(--slate200);
     border-bottom-color: rgba(255, 255, 255, 0.1);
     padding: 1px 0;
 }
@@ -1065,7 +1099,7 @@ button.quiz-option.quiz-option-text {
 
 .ribo-chain .aminoacid .full-name {
     font-size: 0.52rem;
-    color: #5eead4;
+    color: var(--colorDetailsLight);
 }
 
 @keyframes riboChainPop {
@@ -1076,7 +1110,7 @@ button.quiz-option.quiz-option-text {
 .ribo-status {
     margin: 10px 0 0;
     font-size: 0.85rem;
-    color: #9aa3b2;
+    color: var(--slate600);
     min-height: 1.2em;
 }
 
@@ -1097,20 +1131,20 @@ button.quiz-option.quiz-option-text {
 
 .ribo-speed-label {
     font-size: 0.78rem;
-    color: #9aa3b2;
+    color: var(--slate500);
     margin-left: auto;
 }
 
 .ribo-speed-select {
-    background: #0d1117;
-    color: #e6e9ef;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--white);
+    color: var(--slate700);
+    border: 1px solid var(--slate200);
     border-radius: 6px;
     padding: 6px 8px;
     font-size: 0.82rem;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
     .ribo-speed-label {
         margin-left: 0;
     }
@@ -1119,26 +1153,26 @@ button.quiz-option.quiz-option-text {
 /* ═══════════════════════════════════════════════════════════════════════
    Genética Mendeliana — Construtor de Cruzamentos (Quadro de Punnett)
    ═══════════════════════════════════════════════════════════════════════
-   Tema CLARO (diferente do .seq-modal/.ribosome-modal escuros), consistente
-   com o restante das páginas de conteúdo do app (.info-card, .step-card). */
+   .lab-modal-lg agora é só uma variante de TAMANHO (modal grande). O tema
+   claro deixou de ser exclusividade dela — .seq-modal já é claro por
+   padrão — então as três declarações de cor que existiam aqui (background,
+   color, border-color, idênticas ao novo padrão de .seq-modal) foram
+   removidas por serem redundantes. */
 
 .lab-modal-lg {
     width: min(820px, 95vw);
-    background: #ffffff;
-    color: #2c3e50;
-    border-color: #eef2f5;
 }
 
 .lab-modal-close {
-    color: #94a3b8;
+    color: var(--slate400);
 }
 
 .lab-modal-close:hover {
-    color: #ef4444;
+    color: var(--colorError);
 }
 
 .lab-modal-title {
-    color: #1e293b;
+    color: var(--slate800);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1150,7 +1184,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .lab-modal-desc {
-    color: #64748b;
+    color: var(--slate500);
     font-size: 0.88rem;
     line-height: 1.5;
     margin: 0 0 16px;
@@ -1166,7 +1200,7 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #64748b;
+    color: var(--slate500);
     margin-bottom: 6px;
 }
 
@@ -1182,10 +1216,10 @@ button.quiz-option.quiz-option-text {
     align-items: center;
     gap: 2px;
     padding: 10px 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
-    color: #475569;
+    color: var(--slate600);
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
@@ -1193,13 +1227,13 @@ button.quiz-option.quiz-option-text {
 }
 
 .lab-toggle-btn:hover {
-    background: #f1f5f9;
+    background: var(--slate100);
 }
 
 .lab-toggle-btn.active {
     background: var(--colorDetailsText);
     border-color: var(--colorDetailsText);
-    color: #ffffff;
+    color: white;
 }
 
 .lab-toggle-sub {
@@ -1209,8 +1243,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .mendel-gene-config {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 16px;
@@ -1242,7 +1276,7 @@ button.quiz-option.quiz-option-text {
     gap: 4px;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #475569;
+    color: var(--slate600);
 }
 
 .lab-field-narrow {
@@ -1251,10 +1285,10 @@ button.quiz-option.quiz-option-text {
 
 .lab-input {
     padding: 8px 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     border-radius: 6px;
-    background: #ffffff;
-    color: #2c3e50;
+    background: var(--white);
+    color: var(--slate700);
     font-size: 0.88rem;
     font-family: inherit;
     font-weight: 400;
@@ -1263,7 +1297,7 @@ button.quiz-option.quiz-option-text {
 .lab-input:focus {
     outline: none;
     border-color: var(--colorDetailsText);
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    box-shadow: 0 0 0 3px rgba(var(--colorDetailsTextRgb), 0.12);
 }
 
 .lab-input-letter {
@@ -1276,13 +1310,13 @@ button.quiz-option.quiz-option-text {
 .mendel-parent-genotypes {
     margin-top: 4px;
     padding-top: 12px;
-    border-top: 1px dashed #e2e8f0;
+    border-top: 1px dashed var(--slate200);
 }
 
 .lab-action-btn {
     width: 100%;
-    background: linear-gradient(135deg, var(--colorDetailsText), #14b8a6);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--colorDetailsText), var(--colorDetails));
+    color: white;
     border-color: transparent;
     font-size: 0.95rem;
     padding: 0.85rem;
@@ -1295,12 +1329,12 @@ button.quiz-option.quiz-option-text {
 .mendel-results {
     margin-top: 20px;
     padding-top: 16px;
-    border-top: 1px solid #eef2f5;
+    border-top: 1px solid var(--slate100);
 }
 
 .lab-results-title {
     margin: 0 0 12px;
-    color: #1e293b;
+    color: var(--slate800);
     font-size: 1.05rem;
 }
 
@@ -1315,13 +1349,13 @@ button.quiz-option.quiz-option-text {
 }
 
 .mendel-punnett-table th {
-    background: #f1f5f9;
-    color: #334155;
+    background: var(--slate100);
+    color: var(--slate700);
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
     font-size: 0.85rem;
     padding: 8px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
 }
 
 .mendel-punnett-table thead th:first-child {
@@ -1330,7 +1364,7 @@ button.quiz-option.quiz-option-text {
 }
 
 .mendel-cell {
-    border: 1.5px solid #e2e8f0;
+    border: 1.5px solid var(--slate200);
     padding: 10px 14px;
     text-align: center;
     min-width: 56px;
@@ -1355,7 +1389,7 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #64748b;
+    color: var(--slate500);
 }
 
 .lab-tally-col ul {
@@ -1372,9 +1406,9 @@ button.quiz-option.quiz-option-text {
     align-items: center;
     gap: 8px;
     font-size: 0.88rem;
-    color: #334155;
-    background: #f8fafc;
-    border: 1px solid #eef2f5;
+    color: var(--slate700);
+    background: var(--slate50);
+    border: 1px solid var(--slate100);
     border-radius: 6px;
     padding: 6px 10px;
 }
@@ -1387,22 +1421,22 @@ button.quiz-option.quiz-option-text {
 }
 
 .lab-tally-detail {
-    color: #94a3b8;
+    color: var(--slate400);
     font-size: 0.8rem;
 }
 
 .lab-explanation {
     font-size: 0.88rem;
-    color: #55606d;
+    color: var(--slate600);
     line-height: 1.6;
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
     border-left: 3px solid var(--colorDetailsText);
     border-radius: 0 8px 8px 0;
     padding: 10px 14px;
     margin: 0;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 640px) {
     .lab-field-narrow {
         max-width: none;
     }
@@ -1426,29 +1460,29 @@ button.quiz-option.quiz-option-text {
     font-family: 'Roboto Mono', monospace;
     font-size: 1rem;
     letter-spacing: 0.03em;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     padding: 12px 14px;
     overflow-x: auto;
     white-space: nowrap;
-    color: #94a3b8;
+    color: var(--slate400);
     margin-bottom: 6px;
 }
 
 .crispr-seq-plain {
-    color: #94a3b8;
+    color: var(--slate400);
 }
 
 .crispr-protospacer {
-    color: #1e40af;
-    background: #dbeafe;
+    color: var(--colorInfoText);
+    background: var(--colorInfoBg);
     border-radius: 3px;
 }
 
 .crispr-pam {
-    color: #92400e;
-    background: #fef3c7;
+    color: var(--colorWarningText);
+    background: var(--colorWarningBgVivid);
     border-radius: 3px;
     font-weight: 700;
 }
@@ -1478,19 +1512,19 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-link-btn:hover {
-    color: #14b8a6;
+    color: var(--colorDetails);
 }
 
 .crispr-search-btn {
     width: 100%;
     margin-top: 8px;
-    background: #f8fafc;
+    background: var(--slate50);
     color: var(--colorDetailsText);
-    border: 1px solid #ccfbf1;
+    border: 1px solid var(--colorDetailsBorderLight);
 }
 
 .crispr-search-btn:hover {
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
 }
 
 .crispr-result {
@@ -1525,8 +1559,8 @@ button.quiz-option.quiz-option-text {
     align-items: flex-start;
     gap: 6px;
     text-align: left;
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1.5px solid var(--slate200);
     border-radius: 10px;
     padding: 14px 16px;
     cursor: pointer;
@@ -1535,13 +1569,13 @@ button.quiz-option.quiz-option-text {
 
 .crispr-pathway-card:hover {
     border-color: var(--colorDetailsText);
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
 }
 
 .crispr-pathway-card.selected {
     border-color: var(--colorDetailsText);
-    background: #f0fdfa;
-    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+    background: var(--colorDetailsBg);
+    box-shadow: 0 0 0 3px rgba(var(--colorDetailsTextRgb), 0.12);
 }
 
 .crispr-pathway-card i {
@@ -1550,12 +1584,12 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-pathway-card strong {
-    color: #1e293b;
+    color: var(--slate800);
     font-size: 0.95rem;
 }
 
 .crispr-pathway-card span {
-    color: #64748b;
+    color: var(--slate500);
     font-size: 0.8rem;
     line-height: 1.4;
     font-weight: 400;
@@ -1567,13 +1601,13 @@ button.quiz-option.quiz-option-text {
 }
 
 .crispr-preview {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 8px;
     padding: 14px;
     margin-bottom: 16px;
     font-size: 0.88rem;
-    color: #334155;
+    color: var(--slate700);
     line-height: 1.6;
 }
 
@@ -1611,8 +1645,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .repl-ladder-wrapper {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 10px;
     padding: 16px 14px;
     margin-bottom: 14px;
@@ -1625,7 +1659,7 @@ button.quiz-option.quiz-option-text {
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: var(--slate400);
     padding: 0 2px;
 }
 
@@ -1653,8 +1687,8 @@ button.quiz-option.quiz-option-text {
 /* Fitas-molde (originais) — sempre visíveis, tom neutro/azul */
 .repl-row-template1 .repl-base,
 .repl-row-template2 .repl-base {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--colorInfoBg);
+    color: var(--colorInfoText);
 }
 
 /* Fita nova líder — verde, contínua */
@@ -1665,12 +1699,12 @@ button.quiz-option.quiz-option-text {
 
 /* Fita nova tardia — laranja enquanto fragmentada; fragmentos alternam tom p/ ficarem distinguíveis */
 .repl-row-new-lagging .repl-base {
-    background: #fed7aa;
-    color: #9a3412;
+    background: var(--colorOrangeBg);
+    color: var(--colorOrangeTextAlt);
 }
 
 .repl-row-new-lagging .repl-base.repl-fragment-alt {
-    background: #fdba74;
+    background: var(--colorOrangeBgAlt);
 }
 
 .repl-row-new-lagging .repl-base.repl-joined {
@@ -1699,16 +1733,16 @@ button.quiz-option.quiz-option-text {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: #fff;
+    background: linear-gradient(135deg, var(--colorWarning), var(--colorWarningBorder));
+    color: white;
     font-size: 0.8rem;
-    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+    box-shadow: 0 2px 6px rgba(var(--colorWarningBorderRgb), 0.4);
     transition: left 0.3s linear;
 }
 
 .repl-daughter-caption {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--slate500);
     margin: 2px 0 0;
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -1720,7 +1754,7 @@ button.quiz-option.quiz-option-text {
 
 .repl-status {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--slate500);
     min-height: 1.3em;
     margin: 0 0 14px;
 }
@@ -1737,23 +1771,23 @@ button.quiz-option.quiz-option-text {
     margin-top: 0;
     flex: 0 0 auto;
     padding: 0.6rem 1rem;
-    background: #f8fafc;
+    background: var(--slate50);
     color: var(--colorDetailsText);
-    border: 1px solid #ccfbf1;
+    border: 1px solid var(--colorDetailsBorderLight);
 }
 
 .repl-controls .seq-modal-action:hover {
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
 }
 
 .repl-controls .ribo-speed-label {
-    color: #64748b;
+    color: var(--slate500);
 }
 
 .repl-controls .ribo-speed-select {
-    background: #ffffff;
-    color: #334155;
-    border: 1px solid #e2e8f0;
+    background: var(--white);
+    color: var(--slate700);
+    border: 1px solid var(--slate200);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1764,7 +1798,7 @@ button.quiz-option.quiz-option-text {
     display: inline-block;
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
     color: var(--colorDetailsText);
     padding: 2px 8px;
     border-radius: 4px;
@@ -1791,7 +1825,7 @@ button.quiz-option.quiz-option-text {
 .popgen-results {
     margin-top: 20px;
     padding-top: 16px;
-    border-top: 1px solid #eef2f5;
+    border-top: 1px solid var(--slate100);
 }
 
 .popgen-allele-freqs {
@@ -1802,8 +1836,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .popgen-stat-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 10px;
     padding: 12px 14px;
     text-align: center;
@@ -1815,7 +1849,7 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #94a3b8;
+    color: var(--slate400);
     margin-bottom: 4px;
 }
 
@@ -1832,7 +1866,7 @@ button.quiz-option.quiz-option-text {
     height: 34px;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
     margin-bottom: 10px;
 }
 
@@ -1840,7 +1874,7 @@ button.quiz-option.quiz-option-text {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
+    color: white;
     font-size: 0.78rem;
     font-weight: 700;
     font-family: 'Roboto Mono', monospace;
@@ -1855,7 +1889,7 @@ button.quiz-option.quiz-option-text {
     gap: 14px;
     margin-bottom: 18px;
     font-size: 0.82rem;
-    color: #475569;
+    color: var(--slate600);
 }
 
 .popgen-bar-legend .lab-swatch {
@@ -1878,19 +1912,19 @@ button.quiz-option.quiz-option-text {
 .popgen-table-wrap td {
     padding: 7px 10px;
     text-align: center;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate200);
 }
 
 .popgen-table-wrap th {
-    background: #f1f5f9;
-    color: #334155;
+    background: var(--slate100);
+    color: var(--slate700);
     font-weight: 700;
 }
 
 .popgen-table-wrap td:first-child {
     text-align: left;
     font-weight: 600;
-    color: #334155;
+    color: var(--slate700);
 }
 
 .popgen-verdict {
@@ -1923,7 +1957,7 @@ button.quiz-option.quiz-option-text {
     font-weight: 700;
     font-size: 1rem;
     color: var(--colorDetailsText);
-    background: #f0fdfa;
+    background: var(--colorDetailsBg);
     display: inline-block;
     padding: 4px 12px;
     border-radius: 6px;
@@ -1934,8 +1968,8 @@ button.quiz-option.quiz-option-text {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1px solid var(--slate200);
     border-radius: 10px;
     padding: 14px;
     margin-bottom: 12px;
@@ -1966,27 +2000,27 @@ button.quiz-option.quiz-option-text {
 .karyo-bar {
     width: 12px;
     border-radius: 4px;
-    background: linear-gradient(180deg, #64748b, #475569);
+    background: linear-gradient(180deg, var(--slate500), var(--slate600));
 }
 
 .karyo-bar.karyo-bar-x {
-    background: linear-gradient(180deg, #a78bfa, #7c3aed);
+    background: linear-gradient(180deg, var(--colorVioletLight), var(--colorViolet));
 }
 
 .karyo-bar.karyo-bar-y {
-    background: linear-gradient(180deg, #5eead4, #0d9488);
+    background: linear-gradient(180deg, var(--colorDetailsLight), var(--colorDetailsHover));
 }
 
 .karyo-bar.karyo-bar-anomaly {
-    background: linear-gradient(180deg, #fb923c, #ea580c);
-    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.25);
+    background: linear-gradient(180deg, var(--colorOrangeLight), var(--colorOrange));
+    box-shadow: 0 0 0 2px rgba(var(--colorOrangeRgb), 0.25);
 }
 
 .karyo-slot-label {
     font-family: 'Roboto Mono', monospace;
     font-size: 0.72rem;
     font-weight: 700;
-    color: #64748b;
+    color: var(--slate500);
 }
 
 /* Simulador de não-disjunção */
@@ -2003,8 +2037,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .nondis-gamete-card {
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
+    background: var(--slate50);
+    border: 1.5px solid var(--slate200);
     border-radius: 10px;
     padding: 14px 10px;
     text-align: center;
@@ -2015,8 +2049,8 @@ button.quiz-option.quiz-option-text {
 }
 
 .nondis-gamete-card.abnormal {
-    border-color: #fb923c;
-    background: #fff7ed;
+    border-color: var(--colorOrangeLight);
+    background: var(--colorOrangeBgLight);
 }
 
 .nondis-gamete-bars {
@@ -2030,17 +2064,17 @@ button.quiz-option.quiz-option-text {
     font-family: 'Roboto Mono', monospace;
     font-weight: 700;
     font-size: 0.9rem;
-    color: #334155;
+    color: var(--slate700);
 }
 
 .nondis-gamete-card.abnormal .nondis-gamete-label {
-    color: #c2410c;
+    color: var(--colorOrangeText);
 }
 
 .nondis-gamete-btn {
     background: none;
-    border: 1px solid #ea580c;
-    color: #ea580c;
+    border: 1px solid var(--colorOrange);
+    color: var(--colorOrange);
     border-radius: 6px;
     padding: 4px 8px;
     font-size: 0.72rem;
@@ -2049,12 +2083,12 @@ button.quiz-option.quiz-option-text {
 }
 
 .nondis-gamete-btn:hover {
-    background: #ea580c;
-    color: #fff;
+    background: var(--colorOrange);
+    color: white;
 }
 
 .karyo-result {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px dashed #e2e8f0;
+    border-top: 1px dashed var(--slate200);
 }

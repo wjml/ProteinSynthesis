@@ -229,8 +229,10 @@
   /**
    * Exibe um alerta de erro.
    * Usa SweetAlert se disponível; caso contrário, usa o alert nativo.
-   * BUGFIX: o SweetAlert é carregado após este script no HTML,
-   * portanto não pode ser chamado diretamente no nível de módulo.
+   * O <script> do SweetAlert2 agora carrega ANTES de dom.js/script.js no HTML,
+   * então esse fallback só entra em ação se o CDN falhar (rede instável,
+   * bloqueador de conteúdo etc.) — deixado por segurança, não como caminho
+   * esperado.
    */
   function showAlert(title, text) {
     if (typeof Swal !== 'undefined') {
@@ -1225,11 +1227,72 @@
     }
   }
 
+  /**
+   * Clona a fita primária (DNA/RNA/proteína) para a fita de comparação, no
+   * momento em que o usuário entra no modo de mutação. Migrada de dom.js:
+   * a função só existia ali porque os botões de mutação eram itens do menu
+   * lateral; agora que são controles da própria página do simulador, ela
+   * mora junto do resto do comportamento de mutação, em vez de ser a única
+   * função do arquivo de navegação exposta especificamente para este script.
+   */
+  function cloneSequencePrimary() {
+    const sequenceToMutate = document.getElementsByClassName('sequence')[1];
+    sequenceToMutate.innerHTML = '';
+    Array.from(document.getElementsByClassName('sequence')[0].children).forEach(function (child) {
+      if (child.classList.contains('output-aminoacids') || child.classList.contains('textbox-rna')) {
+        Array.from(child.getElementsByClassName('aminoacid')).forEach(function (aminoacid) {
+          aminoacid.classList.remove('mutated');
+        });
+        Array.from(child.getElementsByClassName('sequenceChar')).forEach(function (sequenceChar) {
+          sequenceChar.classList.remove('mutated');
+        });
+      }
+      // Não clona o elemento de espaço em branco, para não duplicar um input vazio.
+      if (!child.id || child.id !== 'blank-space') {
+        sequenceToMutate.appendChild(child.cloneNode(true));
+      }
+    });
+  }
+
+  /**
+   * Ativa um modo de mutação (Adição/Deleção/Substituição) na Genética Molecular.
+   * Antes esta lógica vivia dentro do manipulador de clique genérico do menu
+   * (dom.js), porque os 3 botões eram itens da barra lateral. Agora que viraram
+   * controles dentro da própria página do simulador — igual aos seletores de
+   * modo do Heredograma, da Genética Populacional e dos Cruzamentos — a lógica
+   * mora aqui, junto com o resto do comportamento específico desta página.
+   */
+  function setMutationMode(mode) {
+    const modeButtons = { add: addButton, delete: deleteButton, replace: replaceButton };
+    Object.keys(modeButtons).forEach(function (key) {
+      const isActive = key === mode;
+      modeButtons[key].classList.toggle('active', isActive);
+      modeButtons[key].setAttribute('aria-pressed', String(isActive));
+    });
+
+    const sequencePrimary  = document.getElementsByClassName('sequence')[0];
+    const sequenceToMutate = document.getElementsByClassName('sequence')[1];
+    // BUGFIX (preservado do dom.js original): o snapshot do baseline só é
+    // refeito ao ENTRAR no modo mutação pela primeira vez (quando a fita de
+    // comparação ainda não estava ativa). Trocar entre Adição/Deleção/
+    // Substituição com o modo já ativo preserva a comparação "antes x depois"
+    // em vez de recomeçar do estado já mutado.
+    const enteringMutationMode = !sequenceToMutate.classList.contains('active');
+    sequencePrimary.classList.add('active');
+    sequenceToMutate.classList.add('active');
+    if (enteringMutationMode) {
+      cloneSequencePrimary();
+    }
+  }
+
   /** Reinicia o simulador: limpa todas as sequências e desativa o modo de mutação. */
   function clearSequence() {
     addButton.classList.remove('active');
     deleteButton.classList.remove('active');
     replaceButton.classList.remove('active');
+    addButton.setAttribute('aria-pressed', 'false');
+    deleteButton.setAttribute('aria-pressed', 'false');
+    replaceButton.setAttribute('aria-pressed', 'false');
     if (mutationWindow[0]) mutationWindow[0].classList.remove('active');
 
     // clearSequenceChars elimina o padrão repetido 4 vezes no original
@@ -3969,6 +4032,11 @@
       });
     }
     if (replResetBtn) replResetBtn.addEventListener('click', resetReplicationAnimation);
+
+    // Controles de Mutação (Genética Molecular) — Adição / Deleção / Substituição
+    if (addButton)     addButton.addEventListener('click', () => setMutationMode('add'));
+    if (deleteButton)  deleteButton.addEventListener('click', () => setMutationMode('delete'));
+    if (replaceButton) replaceButton.addEventListener('click', () => setMutationMode('replace'));
 
     // Controles do construtor de cruzamentos (Genética Mendeliana)
     const mendelModeMonoBtn = document.getElementById('mendel-mode-mono');

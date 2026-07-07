@@ -1,106 +1,164 @@
-var buttons = Array.from(document.getElementsByClassName("button"))
-var collapsibles = Array.from(document.getElementsByClassName("collapsible"))
+/**
+ * dom.js — Navegação e estrutura do menu lateral
+ *
+ * Encapsulado em uma IIFE, no mesmo padrão de script.js: nada é exposto no
+ * escopo global. Antes deste ajuste, `buttons` e `collapsibles` viviam
+ * soltos em `window`, enquanto script.js já seguia o padrão de
+ * zero-exposição — essa era a maior divergência de estilo entre os dois
+ * arquivos JS do projeto.
+ *
+ * Responsabilidade deste arquivo: alternar páginas visíveis, abrir/fechar
+ * os submenus colapsáveis do menu lateral, o menu "Mais ações" do
+ * simulador e o alternador de tema claro/escuro. Comportamento específico
+ * de cada simulador (ex.: `cloneSequencePrimary`) mora em script.js, não
+ * aqui — a linha divisória é "chrome de UI genérico" vs. "lógica de
+ * domínio de um simulador".
+ */
+(function () {
+  'use strict';
 
-buttons.forEach(function (button) {
-    button.addEventListener("click", function () {
+  const buttons = Array.from(document.getElementsByClassName('button'));
+  const collapsibles = Array.from(document.getElementsByClassName('collapsible'));
 
-        // Entrando/saindo do modo de mutação (Adição/Deleção/Substituição).
-        // Roda antes da navegação porque não depende de qual página estava visível.
-        if (this.id == "add" || this.id == "delete" || this.id == "replace") {
-            var sequencePrimary = document.getElementsByClassName("sequence")[0]
-            var sequenceToMutate = document.getElementsByClassName("sequence")[1]
-            // BUGFIX: antes, o snapshot do baseline era refeito a CADA clique em
-            // Adicionar/Deletar/Substituir. Isso fazia o aluno perder a sequência
-            // original ao alternar entre ferramentas no meio de uma mutação, pois
-            // o baseline virava uma cópia do estado já mutado.
-            // Agora só tiramos o snapshot ao ENTRAR no modo mutação (quando a fita
-            // de comparação ainda não estava ativa); trocar de ferramenta dentro do
-            // modo mutação preserva a comparação "antes x depois".
-            var enteringMutationMode = !sequenceToMutate.classList.contains("active")
-            sequencePrimary.classList.add("active")
-            sequenceToMutate.classList.add("active")
-            if (enteringMutationMode) {
-                cloneSequencePrimary()
-            }
+  buttons.forEach(function (button) {
+    button.addEventListener('click', function () {
+
+      // Um botão pode ser (a) um item de navegação normal — mostra uma
+      // página de conteúdo — ou (b) um gatilho PURO de submenu colapsável
+      // (o "LABORATÓRIO VIRTUAL"), que só abre/fecha a lista de
+      // ferramentas e não corresponde a nenhuma página própria.
+      const ownSubmenuId = this.getAttribute('data-collapsible');
+      const ownSubmenu = ownSubmenuId ? document.getElementById(ownSubmenuId) : null;
+
+      if (!ownSubmenu) {
+        const targetPage = this.getAttribute('data-page') || this.id;
+        setVisiblePage(targetPage);
+      }
+
+      // Um botão também pode morar DENTRO do submenu colapsável de outro
+      // botão. Isso precisa manter aquele submenu visível e destacar o
+      // botão "pai" correspondente, para a seção parecer "aberta" mesmo
+      // quando o item ativo é um dos filhos.
+      const parentSubmenu = this.closest('.collapsible');
+
+      // Fecha qualquer OUTRO submenu que não tenha relação com este clique
+      // (generalizado para N submenus independentes, não só o primeiro).
+      collapsibles.forEach(function (submenu) {
+        if (submenu !== ownSubmenu && submenu !== parentSubmenu) {
+          submenu.classList.remove('active');
         }
+      });
 
-        // Navegação: todo botão mostra uma página de conteúdo. Por padrão essa
-        // página é a do próprio id (ex.: id="mendel" -> .content.mendel).
-        // Botões que representam um MODO dentro de outra página — como as três
-        // ferramentas de mutação, que operam sobre a Genética Molecular —
-        // declaram data-page="app" no HTML para apontar explicitamente para lá,
-        // mesmo estando fisicamente dentro do submenu do Laboratório Virtual.
-        var targetPage = this.getAttribute("data-page") || this.id
-        setVisiblePage(targetPage)
+      buttons.forEach(function (btn) {
+        btn.classList.remove('active');
+      });
 
-        // Um botão pode (a) abrir seu PRÓPRIO submenu colapsável — via
-        // data-collapsible="id-do-submenu" — e/ou (b) morar DENTRO do submenu
-        // colapsável de outro botão. Os dois casos precisam manter aquele
-        // submenu visível e destacar o botão "pai" correspondente, para que a
-        // seção pareça "aberta" mesmo quando o item ativo é um dos filhos.
-        var ownSubmenuId = this.getAttribute("data-collapsible")
-        var ownSubmenu = ownSubmenuId ? document.getElementById(ownSubmenuId) : null
-        var parentSubmenu = this.closest(".collapsible")
-
-        // Fecha qualquer OUTRO submenu que não tenha relação com este clique
-        // (generalizado para N submenus independentes, não só o primeiro).
-        collapsibles.forEach(function (submenu) {
-            if (submenu !== ownSubmenu && submenu !== parentSubmenu) {
-                submenu.classList.remove("active")
-            }
-        })
-
-        buttons.forEach(function (button) {
-            button.classList.remove("active")
-        })
-
-        if (ownSubmenu || parentSubmenu) {
-            document.getElementsByClassName("empty")[0].classList.add("active")
-            if (ownSubmenu) {
-                ownSubmenu.classList.add("active")
-            }
-            if (parentSubmenu) {
-                parentSubmenu.classList.add("active")
-                var owner = document.querySelector('[data-collapsible="' + parentSubmenu.id + '"]')
-                if (owner) owner.classList.add("active")
-            }
-        } else {
-            document.getElementsByClassName("empty")[0].classList.remove("active")
-            document.getElementsByClassName("sequence")[0].classList.remove("active")
-            document.getElementsByClassName("sequence")[1].classList.remove("active")
+      if (ownSubmenu || parentSubmenu) {
+        document.getElementsByClassName('empty')[0].classList.add('active');
+        if (ownSubmenu) {
+          ownSubmenu.classList.add('active');
         }
-
-        this.classList.add("active")
-
-    })
-})
-function cloneSequencePrimary() {
-    document.getElementsByClassName("sequence")[1].innerHTML = ""
-    Array.from(document.getElementsByClassName("sequence")[0].children).forEach(function (child) {
-        if (child.classList.contains("output-aminoacids") || child.classList.contains("textbox-rna")) {
-            Array.from(child.getElementsByClassName("aminoacid")).forEach(function (aminoacid) {
-                aminoacid.classList.remove("mutated")
-            })
-            Array.from(child.getElementsByClassName("sequenceChar")).forEach(function (sequenceChar) {
-                sequenceChar.classList.remove("mutated")
-            })
+        if (parentSubmenu) {
+          parentSubmenu.classList.add('active');
+          const owner = document.querySelector('[data-collapsible="' + parentSubmenu.id + '"]');
+          if (owner) owner.classList.add('active');
         }
-        // Skip cloning the blank-space element to avoid extra empty input
-        if (!child.id || child.id !== 'blank-space') {
-            document.getElementsByClassName("sequence")[1].appendChild(child.cloneNode(true));
-        }
-    })
-}
-function setVisiblePage(id) {
-    document.getElementById("visible-page").getElementsByClassName("active")[0].classList.remove("active")
-    document.getElementById("visible-page").getElementsByClassName(id)[0].classList.add("active")
-}
+      } else {
+        document.getElementsByClassName('empty')[0].classList.remove('active');
+      }
 
-// Lógica do Modo Professor
-var toggleProfessor = document.getElementById("toggle-professor");
-if (toggleProfessor) {
-    toggleProfessor.addEventListener("click", function () {
-        document.body.classList.toggle("presentation-mode");
-        this.classList.toggle("active");
+      this.classList.add('active');
     });
-}
+  });
+
+  function setVisiblePage(id) {
+    document.getElementById('visible-page').getElementsByClassName('active')[0].classList.remove('active');
+    document.getElementById('visible-page').getElementsByClassName(id)[0].classList.add('active');
+  }
+
+  /**
+   * Modo Escuro — alternador no rodapé da barra lateral (antes: Modo
+   * Professor, removido). Preferência salva em localStorage; na ausência
+   * de uma escolha explícita, respeita prefers-color-scheme do sistema.
+   */
+  const THEME_STORAGE_KEY = 'proteinSynthesis.theme';
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeToggleIcon = document.getElementById('theme-toggle-icon');
+  const themeToggleLabel = document.getElementById('theme-toggle-label');
+
+  function applyTheme(isDark) {
+    document.body.classList.toggle('dark-theme', isDark);
+    if (themeToggle) themeToggle.setAttribute('aria-pressed', String(isDark));
+    if (themeToggleIcon) themeToggleIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    // O rótulo descreve a AÇÃO do clique (o tema que você vai ativar), não o estado atual.
+    if (themeToggleLabel) themeToggleLabel.textContent = isDark ? 'Modo Claro' : 'Modo Escuro';
+  }
+
+  let storedTheme = null;
+  try {
+    storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (e) {
+    // localStorage pode estar indisponível (modo privado, cookies bloqueados); segue sem persistir.
+  }
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(storedTheme ? storedTheme === 'dark' : prefersDark);
+
+  if (themeToggle) {
+    const toggleTheme = function () {
+      const isDark = !document.body.classList.contains('dark-theme');
+      applyTheme(isDark);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, isDark ? 'dark' : 'light');
+      } catch (e) {
+        // Sem persistência disponível — o tema ainda funciona nesta sessão.
+      }
+    };
+    themeToggle.addEventListener('click', toggleTheme);
+    // <li> não é focável/ativável por teclado por padrão como um <button> seria;
+    // role="button" + tabindex já estão no HTML, falta só o Enter/Espaço.
+    themeToggle.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleTheme();
+      }
+    });
+  }
+
+  /**
+   * Menu "Mais ações" da barra do simulador — comportamento genérico de
+   * dropdown (abrir/fechar, clique fora, Esc). Fica aqui, não em script.js,
+   * porque não é lógica do simulador: é chrome de UI, igual aos submenus
+   * colapsáveis do menu lateral.
+   */
+  const moreActionsWrap = document.getElementById('more-actions');
+  const moreActionsToggle = document.getElementById('more-actions-toggle');
+  const moreActionsMenu = document.getElementById('more-actions-menu');
+
+  if (moreActionsWrap && moreActionsToggle && moreActionsMenu) {
+    const closeMoreActions = function () {
+      moreActionsMenu.hidden = true;
+      moreActionsToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    moreActionsToggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      const willOpen = moreActionsMenu.hidden;
+      moreActionsMenu.hidden = !willOpen;
+      moreActionsToggle.setAttribute('aria-expanded', String(willOpen));
+    });
+
+    // Fecha ao escolher qualquer item, para não cobrir o modal que acabou de abrir.
+    moreActionsMenu.addEventListener('click', function (event) {
+      if (event.target.closest('.more-actions-item')) closeMoreActions();
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!moreActionsWrap.contains(event.target)) closeMoreActions();
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeMoreActions();
+    });
+  }
+
+})();

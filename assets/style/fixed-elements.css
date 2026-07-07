@@ -19,6 +19,14 @@
 }
 
 :root {
+	/* ===== Escala de breakpoints — só existem estes dois valores no projeto
+	   inteiro. Antes eram 5 números soltos (480/540/560/640/768px) decididos
+	   individualmente por quem escreveu cada regra. CSS puro não permite
+	   var() dentro de @media, então isso é convenção, não imposição técnica:
+	   novas regras responsivas devem usar 640px (ajustes de componente —
+	   empilhar grid, remover max-width, reduzir padding) ou 768px (a troca
+	   estrutural do layout: sidebar vira barra horizontal). Não introduza um
+	   terceiro valor sem um motivo documentado. */
 	--headerSize: 0%;
 	--footerSize: 40px;
 	--sidebarSize: 260px;
@@ -50,10 +58,106 @@
 
 	--colorWarning: #f59e0b;       /* Amber 500 */
 	--colorWarningText: #92400e;   /* Amber 800 — texto sobre fundo claro */
+	--colorWarningBorder: #d97706; /* Amber 600 */
+	--colorWarningBgVivid: #fef3c7;/* Amber 100 */
 
 	--colorInfo: #2563eb;          /* Blue 600 */
 	--colorInfoText: #1e40af;      /* Blue 800 — texto sobre fundo claro */
 	--colorInfoBg: #dbeafe;        /* Blue 100 */
+
+	/* ===== Neutros de interface (Tailwind Slate) — controles do simulador,
+	   badges e bordas dos componentes mais novos. ===== */
+	--slate50: #f8fafc;
+	--slate100: #f1f5f9;
+	--slate200: #e2e8f0;
+	--slate300: #cbd5e1;
+	--slate400: #94a3b8;
+	--slate500: #64748b;
+	--slate600: #475569;
+	--slate700: #334155;
+	--slate800: #1e293b;
+	--slate900: #0f172a;
+	--white: #ffffff;
+
+	/* ===== Neutros de conteúdo e "flat" — REMOVIDOS. Eram duas famílias
+	   quase idênticas a --slate* (diferença de cor imperceptível: distância
+	   euclidiana RGB entre 2 e 36 em cada par). Todo uso em app.css/pages.css
+	   foi migrado para o --slate* correspondente:
+	   textContent→slate700, textContentMuted→slate600, textContentLight→slate500,
+	   textContentLighter→slate400, borderContentLight→slate100, borderContentLighter→slate200,
+	   textFlatMuted→slate500, textFlatLight→slate400, borderFlat→slate200, bgFlatSubtle→slate50.
+	   Agora só existe UMA família de neutros no projeto. ===== */
+
+	/* ===== Variações da marca (Teal) ===== */
+	--colorDetailsRgb: 20, 184, 166;
+	--colorDetailsHover: #0d9488;    /* Teal 600 — hover/active mais escuro */
+	--colorDetailsBg: #f0fdfa;       /* Teal 50 — fundo sutil em hover/active */
+	--colorDetailsBorderLight: #ccfbf1; /* Teal 100 */
+	--colorDetailsLight: #5eead4;    /* Teal 300 — texto sobre fundo escuro */
+
+	/* ===== Bases nitrogenadas — cor de identidade de cada base, consistente
+	   entre a fita do simulador, os badges e os botões de inserção. ===== */
+	--baseA: #1e88e5;
+	--baseT: #f57c00;
+	--baseC: #43a047;
+	--baseG: #e53935;
+	--baseU: #8e24aa;
+
+	/* ===== Categorias adicionais (tipos de mutação, propriedades de
+	   aminoácidos, códons start/stop) — algumas reaproveitam os tokens de
+	   sucesso/erro/aviso/informação acima quando a cor coincide. ===== */
+	--colorSilent: #0ea5e9;      /* Sky 500 */
+	--colorFrameshift: #8b5cf6;  /* Violet 500 */
+	--colorEmerald: #059669;     /* Emerald 600 — aminoácidos básicos */
+	--colorEmeraldText: #065f46;
+	--colorEmeraldBg: #d1fae5;
+	--colorPurple: #9333ea;      /* Purple 600 — códon de parada */
+	--colorPurpleText: #6b21a8;
+	--colorPurpleBg: #f3e8ff;
+	--colorSky: #0284c7;         /* Sky 600 — códon de início */
+	--colorSkyText: #0369a1;
+	--colorSkyBg: #e0f2fe;
+	--colorOrange: #ea580c;      /* Orange 600 — anomalias no cariótipo */
+	--colorOrangeLight: #fb923c;
+	--colorOrangeText: #c2410c;
+	--colorOrangeTextAlt: #9a3412;
+	--colorOrangeBg: #fed7aa;
+	--colorOrangeBgAlt: #fdba74;
+	--colorViolet: #7c3aed;      /* Violet 600 — cromossomo X no cariótipo */
+	--colorVioletLight: #a78bfa;
+	--colorSuccessOnDark: #4ade80; /* Green 400 — indicador "concluído" sobre fundo escuro */
+
+	/* ===== Superfícies escuras (ribossomo, blocos estilo terminal) ===== */
+	--colorCodeBg: #0d1117;
+	--colorCodeBgLight: #1c2431;
+
+	/* ===== Fundo compartilhado da área de conteúdo (igual ao <body>) ===== */
+	--bgPage: #f4f6f9;
+
+	/* ===== Tons adicionais encontrados na segunda varredura ===== */
+	--colorErrorTextAlt: #b91c1c;     /* Red 700 — hover de "Limpar tudo", rótulo de stop codon */
+	--colorErrorBorderVivid: #fca5a5; /* Red 300 */
+	--colorErrorLight: #f87171;       /* Red 400 — códon de parada em destaque no ribossomo */
+	--colorInfoTextStrong: #1e3a8a;   /* Blue 900 */
+	--colorWarningLight: #fbbf24;     /* Amber 400 — gradiente do temporizador */
+	--colorWarningTextStrong: #78350f;/* Amber 900 */
+	--colorOrangeBgLight: #fff7ed;    /* Orange 50 */
+
+	/* ===== Variantes RGB (sem "#"), para cores também usadas com alfa via
+	   rgba(var(--xRgb), A) — evita repetir os mesmos tons em decimal. ===== */
+	--colorDetailsTextRgb: 15, 118, 110;
+	--colorSkyRgb: 2, 132, 199;
+	--colorErrorStrongRgb: 220, 38, 38;
+	--colorSuccessRgb: 22, 163, 74;
+	--colorSuccessOnDarkRgb: 74, 222, 128;
+	--colorErrorLightRgb: 248, 113, 113;
+	--colorWarningBorderRgb: 217, 119, 6;
+	--colorOrangeRgb: 234, 88, 12;
+	--colorDetailsBgAlpha: #14b8a630;
+
+	/* ===== Tons mais escuros do próprio shell (rodapé, submenu) ===== */
+	--bgDarkest: #090d16;
+	--bgDarkestMobile: #05070c;
 }
 
 body {
@@ -63,23 +167,77 @@ body {
 	flex-direction: column;
 	width: 100vw;
 	height: 100vh;
-	background: #f4f6f9;
-	transition: font-size 0.2s ease-in-out;
+	background: var(--bgPage);
+	transition: background 0.2s ease-in-out, font-size 0.2s ease-in-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Modo Escuro
+   ═══════════════════════════════════════════════════════════════════════
+   Como app.css/pages.css já usam var(--slate*)/var(--white)/var(--bgPage)
+   em vez de hex fixo em praticamente todo lugar (ver v1.2 do changelog),
+   dar suporte a tema escuro não exige tocar nas ~400 regras que consomem
+   esses tokens — só redefinir o que eles SIGNIFICAM. A escala de cinza é
+   invertida par a par (50↔900, 100↔800, 200↔700, 300↔600, 400↔500): texto
+   que era escuro sobre --white vira texto claro sobre um --white agora
+   escuro, mantendo a mesma relação de contraste relativa em vez de exigir
+   uma cor nova para cada regra existente.
+
+   Cores semânticas (sucesso/erro/aviso/informação, bases nitrogenadas,
+   badges de mutação e do cariótipo) NÃO são invertidas: continuam como
+   "ilhas" de cor auto-contidas (texto escuro + fundo claro da mesma
+   família), do mesmo jeito que os blocos "estilo terminal" do ribossomo já
+   funcionavam antes desta mudança. Ficam com a mesma aparência nos dois
+   temas — uma escolha comum em dark mode (ex.: labels do GitHub), mais
+   simples e mais segura do que redesenhar ~40 pares de tokens semânticos
+   sob prazo apertado.
+
+   Por isso existem dois jeitos de dizer "branco" no CSS, com significados
+   diferentes: var(--white) é a superfície neutra (cartão/modal) e DEVE
+   inverter com o tema; o literal `white` é texto sobre um fundo vívido
+   (badge com gradiente, botão de destaque) e NUNCA deve inverter — por
+   isso os ~6 lugares de "texto branco sobre badge colorido" em app.css
+   foram trocados de var(--white) para o literal white nesta mesma entrega. */
+body.dark-theme {
+	--bgPage: #0f172a;
+	--white: #1e293b;
+	--slate50: #0f172a;
+	--slate100: #1e293b;
+	--slate200: #334155;
+	--slate300: #475569;
+	--slate400: #64748b;
+	--slate500: #94a3b8;
+	--slate600: #cbd5e1;
+	--slate700: #e2e8f0;
+	--slate800: #f1f5f9;
+	--slate900: #f8fafc;
+}
+
+/* A barra lateral já era escura nos dois temas — não deve reagir à
+   inversão acima. Redeclarar aqui os valores ORIGINAIS de --slate* restaura
+   o comportamento de sempre só dentro do <nav>; o restante da página (fora
+   dele, incluindo todos os modais) continua recebendo a inversão normal. */
+body.dark-theme nav {
+	--slate300: #cbd5e1;
+	--slate400: #94a3b8;
+	--slate500: #64748b;
+	--slate600: #475569;
+	--slate800: #1e293b;
 }
 
 header {
 	display: none;
-	background: #1e293b;
+	background: var(--slate800);
 	height: var(--headerSize);
 }
 
 footer {
 	display: flex;
-	color: #94a3b8;
-	background: #090d16;
+	color: var(--slate400);
+	background: var(--bgDarkest);
 	height: var(--footerSize);
 	font-size: 0.85rem;
-	border-top: 1px solid #1e293b;
+	border-top: 1px solid var(--slate800);
 }
 
 footer span {
@@ -98,11 +256,11 @@ nav {
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	border-right: 1px solid #1e293b;
+	border-right: 1px solid var(--slate800);
 }
 
 nav #logo {
-	background: #1e293b;
+	background: var(--slate800);
 	width: 100%;
 	padding: 1.5rem 0;
 	display: flex;
@@ -123,7 +281,7 @@ nav #logo img {
 }
 
 .sidebar {
-	color: #94a3b8;
+	color: var(--slate400);
 	width: var(--sidebarSize);
 	text-align: initial;
 	align-items: stretch;
@@ -141,7 +299,7 @@ nav #logo img {
 }
 
 .sidebar .collapsible {
-	background: #090d16;
+	background: var(--bgDarkest);
 	max-height: 0;
 	opacity: 0;
 	transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out;
@@ -160,8 +318,8 @@ nav #logo img {
 }
 
 .sidebar .collapsible.active {
-	/* Teto generoso (a altura real vem do conteúdo); grande o bastante para
-	   os 4 simuladores + os 3 controles de mutação do submenu unificado. */
+	/* Teto generoso (a altura real vem do conteúdo); cobre confortavelmente
+	   o cabeçalho + os 5 simuladores do Laboratório Virtual. */
 	max-height: 32rem;
 	opacity: 1;
 }
@@ -178,7 +336,7 @@ nav #logo img {
 	font-size: 0.75rem;
 	font-weight: 700;
 	letter-spacing: 0.1em;
-	color: #475569;
+	color: var(--slate600);
 }
 
 .sidebar .button i {
@@ -194,7 +352,7 @@ nav #logo img {
 
 .sidebar .button {
 	font-weight: 500;
-	color: #cbd5e1;
+	color: var(--slate300);
 	flex: 0 0 auto;
 	padding: 13px 0;
 	display: flex;
@@ -203,30 +361,30 @@ nav #logo img {
 	transition: all 0.2s ease-in-out;
 	border-left: 4px solid transparent;
 }
-.sidebar .button#app .menu-label-group {
+.sidebar .button#lab-toggle .menu-label-group {
 	margin-top:2%;
 	padding-top:3%;
 	padding-bottom:3%;
 }
-.sidebar .button#app,
+.sidebar .button#lab-toggle,
 .sidebar .header-title#about {
-	border-top: 1px solid #1e293b;
+	border-top: 1px solid var(--slate800);
 }
 
-.sidebar .button#app:after {
+.sidebar .button#lab-toggle:after {
 	content: "\23F5";
-	color: #94a3b8;
+	color: var(--slate400);
 	position: absolute;
 	margin-left: calc(var(--sidebarSize) - 35px);
 	transition: transform 0.2s;
 }
 
-.sidebar .button.active#app:after {
+.sidebar .button.active#lab-toggle:after {
 	content: "\23F7";
 	color: white;
 }
 
-.sidebar .button#app span {
+.sidebar .button#lab-toggle span {
 	margin: auto;
 }
 
@@ -250,7 +408,7 @@ nav #logo img {
 .button.active:hover {
 	background: var(--colorDetailsText);
 	color: white;
-	border-left: 4px solid #0d9488;
+	border-left: 4px solid var(--colorDetailsHover);
 	transition: all 0.2s ease-in;
 }
 
@@ -265,7 +423,7 @@ nav #logo img {
 	nav {
 		height: auto;
 		border-right: none;
-		border-bottom: 1px solid #1e293b;
+		border-bottom: 1px solid var(--slate800);
 	}
 
 	nav #logo {
@@ -296,7 +454,7 @@ nav #logo img {
 		margin: 0 8px 0 0;
 	}
 
-	.sidebar .button#app:after {
+	.sidebar .button#lab-toggle:after {
 		content: "\25BC";
 		font-size: 0.6rem;
 		position: static !important;
@@ -315,7 +473,7 @@ nav #logo img {
 		max-height: none;
 		flex-direction: row;
 		flex-wrap: wrap;
-		background: #05070c;
+		background: var(--bgDarkestMobile);
 	}
 
 	.sidebar .collapsible.active {
@@ -344,7 +502,7 @@ nav #logo img {
 	.button.active,
 	.button.active:hover {
 		border-left: none;
-		border-bottom: 3px solid #0d9488;
+		border-bottom: 3px solid var(--colorDetailsHover);
 	}
 
 	.sidebar-toggle {
@@ -369,13 +527,13 @@ nav #logo img {
 
 .menu-label-group .main-label {
 	font-weight: 700;
-	color: #cbd5e1;
+	color: var(--slate300);
 	font-size: 0.9rem;
 }
 
 .menu-label-group .sub-label {
 	font-size: 0.7rem;
-	color: #64748b;
+	color: var(--slate500);
 	font-weight: normal;
 }
 
@@ -384,18 +542,18 @@ nav #logo img {
 	color: white;
 }
 
-/* Sidebar Toggle for presentation mode */
+/* Alternador de tema no rodapé da barra lateral (antes: alternador do Modo Professor) */
 .sidebar-toggle {
 	margin-top: auto;
 	margin-bottom: 10px;
 	padding: 15px 20px;
-	color: #cbd5e1;
+	color: var(--slate300);
 	cursor: pointer;
 	font-weight: 600;
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	border-top: 1px solid #1e293b;
+	border-top: 1px solid var(--slate800);
 	transition: all 0.2s ease-in-out;
 }
 
@@ -410,31 +568,11 @@ nav #logo img {
 	color: white;
 }
 
-.sidebar-toggle.active {
-	background-color: #f59e0b;
-	color: #0f172a;
+.sidebar-toggle[aria-pressed="true"] {
+	background-color: var(--colorDetailsText);
+	color: white;
 }
 
-.sidebar-toggle.active i {
-	color: #0f172a;
-}
-
-/* Presentation Mode (Modo Professor) Overrides */
-body.presentation-mode {
-	--sidebarSize: 280px;
-}
-
-body.presentation-mode .page-header h2 {
-	font-size: 2.8rem !important;
-}
-
-body.presentation-mode .page-header p,
-body.presentation-mode .info-card p,
-body.presentation-mode .info-card li,
-body.presentation-mode .pairing-rule {
-	font-size: 1.15rem !important;
-}
-
-body.presentation-mode .info-card h3 {
-	font-size: 1.5rem !important;
+.sidebar-toggle[aria-pressed="true"] i {
+	color: white;
 }
