@@ -12,15 +12,16 @@
    do HTML. Resultado: no mobile, onde .main empilha a sidebar ACIMA do
    conteúdo (ver fixed-elements.css), o conteúdo ainda tentava caber em
    "100% − 260px" — numa tela de 375px isso sobrava só ~115px, espremendo todo
-   o texto numa coluna estreitíssima.
+   o texto numa coluna estreiíssima.
 
-   A condição é "min-width: 769px E min-height: 501px" — a negação lógica exata
-   de "max-width: 768px OU max-height: 500px" (o breakpoint mobile em
-   fixed-elements.css). Isso garante que um celular girado para paisagem
-   (largura lógica > 768px, mas altura curta, ~360-430px) continue no modo
-   gaveta off-canvas em vez de cair aqui e reservar espaço para uma sidebar
-   que não está mais ocupando lugar no fluxo. */
-@media (min-width: 769px) and (min-height: 501px) {
+   A condição é "min-width: 769px E min-height: 501px E orientation: landscape"
+   — a negação lógica exata de "max-width: 768px OU max-height: 500px OU
+   orientation: portrait" (o breakpoint mobile em fixed-elements.css).
+   Isso garante que um celular em portrait (mesmo que largura lógica > 768px
+   por DPR baixo/customizado) não tente reservar espaço para a sidebar,
+   e que um celular girado para paisagem (largura lógica > 768px, mas altura
+   curta ~360-430px) também continue no modo gaveta off-canvas. */
+@media (min-width: 769px) and (min-height: 501px) and (orientation: landscape) {
 	#visible-page {
 		width: calc(100% - var(--sidebarSize));
 	}

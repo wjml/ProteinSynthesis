@@ -501,17 +501,20 @@ nav #logo img {
    conteúdo, com um backdrop escurecido atrás — a mesma barra vertical do
    desktop, sem nenhuma variação de layout a manter.
 
-   O breakpoint combina largura E altura (max-width: 768px OU max-height:
-   500px) — não só largura. Um celular girado para paisagem costuma ficar
-   com largura lógica maior que 768px (ex.: ~844-926px num iPhone), então
-   um breakpoint baseado só em largura deixava de bater nessa orientação e
-   o menu voltava a aparecer fixo, como no desktop. A altura, porém,
-   continua baixa em paisagem num celular (~360-430px) — bem abaixo do
-   limite de 500px — enquanto um tablet em paisagem mantém altura maior
-   (iPad Mini: 768px), preservando a sidebar fixa onde ela ainda cabe
-   confortavelmente. Este limite precisa ficar em sincronia com o
-   `@media (min-width: 769px) and (min-height: 501px)` de pages.css, que é
-   o complemento exato desta condição. */
+   O breakpoint combina três condições (qualquer uma que seja verdadeira
+   ativa o modo off-canvas):
+   1. max-width: 768px — telas estreitas em geral.
+   2. max-height: 500px — celulares em paisagem (altura curta, ~360-430px),
+      mesmo que a largura seja maior que 768px (ex.: ~844-926px num iPhone).
+   3. orientation: portrait — qualquer dispositivo em modo retrato. Isso
+      cobre celulares com DPR baixo ou personalizado pelo fabricante (ex.:
+      1080×2460 com DPR ≈ 1.5 resulta em ~720px lógico, acima do limite de
+      768px, mas claramente mobile em portrait).
+   Tablets em paisagem mantêm a sidebar fixa: têm altura > 500px E largura
+   > 768px E orientação landscape — nenhuma das três condições é satisfeita.
+   Este limite precisa ficar em sincronia com o complemento de pages.css:
+   `@media (min-width: 769px) and (min-height: 501px) and (orientation: landscape)`
+   que é a negação lógica exata desta tripla condição. */
 
 .mobile-menu-btn {
 	display: none;
@@ -544,7 +547,7 @@ nav #logo img {
 	z-index: 999;
 }
 
-@media (max-width: 768px), (max-height: 500px) {
+@media (max-width: 768px), (max-height: 500px), (orientation: portrait) {
 	.main {
 		height: calc(100% - var(--footerSize));
 	}
