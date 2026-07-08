@@ -300,8 +300,8 @@ footer {
 	color: var(--slate400);
 	background: var(--bgDarkest);
 	height: var(--footerSize);
-	font-size: 0.85rem;
-	border-top: 1px solid var(--slate800);
+	font-size: 0.8rem;
+	/*border-top: 1px solid var(--slate800);
 }
 
 footer span {
