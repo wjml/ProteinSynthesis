@@ -600,10 +600,19 @@
             </div>
             <!-- ═══ MODO DESAFIO (Quiz) ═══════════════════════════════════════════════
                  Página independente, navegada pelo sidebar (li#quiz).
-                 O conteúdo das perguntas é gerado dinamicamente por script.js —
-                 ver buildConceptualQuestion, buildMutationQuestion, buildCodonQuestion
-                 e buildStartStopQuestion. Não há display:none aqui; a visibilidade
-                 é controlada pelo sistema de páginas do dom.js (classe .active).
+                 Antes de jogar, o usuário passa por uma tela de configuração
+                 (#quiz-setup) onde escolhe a dificuldade (chips de seleção única em
+                 #quiz-difficulty-chips) e os tipos de conteúdo (chips de seleção
+                 múltipla em #quiz-category-chips, cobrindo as 5 categorias do app:
+                 genética molecular, mendeliana, populacional, heredograma e
+                 cariótipo). O conteúdo das perguntas é gerado dinamicamente por
+                 script.js — ver buildConceptualQuestionFromIndex, buildMutationQuestion,
+                 buildCodonQuestion, buildStartStopQuestion, buildMendelianCrossQuestion,
+                 buildHardyWeinbergQuestion, buildPedigreeQuestion e buildKaryotypeQuestion.
+                 Não há display:none no wrapper da página; a visibilidade da PÁGINA é
+                 controlada pelo sistema de páginas do dom.js (classe .active) — já a
+                 alternância interna entre setup / pergunta / fim-de-jogo é controlada
+                 por script.js (display inline em cada bloco).
             ════════════════════════════════════════════════════════════════════════ -->
             <div class="content quiz">
                 <div id="quiz-panel" class="quiz-panel">
@@ -617,11 +626,41 @@
                             aria-label="Voltar ao Simulador">&times;</button>
                     </div>
 
-                    <p class="quiz-subtitle">Responda o máximo de perguntas seguidas que conseguir — mistura
-                        perguntas conceituais de genética, identificação de mutações e reconhecimento de
-                        códons. Um erro encerra a rodada.</p>
+                    <p class="quiz-subtitle">Responda o máximo de perguntas seguidas que conseguir. Um erro
+                        encerra a rodada — escolha abaixo a dificuldade e os assuntos que vão cair no desafio.</p>
 
-                    <div id="quiz-question-area" class="quiz-question-area"></div>
+                    <div id="quiz-setup" class="quiz-setup">
+                        <div class="quiz-setup-group">
+                            <h4 class="quiz-setup-title"><i class="fas fa-gauge-high"></i> Dificuldade</h4>
+                            <div class="quiz-setup-chips" id="quiz-difficulty-chips">
+                                <button type="button" class="quiz-chip active" data-difficulty="todas">Todas</button>
+                                <button type="button" class="quiz-chip" data-difficulty="facil">Fácil</button>
+                                <button type="button" class="quiz-chip" data-difficulty="medio">Médio</button>
+                                <button type="button" class="quiz-chip" data-difficulty="dificil">Difícil</button>
+                            </div>
+                        </div>
+                        <div class="quiz-setup-group">
+                            <h4 class="quiz-setup-title"><i class="fas fa-layer-group"></i> Conteúdo</h4>
+                            <div class="quiz-setup-chips" id="quiz-category-chips">
+                                <button type="button" class="quiz-chip active"
+                                    data-category="molecular">Genética Molecular</button>
+                                <button type="button" class="quiz-chip active"
+                                    data-category="mendelian">Genética Mendeliana</button>
+                                <button type="button" class="quiz-chip active"
+                                    data-category="population">Genética Populacional</button>
+                                <button type="button" class="quiz-chip active"
+                                    data-category="pedigree">Heredograma</button>
+                                <button type="button" class="quiz-chip active"
+                                    data-category="karyotype">Cariótipo</button>
+                            </div>
+                        </div>
+                        <p id="quiz-setup-hint" class="quiz-setup-hint" role="alert" aria-live="polite"></p>
+                        <button type="button" id="quiz-start-btn" class="btn-control quiz-start-btn">
+                            <i class="fas fa-play"></i> Começar Desafio
+                        </button>
+                    </div>
+
+                    <div id="quiz-question-area" class="quiz-question-area" style="display:none;"></div>
 
                     <div id="quiz-feedback" class="quiz-feedback" aria-live="polite"></div>
 
@@ -1751,7 +1790,7 @@
     </div>
 
     <footer>
-        <a href="https://www.linkedin.com/in/willian-j-m-louren%C3%A7o/" target="_blank"><span>© 2019 Willian J. M. Lourenço</span></a>
+        <span>© 2026 Protein Synthesis</span>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
