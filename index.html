@@ -29,39 +29,49 @@
                 <img src="assets/images/Logo.svg" alt="Logo Protein Synthesis">
             </div>
             <ul class="sidebar">
-                <li class="header-title" id="access-to-information">
-                    <span>Biologia Molecular</span>
-                </li>
-                <li class="button active" id="dna">
-                    <i class="fas fa-dna"></i> DNA
-                </li>
-                <li class="button" id="rna">
-                    <i class="fas fa-code-branch"></i> RNA
-                </li>
-                <li class="button" id="aminoacids">
-                    <i class="fas fa-cubes"></i> Proteínas
-                </li>
-                <li class="button" id="diseases">
-                    <i class="fas fa-universal-access"></i> Doenças Genéticas
-                </li>
-                <li class="header-title" id="classical-genetics-header">
-                    <span>Genética Clássica</span>
-                </li>
-                <li class="button" id="mendel-theory">
-                    <i class="fas fa-seedling"></i> Genética Mendeliana
-                </li>
-                <li class="button" id="pedigree-theory">
-                    <i class="fas fa-users"></i> Heredogramas
-                </li>
-                <li class="button" id="popgen-theory">
-                    <i class="fas fa-chart-pie"></i> Genética Populacional
-                </li>
-                <li class="button" id="karyotype-theory">
-                    <i class="fas fa-th"></i> Cariótipo
-                </li>
-                <li class="button" id="lab-toggle" data-collapsible="lab-collapsible">
+                <li class="button collapsible-toggle" id="classical-genetics-toggle" data-collapsible="classical-genetics-collapsible">
                     <div class="menu-label-group">
-                        <span class="main-label"><i class="fas fa-flask"></i> SIMULADORES</span>
+                        <span class="main-label"><i class="fas fa-sitemap"></i>Genética Clássica</span>
+                    </div>
+                </li>
+                <ul class="collapsible" id="classical-genetics-collapsible">
+                    <li class="button" id="mendel-theory">
+                        <i class="fas fa-seedling"></i> Genética Mendeliana
+                    </li>
+                    <li class="button" id="pedigree-theory">
+                        <i class="fas fa-users"></i> Heredogramas
+                    </li>
+                    <li class="button" id="popgen-theory">
+                        <i class="fas fa-chart-pie"></i> Genética Populacional
+                    </li>
+                    <li class="button" id="karyotype-theory">
+                        <i class="fas fa-th"></i> Cariótipo
+                    </li>
+                </ul>
+
+                <li class="button collapsible-toggle active" id="molecular-genetics-toggle" data-collapsible="molecular-genetics-collapsible">
+                    <div class="menu-label-group">
+                        <span class="main-label"><i class="fas fa-atom"></i>Genética Molecular</span>
+                    </div>
+                </li>
+                <ul class="collapsible active" id="molecular-genetics-collapsible">
+                    <li class="button active" id="dna">
+                        <i class="fas fa-dna"></i> DNA
+                    </li>
+                    <li class="button" id="rna">
+                        <i class="fas fa-code-branch"></i> RNA
+                    </li>
+                    <li class="button" id="aminoacids">
+                        <i class="fas fa-cubes"></i> Proteínas
+                    </li>
+                    <li class="button" id="diseases">
+                        <i class="fas fa-universal-access"></i> Doenças Genéticas
+                    </li>
+                </ul>
+
+                <li class="button collapsible-toggle" id="lab-toggle" data-collapsible="lab-collapsible">
+                    <div class="menu-label-group">
+                        <span class="main-label"><i class="fas fa-flask"></i>Simuladores</span>
                         <span class="sub-label">Laboratório Virtual</span>
                     </div>
                 </li>
@@ -98,7 +108,7 @@
                 <li class="sidebar-toggle" id="theme-toggle" role="button" tabindex="0" aria-pressed="false">
                     <i class="fas fa-moon" id="theme-toggle-icon"></i> <span id="theme-toggle-label">Modo Escuro</span>
                 </li>
-                <li class="empty"></li>
+                <li class="empty active"></li>
             </ul>
         </nav>
         <div id="visible-page">
@@ -1741,7 +1751,7 @@
     </div>
 
     <footer>
-        <span>© 2026 Protein Synthesis</span>
+        <a href="https://www.linkedin.com/in/willian-j-m-louren%C3%A7o/" target="_blank"><span>© 2019 Willian J. M. Lourenço</span></a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>

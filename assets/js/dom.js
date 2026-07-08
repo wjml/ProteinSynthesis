@@ -71,13 +71,32 @@
 
       // No mobile, o menu é uma gaveta retrátil — depois de escolher uma
       // página, fecha a gaveta automaticamente (função definida mais abaixo).
-      closeMobileDrawer();
+      // IMPORTANTE: só fecha quando o clique realmente navegou para uma
+      // página (!ownSubmenu). Se o botão é um gatilho PURO de submenu
+      // colapsável (ex.: "LABORATÓRIO VIRTUAL"), o clique serve só para
+      // abrir/fechar a lista de opções — fechar a gaveta aqui bloquearia
+      // o usuário de ver e tocar nos itens que acabaram de aparecer.
+      if (!ownSubmenu) {
+        closeMobileDrawer();
+      }
     });
   });
 
   function setVisiblePage(id) {
-    document.getElementById('visible-page').getElementsByClassName('active')[0].classList.remove('active');
-    document.getElementById('visible-page').getElementsByClassName(id)[0].classList.add('active');
+    const container = document.getElementById('visible-page');
+    // Restringe a busca às páginas de nível superior (filhas diretas de
+    // #visible-page, todas com a classe "content"). Sem essa restrição,
+    // getElementsByClassName('active') pegaria QUALQUER elemento ativo
+    // dentro da página atual — inclusive controles internos dos
+    // simuladores que já nascem com "active" no HTML (ex.: botão "Modo
+    // Estudo" em Heredogramas, "Mono-híbrido" no cruzamento mendeliano) —
+    // e podia remover "active" do elemento errado em vez da página visível,
+    // exigindo cliques repetidos até o estado se acertar por acaso.
+    const currentPage = container.querySelector(':scope > .content.active');
+    if (currentPage) currentPage.classList.remove('active');
+
+    const targetPage = container.querySelector(':scope > .content.' + id);
+    if (targetPage) targetPage.classList.add('active');
   }
 
   /**

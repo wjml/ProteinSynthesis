@@ -66,8 +66,8 @@ h1, h2, h3, h4 {
 	   empilhar grid, remover max-width, reduzir padding) ou 768px (a troca
 	   estrutural do layout: sidebar vira barra horizontal). Não introduza um
 	   terceiro valor sem um motivo documentado. */
-	--footerSize: 40px;
-	--sidebarSize: 260px;
+	--footerSize: 25px;
+	--sidebarSize: 265px;
 	--colorDetails: #14b8a6; /* Modern Teal — usar para bordas, ícones e fundos decorativos */
 	--colorDetailsText: #0f766e; /* Teal 700 — variante escura de --colorDetails, ~5,5:1 de contraste
 	   contra branco (WCAG AA). Usar sempre que a cor carregar texto: headings, badges com texto,
@@ -295,6 +295,8 @@ body.dark-theme nav {
 
 footer {
 	display: flex;
+	align-items: center;
+	justify-content: center;
 	color: var(--slate400);
 	background: var(--bgDarkest);
 	height: var(--footerSize);
@@ -423,30 +425,40 @@ nav #logo img {
 	transition: all 0.2s ease-in-out;
 	border-left: 4px solid transparent;
 }
-.sidebar .button#lab-toggle .menu-label-group {
+.sidebar .button.collapsible-toggle .menu-label-group {
 	margin-top:2%;
 	padding-top:3%;
 	padding-bottom:3%;
 }
-.sidebar .button#lab-toggle,
+.sidebar .button.collapsible-toggle,
 .sidebar .header-title#about {
 	border-top: 1px solid var(--slate800);
 }
 
-.sidebar .button#lab-toggle:after {
+.sidebar .button.collapsible-toggle {
+	/* Ancestral posicionado para o ::after (seta) abaixo: sem isso, a seta
+	   (position: absolute) se ancora no ancestral posicionado mais próximo
+	   — que fica FORA da área com scroll da .sidebar — e não acompanha o
+	   botão ao rolar o menu, parecendo "flutuar" solta na tela. */
+	position: relative;
+}
+
+.sidebar .button.collapsible-toggle:after {
 	content: "\23F5";
 	color: var(--slate400);
 	position: absolute;
-	margin-left: calc(var(--sidebarSize) - 35px);
+	top: 50%;
+	right: 15px;
+	transform: translateY(-50%);
 	transition: transform 0.2s;
 }
 
-.sidebar .button.active#lab-toggle:after {
+.sidebar .button.collapsible-toggle.active:after {
 	content: "\23F7";
 	color: white;
 }
 
-.sidebar .button#lab-toggle span {
+.sidebar .button.collapsible-toggle span {
 	margin: auto;
 }
 
@@ -487,7 +499,19 @@ nav #logo img {
    categoria) sai do fluxo normal (position: fixed) e fica escondida fora
    da tela a esquerda. Um botão de hambúrguer fixo a abre por cima do
    conteúdo, com um backdrop escurecido atrás — a mesma barra vertical do
-   desktop, sem nenhuma variação de layout a manter. */
+   desktop, sem nenhuma variação de layout a manter.
+
+   O breakpoint combina largura E altura (max-width: 768px OU max-height:
+   500px) — não só largura. Um celular girado para paisagem costuma ficar
+   com largura lógica maior que 768px (ex.: ~844-926px num iPhone), então
+   um breakpoint baseado só em largura deixava de bater nessa orientação e
+   o menu voltava a aparecer fixo, como no desktop. A altura, porém,
+   continua baixa em paisagem num celular (~360-430px) — bem abaixo do
+   limite de 500px — enquanto um tablet em paisagem mantém altura maior
+   (iPad Mini: 768px), preservando a sidebar fixa onde ela ainda cabe
+   confortavelmente. Este limite precisa ficar em sincronia com o
+   `@media (min-width: 769px) and (min-height: 501px)` de pages.css, que é
+   o complemento exato desta condição. */
 
 .mobile-menu-btn {
 	display: none;
@@ -520,7 +544,7 @@ nav #logo img {
 	z-index: 999;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-height: 500px) {
 	.main {
 		height: calc(100% - var(--footerSize));
 	}
@@ -556,12 +580,15 @@ nav #logo img {
 	}
 }
 
-/* Menu label group for simulator button */
+/* Menu label group for collapsible-toggle buttons (Genética Clássica, Genética
+   Molecular, Simuladores). Sem padding-left próprio: o alinhamento horizontal
+   do ícone vem só da margem de .sidebar .button i (25px), a mesma usada pelos
+   botões não-colapsáveis (Modo Desafio, Sobre & Tutorial etc.), garantindo que
+   todos os itens do menu fiquem alinhados verticalmente entre si. */
 .menu-label-group {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	padding-left: 10px;
 	line-height: 1.2;
 }
 
