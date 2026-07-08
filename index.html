@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description"
         content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/images/icon-beta.png" type="image">
     <link rel="stylesheet" href="assets/style/fixed-elements.css">
     <link rel="stylesheet" href="assets/style/pages.css">
@@ -29,80 +31,83 @@
                 <img src="assets/images/Logo.svg" alt="Logo Protein Synthesis">
             </div>
             <ul class="sidebar">
-                <li class="button collapsible-toggle" id="classical-genetics-toggle" data-collapsible="classical-genetics-collapsible">
+                <li class="button collapsible-toggle" id="classical-genetics-toggle"
+                    data-collapsible="classical-genetics-collapsible" role="button" tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-sitemap"></i>Genética Clássica</span>
                     </div>
                 </li>
                 <ul class="collapsible" id="classical-genetics-collapsible">
-                    <li class="button" id="mendel-theory">
+                    <li class="button" id="mendel-theory" role="button" tabindex="0">
                         <i class="fas fa-seedling"></i> Genética Mendeliana
                     </li>
-                    <li class="button" id="pedigree-theory">
+                    <li class="button" id="pedigree-theory" role="button" tabindex="0">
                         <i class="fas fa-users"></i> Heredogramas
                     </li>
-                    <li class="button" id="popgen-theory">
+                    <li class="button" id="popgen-theory" role="button" tabindex="0">
                         <i class="fas fa-chart-pie"></i> Genética Populacional
                     </li>
-                    <li class="button" id="karyotype-theory">
+                    <li class="button" id="karyotype-theory" role="button" tabindex="0">
                         <i class="fas fa-th"></i> Cariótipo
                     </li>
                 </ul>
 
-                <li class="button collapsible-toggle active" id="molecular-genetics-toggle" data-collapsible="molecular-genetics-collapsible">
+                <li class="button collapsible-toggle active" id="molecular-genetics-toggle"
+                    data-collapsible="molecular-genetics-collapsible" role="button" tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-atom"></i>Genética Molecular</span>
                     </div>
                 </li>
                 <ul class="collapsible active" id="molecular-genetics-collapsible">
-                    <li class="button active" id="dna">
+                    <li class="button active" id="dna" role="button" tabindex="0">
                         <i class="fas fa-dna"></i> DNA
                     </li>
-                    <li class="button" id="rna">
+                    <li class="button" id="rna" role="button" tabindex="0">
                         <i class="fas fa-code-branch"></i> RNA
                     </li>
-                    <li class="button" id="aminoacids">
+                    <li class="button" id="aminoacids" role="button" tabindex="0">
                         <i class="fas fa-cubes"></i> Proteínas
                     </li>
-                    <li class="button" id="diseases">
+                    <li class="button" id="diseases" role="button" tabindex="0">
                         <i class="fas fa-universal-access"></i> Doenças Genéticas
                     </li>
                 </ul>
 
-                <li class="button collapsible-toggle" id="lab-toggle" data-collapsible="lab-collapsible">
+                <li class="button collapsible-toggle" id="lab-toggle" data-collapsible="lab-collapsible" role="button"
+                    tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i>Simuladores</span>
                         <span class="sub-label">Laboratório Virtual</span>
                     </div>
                 </li>
                 <ul class="collapsible" id="lab-collapsible">
-                    <li class="button" id="app">
+                    <li class="button" id="app" role="button" tabindex="0">
                         <i class="fas fa-vial"></i> Genética Molecular
                     </li>
-                    <li class="button" id="mendel-lab">
+                    <li class="button" id="mendel-lab" role="button" tabindex="0">
                         <i class="fas fa-dna"></i> Genética Mendeliana
                     </li>
-                    <li class="button" id="pedigree-lab">
+                    <li class="button" id="pedigree-lab" role="button" tabindex="0">
                         <i class="fas fa-users"></i> Heredogramas
                     </li>
-                    <li class="button" id="popgen-lab">
+                    <li class="button" id="popgen-lab" role="button" tabindex="0">
                         <i class="fas fa-chart-pie"></i> Genética Populacional
                     </li>
-                    <li class="button" id="karyotype-lab">
+                    <li class="button" id="karyotype-lab" role="button" tabindex="0">
                         <i class="fas fa-th"></i> Cariótipo
                     </li>
                 </ul>
 
-                <li class="button" id="quiz">
+                <li class="button" id="quiz" role="button" tabindex="0">
                     <i class="fas fa-trophy"></i> Modo Desafio
                 </li>
                 <li class="header-title" id="about">
                     <span>Sobre o Aplicativo</span>
                 </li>
-                <li class="button" id="app-info">
+                <li class="button" id="app-info" role="button" tabindex="0">
                     <i class="fas fa-info-circle"></i> Sobre &amp; Tutorial
                 </li>
-                <li class="button" id="feedback">
+                <li class="button" id="feedback" role="button" tabindex="0">
                     <i class="fas fa-envelope"></i> Feedback
                 </li>
                 <li class="sidebar-toggle" id="theme-toggle" role="button" tabindex="0" aria-pressed="false">
@@ -145,7 +150,8 @@
                             fita se enrola em torno de proteínas <strong>histonas</strong> formando
                             <strong>nucleossomos</strong> ("colar de contas"), que se condensam em
                             <strong>cromatina</strong> e, na divisão celular, se compactam ao máximo formando os
-                            <strong>cromossomos</strong> visíveis ao microscópio.</p>
+                            <strong>cromossomos</strong> visíveis ao microscópio.
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-clone"></i> Replicação Semiconservativa</h3>
@@ -224,7 +230,8 @@
                             <li><strong>RNAm (mensageiro):</strong> copia a informação do DNA e a leva até o
                                 ribossomo.</li>
                             <li><strong>RNAt (transportador):</strong> reconhece um trecho do RNAm pelo seu
-                                <strong>anticódon</strong> e entrega o aminoácido correspondente.</li>
+                                <strong>anticódon</strong> e entrega o aminoácido correspondente.
+                            </li>
                             <li><strong>RNAr (ribossômico):</strong> compõe, junto com proteínas, a estrutura do
                                 próprio ribossomo — a "máquina" onde a tradução acontece.</li>
                         </ul>
@@ -260,7 +267,8 @@
                         <p>Nem todo RNA vira proteína. <strong>microRNAs (miRNA)</strong> e
                             <strong>siRNAs</strong> são pequenas moléculas que se ligam a RNAm específicos e
                             silenciam sua tradução, regulando quais genes ficam realmente ativos numa célula — um
-                            mecanismo central da <strong>interferência por RNA (RNAi)</strong>.</p>
+                            mecanismo central da <strong>interferência por RNA (RNAi)</strong>.
+                        </p>
                     </div>
                     <div class="info-card transcription-card">
                         <h3><i class="fas fa-cogs"></i> Etapas da Transcrição</h3>
@@ -311,7 +319,8 @@
                         <h3><i class="fas fa-project-diagram"></i> Da Sequência à Forma 3D</h3>
                         <p>O ribossomo entrega apenas uma <strong>sequência linear</strong> de aminoácidos — a
                             <strong>estrutura primária</strong>. A partir daí, a cadeia se dobra sozinha em formas
-                            cada vez mais complexas até virar uma proteína funcional:</p>
+                            cada vez mais complexas até virar uma proteína funcional:
+                        </p>
                         <ul class="base-list">
                             <li><strong>Primária:</strong> a ordem dos aminoácidos, definida pelo RNAm.</li>
                             <li><strong>Secundária:</strong> dobras locais (α-hélices e folhas-β).</li>
@@ -321,10 +330,12 @@
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-magic"></i> Modificações Pós-Traducionais</h3>
-                        <p>Depois de pronta, a cadeia ainda pode ser alterada quimicamente: <strong>fosforilação</strong>
+                        <p>Depois de pronta, a cadeia ainda pode ser alterada quimicamente:
+                            <strong>fosforilação</strong>
                             (liga/desliga a atividade da proteína), <strong>glicosilação</strong> (adiciona açúcares,
                             comum em proteínas de membrana) e <strong>clivagem proteolítica</strong> (corta um
-                            precursor maior até a forma ativa, como na insulina).</p>
+                            precursor maior até a forma ativa, como na insulina).
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-cube"></i> Enovelamento e Chaperonas</h3>
@@ -359,126 +370,126 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                            <tr>
-                                <td>Alanina</td>
-                                <td>ALA</td>
-                                <td>A</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Arginina</td>
-                                <td>ARG</td>
-                                <td>R</td>
-                                <td>Básico</td>
-                            </tr>
-                            <tr>
-                                <td>Asparagina</td>
-                                <td>ASN</td>
-                                <td>N</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Ácido Aspártico</td>
-                                <td>ASP</td>
-                                <td>D</td>
-                                <td>Ácido</td>
-                            </tr>
-                            <tr>
-                                <td>Cisteína</td>
-                                <td>CYS</td>
-                                <td>C</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Glutamina</td>
-                                <td>GLN</td>
-                                <td>Q</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Ácido Glutâmico</td>
-                                <td>GLU</td>
-                                <td>E</td>
-                                <td>Ácido</td>
-                            </tr>
-                            <tr>
-                                <td>Glicina</td>
-                                <td>GLY</td>
-                                <td>G</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Histidina</td>
-                                <td>HIS</td>
-                                <td>H</td>
-                                <td>Básico</td>
-                            </tr>
-                            <tr>
-                                <td>Isoleucina</td>
-                                <td>ILE</td>
-                                <td>I</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Leucina</td>
-                                <td>LEU</td>
-                                <td>L</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Lisina</td>
-                                <td>LYS</td>
-                                <td>K</td>
-                                <td>Básico</td>
-                            </tr>
-                            <tr>
-                                <td>Metionina</td>
-                                <td>MET</td>
-                                <td>M</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Fenilalanina</td>
-                                <td>PHE</td>
-                                <td>F</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Prolina</td>
-                                <td>PRO</td>
-                                <td>P</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Serina</td>
-                                <td>SER</td>
-                                <td>S</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Treonina</td>
-                                <td>THR</td>
-                                <td>T</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Triptofano</td>
-                                <td>TRP</td>
-                                <td>W</td>
-                                <td>Apolar</td>
-                            </tr>
-                            <tr>
-                                <td>Tirosina</td>
-                                <td>TYR</td>
-                                <td>Y</td>
-                                <td>Polar</td>
-                            </tr>
-                            <tr>
-                                <td>Valina</td>
-                                <td>VAL</td>
-                                <td>V</td>
-                                <td>Apolar</td>
-                            </tr>
+                                    <tr>
+                                        <td>Alanina</td>
+                                        <td>ALA</td>
+                                        <td>A</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Arginina</td>
+                                        <td>ARG</td>
+                                        <td>R</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Asparagina</td>
+                                        <td>ASN</td>
+                                        <td>N</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ácido Aspártico</td>
+                                        <td>ASP</td>
+                                        <td>D</td>
+                                        <td>Ácido</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cisteína</td>
+                                        <td>CYS</td>
+                                        <td>C</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Glutamina</td>
+                                        <td>GLN</td>
+                                        <td>Q</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ácido Glutâmico</td>
+                                        <td>GLU</td>
+                                        <td>E</td>
+                                        <td>Ácido</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Glicina</td>
+                                        <td>GLY</td>
+                                        <td>G</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Histidina</td>
+                                        <td>HIS</td>
+                                        <td>H</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Isoleucina</td>
+                                        <td>ILE</td>
+                                        <td>I</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Leucina</td>
+                                        <td>LEU</td>
+                                        <td>L</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Lisina</td>
+                                        <td>LYS</td>
+                                        <td>K</td>
+                                        <td>Básico</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Metionina</td>
+                                        <td>MET</td>
+                                        <td>M</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fenilalanina</td>
+                                        <td>PHE</td>
+                                        <td>F</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prolina</td>
+                                        <td>PRO</td>
+                                        <td>P</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Serina</td>
+                                        <td>SER</td>
+                                        <td>S</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Treonina</td>
+                                        <td>THR</td>
+                                        <td>T</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Triptofano</td>
+                                        <td>TRP</td>
+                                        <td>W</td>
+                                        <td>Apolar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tirosina</td>
+                                        <td>TYR</td>
+                                        <td>Y</td>
+                                        <td>Polar</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Valina</td>
+                                        <td>VAL</td>
+                                        <td>V</td>
+                                        <td>Apolar</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -522,8 +533,8 @@
                         <button id="btn-animate" class="btn-control"><i class="fas fa-play-circle"></i> Animar
                             Tradução</button>
                         <div class="more-actions" id="more-actions">
-                            <button type="button" class="btn-control" id="more-actions-toggle"
-                                aria-haspopup="true" aria-expanded="false" aria-controls="more-actions-menu">
+                            <button type="button" class="btn-control" id="more-actions-toggle" aria-haspopup="true"
+                                aria-expanded="false" aria-controls="more-actions-menu">
                                 <i class="fas fa-ellipsis-h"></i> Mais ações
                             </button>
                             <div class="more-actions-menu" id="more-actions-menu" role="menu" hidden>
@@ -642,12 +653,12 @@
                         <div class="quiz-setup-group">
                             <h4 class="quiz-setup-title"><i class="fas fa-layer-group"></i> Conteúdo</h4>
                             <div class="quiz-setup-chips" id="quiz-category-chips">
-                                <button type="button" class="quiz-chip active"
-                                    data-category="molecular">Genética Molecular</button>
-                                <button type="button" class="quiz-chip active"
-                                    data-category="mendelian">Genética Mendeliana</button>
-                                <button type="button" class="quiz-chip active"
-                                    data-category="population">Genética Populacional</button>
+                                <button type="button" class="quiz-chip active" data-category="molecular">Genética
+                                    Molecular</button>
+                                <button type="button" class="quiz-chip active" data-category="mendelian">Genética
+                                    Mendeliana</button>
+                                <button type="button" class="quiz-chip active" data-category="population">Genética
+                                    Populacional</button>
                                 <button type="button" class="quiz-chip active"
                                     data-category="pedigree">Heredograma</button>
                                 <button type="button" class="quiz-chip active"
@@ -714,7 +725,8 @@
                                 acima da fita de DNA, o controle <strong>Mutação</strong> oferece três modos:
                                 <strong>Adição</strong>, <strong>Deleção</strong> e <strong>Substituição</strong>. A
                                 fita inferior mutada se abre para comparar os resultados e apontar a mutação em
-                                vermelho.</p>
+                                vermelho.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -722,7 +734,8 @@
                 <h3 class="app-info-subheading"><i class="fas fa-history"></i> Histórico de Versões</h3>
                 <div class="version-timeline">
                     <details class="version-card" open>
-                        <summary>v1.2 <span class="version-date">Julho, 2026</span> <span class="badge-active">Atual</span></summary>
+                        <summary>v1.2 <span class="version-date">Julho, 2026</span> <span
+                                class="badge-active">Atual</span></summary>
                         <ul>
                             <li><strong>Menu Reestruturado:</strong> conteúdo teórico e simuladores agora vivem em
                                 páginas separadas — cada simulador tem sua página de teoria correspondente, e a
@@ -879,7 +892,8 @@
                             <h3><i class="fas fa-shield-alt"></i> Mutação Silenciosa</h3>
                             <span class="mutation-type-badge silent">Silenciosa (Sinônima)</span>
                         </div>
-                        <p class="disease-gene"><strong>Gene:</strong> <em>HBB</em> — variação hipotética, mesmo códon 6</p>
+                        <p class="disease-gene"><strong>Gene:</strong> <em>HBB</em> — variação hipotética, mesmo códon 6
+                        </p>
                         <p>Exemplo ilustrativo: ao contrário da Anemia Falciforme, esta troca atinge a
                             <strong>terceira posição</strong> do mesmo códon (GAG → GAA). Como o código genético é
                             degenerado, ambos ainda especificam ácido glutâmico — a proteína permanece idêntica e
@@ -994,15 +1008,17 @@
                         <p>Quadrados representam indivíduos do sexo masculino, círculos do sexo feminino. Símbolos
                             <strong>preenchidos</strong> indicam indivíduos afetados pela característica; símbolos
                             vazios, não afetados. Uma linha horizontal une um casal; linhas que descem e se
-                            ramificam levam aos filhos.</p>
+                            ramificam levam aos filhos.
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-dna"></i> 4 Padrões Clássicos</h3>
                         <p><strong>Autossômica dominante:</strong> aparece em toda geração. <strong>Autossômica
-                            recessiva:</strong> pode pular gerações, afetando filhos de pais não afetados.
+                                recessiva:</strong> pode pular gerações, afetando filhos de pais não afetados.
                             <strong>Ligada ao X recessiva:</strong> muito mais comum em homens.
                             <strong>Ligada ao X dominante:</strong> pai afetado transmite a característica para
-                            100% das filhas e 0% dos filhos.</p>
+                            100% das filhas e 0% dos filhos.
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-shoe-prints"></i> Como Deduzir o Padrão</h3>
@@ -1024,7 +1040,8 @@
                         <p>Nem todo indivíduo com o genótipo "certo" manifesta o fenótipo esperado — isso é
                             <strong>penetrância incompleta</strong>. Quando o fenótipo varia em intensidade entre os
                             afetados, chama-se <strong>expressividade variável</strong>. Os dois fenômenos explicam
-                            heredogramas que parecem "pular" uma geração mesmo em heranças dominantes.</p>
+                            heredogramas que parecem "pular" uma geração mesmo em heranças dominantes.
+                        </p>
                     </div>
                 </div>
 
@@ -1049,8 +1066,8 @@
                 </div>
                 <div class="lab-tool-panel">
                     <div class="lab-mode-switcher lab-toggle-group">
-                        <button type="button" class="lab-toggle-btn active" id="pedigree-mode-study"
-                            data-mode="study" aria-pressed="true">Modo Estudo</button>
+                        <button type="button" class="lab-toggle-btn active" id="pedigree-mode-study" data-mode="study"
+                            aria-pressed="true">Modo Estudo</button>
                         <button type="button" class="lab-toggle-btn" id="pedigree-mode-quiz" data-mode="quiz"
                             aria-pressed="false">Modo Quiz</button>
                     </div>
@@ -1083,13 +1100,13 @@
                         <span class="lab-label">Qual é o padrão de herança deste heredograma?</span>
                         <div class="crispr-pathway-cards">
                             <button type="button" class="crispr-pathway-card" data-answer="AD"><strong>Autossômica
-                                Dominante</strong></button>
+                                    Dominante</strong></button>
                             <button type="button" class="crispr-pathway-card" data-answer="AR"><strong>Autossômica
-                                Recessiva</strong></button>
+                                    Recessiva</strong></button>
                             <button type="button" class="crispr-pathway-card" data-answer="XR"><strong>Ligada ao X
-                                Recessiva</strong></button>
+                                    Recessiva</strong></button>
                             <button type="button" class="crispr-pathway-card" data-answer="XD"><strong>Ligada ao X
-                                Dominante</strong></button>
+                                    Dominante</strong></button>
                         </div>
                     </div>
 
@@ -1110,7 +1127,8 @@
                             somam sempre 100% da população. <span class="popgen-eq">p² + 2pq + q² = 1</span> — as
                             frequências genotípicas esperadas: <strong>p²</strong> (homozigoto dominante),
                             <strong>2pq</strong> (heterozigoto, portador) e <strong>q²</strong> (homozigoto
-                            recessivo, geralmente o fenótipo "afetado" observável).</p>
+                            recessivo, geralmente o fenótipo "afetado" observável).
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-balance-scale"></i> 5 Condições de Equilíbrio</h3>
@@ -1118,7 +1136,8 @@
                             <strong>(2)</strong> não houver migração (fluxo gênico), <strong>(3)</strong> o
                             acasalamento for aleatório, <strong>(4)</strong> não houver seleção natural, e
                             <strong>(5)</strong> a população for infinitamente grande (sem deriva genética).
-                            Quando qualquer uma dessas condições é violada, a população evolui.</p>
+                            Quando qualquer uma dessas condições é violada, a população evolui.
+                        </p>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-random"></i> Deriva Genética</h3>
@@ -1141,7 +1160,8 @@
                             frequências alélicas aumentam na geração seguinte — é o único mecanismo evolutivo que
                             gera <strong>adaptação</strong>, e não apenas mudança aleatória. Pode ser
                             <strong>direcional</strong> (favorece um extremo), <strong>estabilizadora</strong>
-                            (favorece o intermediário) ou <strong>disruptiva</strong> (favorece os dois extremos).</p>
+                            (favorece o intermediário) ou <strong>disruptiva</strong> (favorece os dois extremos).
+                        </p>
                     </div>
                 </div>
 
@@ -1170,7 +1190,8 @@
                             data-mode="qsquared" aria-pressed="true">A partir do<span class="lab-toggle-sub">fenótipo
                                 recessivo</span></button>
                         <button type="button" class="lab-toggle-btn" id="popgen-mode-p" data-mode="p"
-                            aria-pressed="false">A partir da<span class="lab-toggle-sub">frequência alélica</span></button>
+                            aria-pressed="false">A partir da<span class="lab-toggle-sub">frequência
+                                alélica</span></button>
                         <button type="button" class="lab-toggle-btn" id="popgen-mode-test" data-mode="test"
                             aria-pressed="false">Testar<span class="lab-toggle-sub">equilíbrio</span></button>
                     </div>
@@ -1194,8 +1215,8 @@
                     <div class="popgen-mode-panel" id="popgen-panel-p" style="display:none;">
                         <div class="lab-grid-inputs">
                             <label class="lab-field">Frequência do alelo dominante (p)
-                                <input type="number" class="lab-input" id="popgen-p-input" value="0.7" min="0"
-                                    max="1" step="0.01">
+                                <input type="number" class="lab-input" id="popgen-p-input" value="0.7" min="0" max="1"
+                                    step="0.01">
                             </label>
                             <label class="lab-field">Tamanho da população (N) — opcional
                                 <input type="number" class="lab-input" id="popgen-n2" value="1000" min="1">
@@ -1401,8 +1422,8 @@
 
                             <div class="lab-field-group">
                                 <label for="mensagem" class="lab-label">Mensagem</label>
-                                <textarea id="mensagem" name="Mensagem" rows="5"
-                                    class="lab-input feedback-input" required></textarea>
+                                <textarea id="mensagem" name="Mensagem" rows="5" class="lab-input feedback-input"
+                                    required></textarea>
                             </div>
 
                             <button type="submit" class="btn-control" id="feedback-submit-btn">
@@ -1544,7 +1565,8 @@
         aria-labelledby="mendel-modal-title">
         <div class="seq-modal lab-modal-lg">
             <button class="seq-modal-close lab-modal-close" id="mendel-modal-close">&times;</button>
-            <h3 class="lab-modal-title" id="mendel-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos</h3>
+            <h3 class="lab-modal-title" id="mendel-modal-title"><i class="fas fa-dna"></i> Construtor de Cruzamentos
+            </h3>
             <p class="lab-modal-desc">Configure o(s) gene(s) e o genótipo de cada genitor para gerar o quadro de
                 Punnett e as proporções resultantes.</p>
 
@@ -1566,7 +1588,8 @@
                         <input type="text" class="lab-input" id="mendel-g1-name" value="Cor da flor">
                     </label>
                     <label class="lab-field lab-field-narrow">Alelo dominante
-                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g1-letter" value="R">
+                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g1-letter"
+                            value="R">
                     </label>
                     <label class="lab-field">Padrão de herança
                         <select class="lab-input" id="mendel-g1-pattern">
@@ -1613,7 +1636,8 @@
                         <input type="text" class="lab-input" id="mendel-g2-name" value="Textura da semente">
                     </label>
                     <label class="lab-field lab-field-narrow">Alelo dominante
-                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g2-letter" value="Y">
+                        <input type="text" maxlength="1" class="lab-input lab-input-letter" id="mendel-g2-letter"
+                            value="Y">
                     </label>
                     <label class="lab-field">Padrão de herança
                         <select class="lab-input" id="mendel-g2-pattern">
@@ -1679,7 +1703,8 @@
         aria-labelledby="crispr-modal-title">
         <div class="seq-modal lab-modal-lg crispr-modal">
             <button class="seq-modal-close lab-modal-close" id="crispr-modal-close">&times;</button>
-            <h3 class="lab-modal-title" id="crispr-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9</h3>
+            <h3 class="lab-modal-title" id="crispr-modal-title"><i class="fas fa-cut"></i> Edição Gênica com CRISPR-Cas9
+            </h3>
             <p class="lab-modal-desc">A Cas9 corta o DNA num ponto guiado por um RNA guia seguido de um PAM
                 ("NGG"). Depois, a célula repara o corte por uma de duas vias: <strong>NHEJ</strong> (rápida, mas
                 sujeita a erros) ou <strong>HDR</strong> (mais lenta, porém precisa — se você fornecer um molde).</p>
@@ -1746,7 +1771,8 @@
                 nova — por isso a replicação é <strong>semiconservativa</strong>. Como a DNA polimerase só
                 sintetiza no sentido 5'→3', uma fita nova cresce continuamente (fita <strong>líder</strong>)
                 enquanto a outra cresce em pedaços curtos — os <strong>fragmentos de Okazaki</strong> (fita
-                <strong>tardia</strong>) — depois unidos pela enzima DNA ligase.</p>
+                <strong>tardia</strong>) — depois unidos pela enzima DNA ligase.
+            </p>
 
             <div class="repl-ladder-wrapper" id="repl-ladder-wrapper">
                 <div class="repl-ends-row">
@@ -1764,9 +1790,11 @@
                 <div class="repl-ends-row">
                     <span class="repl-end-label">5'</span><span class="repl-end-label">3'</span>
                 </div>
-                <p class="repl-daughter-caption repl-daughter-caption-top" id="repl-daughter-caption-2" style="display:none;">
+                <p class="repl-daughter-caption repl-daughter-caption-top" id="repl-daughter-caption-2"
+                    style="display:none;">
                     ↑ Molécula-filha 2 — fita original 2 + fita tardia nova (fragmentada, depois unida)</p>
-                <p class="repl-daughter-caption repl-daughter-caption-bottom" id="repl-daughter-caption-1" style="display:none;">
+                <p class="repl-daughter-caption repl-daughter-caption-bottom" id="repl-daughter-caption-1"
+                    style="display:none;">
                     ↓ Molécula-filha 1 — fita original 1 + fita líder nova (contínua)</p>
             </div>
 
@@ -1790,12 +1818,23 @@
     </div>
 
     <footer>
-        <a href="https://www.linkedin.com/in/willian-j-m-louren%C3%A7o/" target="_blank" rel="noopener noreferrer"><span>© 2026 Willian J. M. Lourenço</span></a>
+        <a href="https://www.linkedin.com/in/willian-j-m-louren%C3%A7o/" target="_blank" rel="noopener noreferrer">
+            <span>© 2019 Willian J. M. Lourenço</span>
+        </a>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
     <script src="assets/js/dom.js"></script>
     <script src="assets/js/script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function (reg) { console.log('Service Worker registrado!', reg); })
+                    .catch(function (err) { console.error('Erro no Service Worker:', err); });
+            });
+        }
+    </script>
 </body>
 
 </html>

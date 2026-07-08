@@ -32,9 +32,18 @@
 	visibility: hidden;
 	width: 0;
 	height: 0;
-	transition: opacity 0.4s ease-in-out;
 	overflow: hidden;
 	box-sizing: border-box;
+	/* A transição de opacidade foi movida para a classe .page-out (saída
+	   gerenciada por JS) e o @keyframes pageEnter abaixo (entrada). */
+}
+
+/* Estado de saída: a página atual faz fade-out antes de o DOM ocultá-la.
+   Gerenciado por JS em setVisiblePage() via setTimeout de 200ms. */
+.content.page-out {
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease-in-out;
 }
 
 .content.active {
@@ -44,6 +53,20 @@
 	height: 100%;
 	padding: 2.5rem;
 	overflow-y: auto;
+	/* Cada troca de página reproduz a animação desde o início porque
+	   o elemento saiu e voltou a ter a classe .active. */
+	animation: pageEnter 0.35s ease forwards;
+}
+
+@keyframes pageEnter {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 /* Page Header */
@@ -83,7 +106,17 @@
 	padding: 1.5rem;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	border: 1px solid var(--slate100);
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.45s ease, translate 0.45s ease;
+	/* Estado inicial para o IntersectionObserver reveal (#12).
+	   JS adiciona .is-visible quando o card entra no viewport. */
+	opacity: 0;
+	translate: 0 18px;
+}
+
+/* Ao entrar no viewport, o card surge suavemente para cima */
+.info-card.is-visible {
+	opacity: 1;
+	translate: 0 0;
 }
 
 .info-card:hover {
@@ -1196,4 +1229,82 @@ details.version-card ul {
 .feedback-status-error {
 	color: var(--colorErrorText);
 	font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Alto Contraste (melhoria #17)
+   ═══════════════════════════════════════════════════════════════════════
+   Respeita a preferência do sistema por alto contraste: remove gradientes
+   e sombras decorativas, aumenta bordas e garante contraste mínimo.
+   Aplica-se a qualquer elemento que use as variáveis de cor do projeto. */
+@media (prefers-contrast: more) {
+	.info-card,
+	.version-card {
+		border-width: 2px;
+		border-color: var(--slate400);
+		box-shadow: none;
+	}
+	.info-card:hover {
+		transform: none;
+		box-shadow: none;
+		border-color: var(--colorDetails);
+	}
+	.page-header {
+		border-bottom-width: 3px;
+	}
+	.pairing-rule {
+		border-left-width: 6px;
+	}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Impressão / Exportar PDF (melhoria #14)
+   ═══════════════════════════════════════════════════════════════════════
+   Oculta a estrutura de navegação e exibe apenas o conteúdo da página
+   ativa, com tipografia e margens adequadas para papel. */
+@media print {
+	/* Esconde tudo que não é conteúdo */
+	nav, footer, .mobile-menu-btn, .sidebar-backdrop,
+	.page-header .btn-control, .action-buttons,
+	.simulator-controls {
+		display: none !important;
+	}
+
+	body, .main, #visible-page {
+		display: block !important;
+		width: 100% !important;
+		height: auto !important;
+		overflow: visible !important;
+		background: white !important;
+		color: black !important;
+	}
+
+	.content {
+		width: 100% !important;
+		height: auto !important;
+		opacity: 1 !important;
+		visibility: visible !important;
+		overflow: visible !important;
+		padding: 1.5cm !important;
+		animation: none !important;
+	}
+
+	/* Mostra só a página ativa; oculta todas as outras */
+	.content:not(.active) {
+		display: none !important;
+	}
+
+	.info-card {
+		break-inside: avoid;
+		box-shadow: none;
+		border: 1px solid #ccc;
+		opacity: 1 !important;
+		translate: none !important;
+	}
+
+	a[href]::after {
+		content: " (" attr(href) ")";
+		font-size: 0.75rem;
+		color: #555;
+	}
 }

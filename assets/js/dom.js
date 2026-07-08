@@ -80,23 +80,66 @@
         closeMobileDrawer();
       }
     });
+
+    button.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        this.click();
+      }
+    });
   });
+
+  const PAGE_TITLES = {
+    'dna': 'DNA',
+    'rna': 'RNA',
+    'aminoacids': 'Proteínas e Tradução',
+    'diseases': 'Doenças Genéticas',
+    'app': 'Simulador Molecular',
+    'mendel-theory': 'Genética Mendeliana (Teoria)',
+    'mendel-lab': 'Genética Mendeliana (Simulador)',
+    'pedigree-theory': 'Heredogramas (Teoria)',
+    'pedigree-lab': 'Heredogramas (Simulador)',
+    'popgen-theory': 'Genética Populacional (Teoria)',
+    'popgen-lab': 'Genética Populacional (Simulador)',
+    'karyotype-theory': 'Cariótipo (Teoria)',
+    'karyotype-lab': 'Cariótipo (Simulador)',
+    'quiz': 'Modo Desafio',
+    'app-info': 'Sobre & Tutorial',
+    'feedback': 'Feedback'
+  };
 
   function setVisiblePage(id) {
     const container = document.getElementById('visible-page');
-    // Restringe a busca às páginas de nível superior (filhas diretas de
-    // #visible-page, todas com a classe "content"). Sem essa restrição,
-    // getElementsByClassName('active') pegaria QUALQUER elemento ativo
-    // dentro da página atual — inclusive controles internos dos
-    // simuladores que já nascem com "active" no HTML (ex.: botão "Modo
-    // Estudo" em Heredogramas, "Mono-híbrido" no cruzamento mendeliano) —
-    // e podia remover "active" do elemento errado em vez da página visível,
-    // exigindo cliques repetidos até o estado se acertar por acaso.
     const currentPage = container.querySelector(':scope > .content.active');
-    if (currentPage) currentPage.classList.remove('active');
-
     const targetPage = container.querySelector(':scope > .content.' + id);
-    if (targetPage) targetPage.classList.add('active');
+
+    // #4 Título dinâmico por página
+    const friendlyTitle = PAGE_TITLES[id] || id.replace('-', ' ');
+    document.title = friendlyTitle + ' | Protein Synthesis';
+
+    // #6 Transição suave (fade)
+    if (currentPage && currentPage !== targetPage) {
+      currentPage.classList.add('page-out');
+      setTimeout(function () {
+        currentPage.classList.remove('active', 'page-out');
+        if (targetPage) {
+          targetPage.classList.add('active');
+          // #1 Scroll to top ao trocar de página
+          container.scrollTop = 0;
+          if (typeof window.observeNewCards === 'function') {
+            window.observeNewCards();
+          }
+        }
+      }, 200);
+    } else {
+      if (targetPage) {
+        targetPage.classList.add('active');
+        container.scrollTop = 0;
+        if (typeof window.observeNewCards === 'function') {
+          window.observeNewCards();
+        }
+      }
+    }
   }
 
   /**
@@ -326,5 +369,50 @@
       });
     });
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Melhoria #12 — Revelar cards de informação suavemente via IntersectionObserver
+  // ═══════════════════════════════════════════════════════════════════════
+  if ('IntersectionObserver' in window) {
+    const cardObserver = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    window.observeNewCards = function () {
+      document.querySelectorAll('.info-card:not(.is-visible)').forEach(function (card) {
+        cardObserver.observe(card);
+      });
+    };
+
+    // Inicializa a observação nos cards presentes
+    window.observeNewCards();
+  } else {
+    // Fallback para navegadores legados (apenas exibe os cards)
+    document.querySelectorAll('.info-card').forEach(function (card) {
+      card.classList.add('is-visible');
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Melhoria #18 — Error Boundary Global
+  // ═══════════════════════════════════════════════════════════════════════
+  window.addEventListener('error', function (event) {
+    console.error('Captured global error:', event.error);
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        type: 'error',
+        title: 'Ops! Ocorreu um erro inesperado',
+        text: 'Por favor, recarregue a página. Se o problema persistir, entre em contato pela aba de Feedback.'
+      });
+    }
+  });
 
 })();

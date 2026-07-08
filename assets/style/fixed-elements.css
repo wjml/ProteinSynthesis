@@ -9,7 +9,9 @@
      já era usada parcialmente (só trocou de família); ver --font-mono. */
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
 }
 
@@ -18,7 +20,10 @@
    ele também apareça estilizado. Um único lugar para essa decisão, em vez de
    repetir font-family em cada .page-header h2 / .info-card h3 / h3 de modal
    / etc. individualmente. */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
 	font-family: var(--font-serif);
 	overflow-wrap: break-word;
 }
@@ -29,7 +34,10 @@ h1, h2, h3, h4 {
    uma delas a essencialmente instantânea quando o usuário pediu isso —
    os elementos ainda mudam de estado, só sem a animação de transição. */
 @media (prefers-reduced-motion: reduce) {
-	*, *::before, *::after {
+
+	*,
+	*::before,
+	*::after {
 		animation-duration: 0.001ms !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.001ms !important;
@@ -54,9 +62,12 @@ h1, h2, h3, h4 {
 :root {
 	/* ===== Tipografia — três papéis, três famílias. Ver o @import no topo
 	   do arquivo para as origens/pesos carregados de cada uma. */
-	--font-serif: "IBM Plex Serif", Georgia, serif; /* títulos e texto explicativo */
-	--font-sans: "Work Sans", "Segoe UI", sans-serif; /* interface: nav, botões, labels, formulários */
-	--font-mono: "IBM Plex Mono", "Roboto Mono", monospace; /* sequências, códons, dados técnicos */
+	--font-serif: "IBM Plex Serif", Georgia, serif;
+	/* títulos e texto explicativo */
+	--font-sans: "Work Sans", "Segoe UI", sans-serif;
+	/* interface: nav, botões, labels, formulários */
+	--font-mono: "IBM Plex Mono", "Roboto Mono", monospace;
+	/* sequências, códons, dados técnicos */
 
 	/* ===== Escala de breakpoints — só existem estes dois valores no projeto
 	   inteiro. Antes eram 5 números soltos (480/540/560/640/768px) decididos
@@ -68,14 +79,18 @@ h1, h2, h3, h4 {
 	   terceiro valor sem um motivo documentado. */
 	--footerSize: 25px;
 	--sidebarSize: 265px;
-	--colorDetails: #14b8a6; /* Modern Teal — usar para bordas, ícones e fundos decorativos */
-	--colorDetailsText: #0f766e; /* Teal 700 — variante escura de --colorDetails, ~5,5:1 de contraste
+	--colorDetails: #14b8a6;
+	/* Modern Teal — usar para bordas, ícones e fundos decorativos */
+	--colorDetailsText: #0f766e;
+	/* Teal 700 — variante escura de --colorDetails, ~5,5:1 de contraste
 	   contra branco (WCAG AA). Usar sempre que a cor carregar texto: headings, badges com texto,
 	   texto sobre fundo teal, ou fundo teal com texto branco em cima. Fica fixo nos dois temas de
 	   propósito — ver a nota em body.dark-theme sobre por que os títulos de card usam uma
 	   sobrescrita PONTUAL em vez deste token mudar de valor. */
-	--bgSidebar: #0f172a; /* Slate 900 */
-	--bgSidebarHover: #1e293b; /* Slate 800 */
+	--bgSidebar: #0f172a;
+	/* Slate 900 */
+	--bgSidebarHover: #1e293b;
+	/* Slate 800 */
 
 	/* Paleta semântica — consolida tons de feedback que antes eram repetidos
 	   (e levemente divergentes) em cada simulador: o Modo Desafio usava um
@@ -83,27 +98,45 @@ h1, h2, h3, h4 {
 	   populacional para o mesmo significado de "certo/errado". Qualquer
 	   componente novo de acerto, erro, alerta ou informação deve referenciar
 	   estas variáveis em vez de escrever um hex novo. */
-	--colorSuccess: #16a34a;       /* Green 600 — ícones e bordas de acerto */
-	--colorSuccessText: #166534;   /* Green 800 — texto sobre fundo claro (~7:1 contraste) */
-	--colorSuccessBg: #f0fdf4;     /* Green 50 — fundo sutil (mensagens/cartões) */
-	--colorSuccessBgVivid: #dcfce7;/* Green 100 — fundo vívido (opção marcada certa, diff adicionado) */
-	--colorSuccessBorder: #bbf7d0; /* Green 200 */
+	--colorSuccess: #16a34a;
+	/* Green 600 — ícones e bordas de acerto */
+	--colorSuccessText: #166534;
+	/* Green 800 — texto sobre fundo claro (~7:1 contraste) */
+	--colorSuccessBg: #f0fdf4;
+	/* Green 50 — fundo sutil (mensagens/cartões) */
+	--colorSuccessBgVivid: #dcfce7;
+	/* Green 100 — fundo vívido (opção marcada certa, diff adicionado) */
+	--colorSuccessBorder: #bbf7d0;
+	/* Green 200 */
 
-	--colorError: #ef4444;         /* Red 500 — ícones, bordas e destaque de mutação/erro */
-	--colorErrorStrong: #dc2626;   /* Red 600 — marcadores/bordas que precisam de mais contraste */
-	--colorErrorText: #991b1b;     /* Red 800 — texto sobre fundo claro (~7:1 contraste) */
-	--colorErrorBg: #fef2f2;       /* Red 50 — fundo sutil (mensagens/cartões) */
-	--colorErrorBgVivid: #fee2e2;  /* Red 100 — fundo vívido (opção marcada errada, diff removido) */
-	--colorErrorBorder: #fecaca;   /* Red 200 */
+	--colorError: #ef4444;
+	/* Red 500 — ícones, bordas e destaque de mutação/erro */
+	--colorErrorStrong: #dc2626;
+	/* Red 600 — marcadores/bordas que precisam de mais contraste */
+	--colorErrorText: #991b1b;
+	/* Red 800 — texto sobre fundo claro (~7:1 contraste) */
+	--colorErrorBg: #fef2f2;
+	/* Red 50 — fundo sutil (mensagens/cartões) */
+	--colorErrorBgVivid: #fee2e2;
+	/* Red 100 — fundo vívido (opção marcada errada, diff removido) */
+	--colorErrorBorder: #fecaca;
+	/* Red 200 */
 
-	--colorWarning: #f59e0b;       /* Amber 500 */
-	--colorWarningText: #92400e;   /* Amber 800 — texto sobre fundo claro */
-	--colorWarningBorder: #d97706; /* Amber 600 */
-	--colorWarningBgVivid: #fef3c7;/* Amber 100 */
+	--colorWarning: #f59e0b;
+	/* Amber 500 */
+	--colorWarningText: #92400e;
+	/* Amber 800 — texto sobre fundo claro */
+	--colorWarningBorder: #d97706;
+	/* Amber 600 */
+	--colorWarningBgVivid: #fef3c7;
+	/* Amber 100 */
 
-	--colorInfo: #2563eb;          /* Blue 600 */
-	--colorInfoText: #1e40af;      /* Blue 800 — texto sobre fundo claro */
-	--colorInfoBg: #dbeafe;        /* Blue 100 */
+	--colorInfo: #2563eb;
+	/* Blue 600 */
+	--colorInfoText: #1e40af;
+	/* Blue 800 — texto sobre fundo claro */
+	--colorInfoBg: #dbeafe;
+	/* Blue 100 */
 
 	/* ===== Neutros de interface (Tailwind Slate) — controles do simulador,
 	   badges e bordas dos componentes mais novos. ===== */
@@ -130,10 +163,14 @@ h1, h2, h3, h4 {
 
 	/* ===== Variações da marca (Teal) ===== */
 	--colorDetailsRgb: 20, 184, 166;
-	--colorDetailsHover: #0d9488;    /* Teal 600 — hover/active mais escuro */
-	--colorDetailsBg: #f0fdfa;       /* Teal 50 — fundo sutil em hover/active */
-	--colorDetailsBorderLight: #ccfbf1; /* Teal 100 */
-	--colorDetailsLight: #5eead4;    /* Teal 300 — texto sobre fundo escuro */
+	--colorDetailsHover: #0d9488;
+	/* Teal 600 — hover/active mais escuro */
+	--colorDetailsBg: #f0fdfa;
+	/* Teal 50 — fundo sutil em hover/active */
+	--colorDetailsBorderLight: #ccfbf1;
+	/* Teal 100 */
+	--colorDetailsLight: #5eead4;
+	/* Teal 300 — texto sobre fundo escuro */
 
 	/* ===== Bases nitrogenadas — cor de identidade de cada base, consistente
 	   entre a fita do simulador, os badges e os botões de inserção. ===== */
@@ -146,26 +183,34 @@ h1, h2, h3, h4 {
 	/* ===== Categorias adicionais (tipos de mutação, propriedades de
 	   aminoácidos, códons start/stop) — algumas reaproveitam os tokens de
 	   sucesso/erro/aviso/informação acima quando a cor coincide. ===== */
-	--colorSilent: #0ea5e9;      /* Sky 500 */
-	--colorFrameshift: #8b5cf6;  /* Violet 500 */
-	--colorEmerald: #059669;     /* Emerald 600 — aminoácidos básicos */
+	--colorSilent: #0ea5e9;
+	/* Sky 500 */
+	--colorFrameshift: #8b5cf6;
+	/* Violet 500 */
+	--colorEmerald: #059669;
+	/* Emerald 600 — aminoácidos básicos */
 	--colorEmeraldText: #065f46;
 	--colorEmeraldBg: #d1fae5;
-	--colorPurple: #9333ea;      /* Purple 600 — códon de parada */
+	--colorPurple: #9333ea;
+	/* Purple 600 — códon de parada */
 	--colorPurpleText: #6b21a8;
 	--colorPurpleBg: #f3e8ff;
-	--colorSky: #0284c7;         /* Sky 600 — códon de início */
+	--colorSky: #0284c7;
+	/* Sky 600 — códon de início */
 	--colorSkyText: #0369a1;
 	--colorSkyBg: #e0f2fe;
-	--colorOrange: #ea580c;      /* Orange 600 — anomalias no cariótipo */
+	--colorOrange: #ea580c;
+	/* Orange 600 — anomalias no cariótipo */
 	--colorOrangeLight: #fb923c;
 	--colorOrangeText: #c2410c;
 	--colorOrangeTextAlt: #9a3412;
 	--colorOrangeBg: #fed7aa;
 	--colorOrangeBgAlt: #fdba74;
-	--colorViolet: #7c3aed;      /* Violet 600 — cromossomo X no cariótipo */
+	--colorViolet: #7c3aed;
+	/* Violet 600 — cromossomo X no cariótipo */
 	--colorVioletLight: #a78bfa;
-	--colorSuccessOnDark: #4ade80; /* Green 400 — indicador "concluído" sobre fundo escuro */
+	--colorSuccessOnDark: #4ade80;
+	/* Green 400 — indicador "concluído" sobre fundo escuro */
 
 	/* ===== Superfícies escuras (ribossomo, blocos estilo terminal) ===== */
 	--colorCodeBg: #0d1117;
@@ -175,13 +220,20 @@ h1, h2, h3, h4 {
 	--bgPage: #f4f6f9;
 
 	/* ===== Tons adicionais encontrados na segunda varredura ===== */
-	--colorErrorTextAlt: #b91c1c;     /* Red 700 — hover de "Limpar tudo", rótulo de stop codon */
-	--colorErrorBorderVivid: #fca5a5; /* Red 300 */
-	--colorErrorLight: #f87171;       /* Red 400 — códon de parada em destaque no ribossomo */
-	--colorInfoTextStrong: #1e3a8a;   /* Blue 900 */
-	--colorWarningLight: #fbbf24;     /* Amber 400 — gradiente do temporizador */
-	--colorWarningTextStrong: #78350f;/* Amber 900 */
-	--colorOrangeBgLight: #fff7ed;    /* Orange 50 */
+	--colorErrorTextAlt: #b91c1c;
+	/* Red 700 — hover de "Limpar tudo", rótulo de stop codon */
+	--colorErrorBorderVivid: #fca5a5;
+	/* Red 300 */
+	--colorErrorLight: #f87171;
+	/* Red 400 — códon de parada em destaque no ribossomo */
+	--colorInfoTextStrong: #1e3a8a;
+	/* Blue 900 */
+	--colorWarningLight: #fbbf24;
+	/* Amber 400 — gradiente do temporizador */
+	--colorWarningTextStrong: #78350f;
+	/* Amber 900 */
+	--colorOrangeBgLight: #fff7ed;
+	/* Orange 50 */
 
 	/* ===== Variantes RGB (sem "#"), para cores também usadas com alfa via
 	   rgba(var(--xRgb), A) — evita repetir os mesmos tons em decimal. ===== */
@@ -274,7 +326,8 @@ body.dark-theme .lab-section-title {
    sobrescrever a variável em si com segurança, sem precisar do mesmo
    contorno seletor-a-seletor. */
 body.dark-theme {
-	--colorInfoTextStrong: #60a5fa; /* Blue 400 — ~5,75:1 contra o card escuro do app */
+	--colorInfoTextStrong: #60a5fa;
+	/* Blue 400 — ~5,75:1 contra o card escuro do app */
 }
 
 body.dark-theme .quiz-score-item strong {
@@ -326,7 +379,7 @@ nav {
 nav #logo {
 	background: var(--slate800);
 	width: 100%;
-	padding: 1.5rem 0;
+	padding: 0.8rem 0;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -389,8 +442,8 @@ nav #logo img {
 }
 
 .sidebar .header-title {
-	margin-top: 0.5rem;
-	margin-bottom: 0.5rem;
+	margin-top: 0.3rem;
+	margin-bottom: 0.3rem;
 	padding-left: 20px;
 	flex: 0 0 auto;
 	cursor: default;
@@ -418,18 +471,20 @@ nav #logo img {
 	font-weight: 500;
 	color: var(--slate300);
 	flex: 0 0 auto;
-	padding: 13px 0;
+	padding: 10px 0;
 	display: flex;
 	align-items: center;
 	cursor: pointer;
 	transition: all 0.2s ease-in-out;
 	border-left: 4px solid transparent;
 }
+
 .sidebar .button.collapsible-toggle .menu-label-group {
-	margin-top:2%;
-	padding-top:3%;
-	padding-bottom:3%;
+	margin-top: 1%;
+	padding-top: 2%;
+	padding-bottom: 2%;
 }
+
 .sidebar .button.collapsible-toggle,
 .sidebar .header-title#about {
 	border-top: 1px solid var(--slate800);
@@ -547,7 +602,9 @@ nav #logo img {
 	z-index: 999;
 }
 
-@media (max-width: 768px), (max-height: 500px), (orientation: portrait) {
+@media (max-width: 768px),
+(max-height: 500px),
+(orientation: portrait) {
 	.main {
 		height: calc(100% - var(--footerSize));
 	}
