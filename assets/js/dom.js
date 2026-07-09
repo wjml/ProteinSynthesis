@@ -108,20 +108,44 @@
     'feedback': 'Feedback'
   };
 
+  // Guarda a transição de página pendente (setTimeout do fade). Precisa
+  // viver fora de setVisiblePage() para poder ser cancelada por uma
+  // chamada seguinte — ver comentário dentro da função.
+  let pageTransitionTimer = null;
+
   function setVisiblePage(id) {
     const container = document.getElementById('visible-page');
-    const currentPage = container.querySelector(':scope > .content.active');
     const targetPage = container.querySelector(':scope > .content.' + id);
 
     // #4 Título dinâmico por página
     const friendlyTitle = PAGE_TITLES[id] || id.replace('-', ' ');
     document.title = friendlyTitle + ' | Protein Synthesis';
 
+    // Cancela uma transição anterior ainda pendente. Sem isso, clicar em
+    // dois itens do menu mais rápido do que os 200ms do fade (bem comum
+    // navegando normalmente, não só em duplo-clique) fazia o setTimeout do
+    // PRIMEIRO clique ativar a página do primeiro clique DEPOIS do
+    // setTimeout do segundo já ter ativado a página do segundo — as duas
+    // ficavam com .active ao mesmo tempo, sobrepostas na tela.
+    if (pageTransitionTimer) {
+      clearTimeout(pageTransitionTimer);
+      pageTransitionTimer = null;
+    }
+
+    // Sempre parte das páginas REALMENTE ativas no DOM neste instante (nunca
+    // de uma referência guardada de uma chamada anterior), incluindo
+    // qualquer uma que tenha ficado em .page-out por causa do cancelamento
+    // acima. Assim, não importa quantos cliques aconteçam em sequência: só a
+    // página do clique mais recente termina marcada como .active.
+    const otherPages = Array.from(
+      container.querySelectorAll(':scope > .content.active, :scope > .content.page-out')
+    ).filter(function (page) { return page !== targetPage; });
+
     // #6 Transição suave (fade)
-    if (currentPage && currentPage !== targetPage) {
-      currentPage.classList.add('page-out');
-      setTimeout(function () {
-        currentPage.classList.remove('active', 'page-out');
+    if (otherPages.length) {
+      otherPages.forEach(function (page) { page.classList.add('page-out'); });
+      pageTransitionTimer = setTimeout(function () {
+        otherPages.forEach(function (page) { page.classList.remove('active', 'page-out'); });
         if (targetPage) {
           targetPage.classList.add('active');
           // #1 Scroll to top ao trocar de página
@@ -130,6 +154,7 @@
             window.observeNewCards();
           }
         }
+        pageTransitionTimer = null;
       }, 200);
     } else {
       if (targetPage) {
@@ -166,8 +191,10 @@
   } catch (e) {
     // localStorage pode estar indisponível (modo privado, cookies bloqueados); segue sem persistir.
   }
-  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(storedTheme ? storedTheme === 'dark' : prefersDark);
+  // Modo claro é o padrão do app. Só entra no modo escuro se o usuário já
+  // tiver escolhido isso explicitamente antes (preferência salva). Não
+  // seguimos mais prefers-color-scheme do sistema para a primeira visita.
+  applyTheme(storedTheme === 'dark');
 
   if (themeToggle) {
     const toggleTheme = function () {

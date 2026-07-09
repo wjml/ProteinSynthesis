@@ -426,8 +426,18 @@ nav #logo img {
 	flex: 0 0 auto;
 }
 
+/* Este item nunca deve "crescer" (flex-grow): quem fixa o alternador de
+   tema (.sidebar-toggle) no rodapé da barra lateral é o margin-top: auto
+   dele mesmo, mais abaixo neste arquivo. Se .empty crescesse (como no
+   flex: 1 1 auto de antes), ele consumiria todo o espaço livre da coluna
+   ANTES da margem automática ter a chance de fazer isso — e, como .empty
+   só ganhava a classe .active (que zerava esse crescimento) ao navegar
+   para itens dentro de um submenu colapsável, o botão de tema "subia" só
+   nas páginas que não pertencem a nenhum submenu (Modo Desafio, Sobre &
+   Tutorial, Feedback). Com flex: 0 0 auto sempre, isso não acontece mais
+   e o botão fica sempre fixo no rodapé, em qualquer página. */
 .empty {
-	flex: 1 1 auto;
+	flex: 0 0 auto;
 }
 
 .empty.active {

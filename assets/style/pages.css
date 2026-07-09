@@ -1308,3 +1308,171 @@ details.version-card ul {
 		color: #555;
 	}
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   Splash / Página Inicial — primeira tela ao abrir o app, antes do DNA.
+   Reaproveita .content.active (fade-in, padding, scroll) do sistema de
+   páginas padrão; só adiciona o layout específico do herói + cards.
+   ═══════════════════════════════════════════════════════════════════════ */
+.content.splash {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
+.splash-hero {
+	max-width: 640px;
+	margin: 0 auto 2.5rem;
+}
+
+.splash-logo {
+	width: 72px;
+	height: 72px;
+	margin-bottom: 1rem;
+}
+
+.splash-hero h2 {
+	margin: 0 0 0.75rem 0;
+	font-size: 2.4rem;
+	font-weight: 700;
+	color: var(--slate800);
+	letter-spacing: -0.02em;
+}
+
+.splash-tagline {
+	margin: 0;
+	color: var(--slate600);
+	font-size: 1.1rem;
+	line-height: 1.6;
+}
+
+.splash-features {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1.25rem;
+	max-width: 980px;
+	width: 100%;
+	margin-bottom: 2.5rem;
+}
+
+.splash-feature {
+	background: var(--white);
+	border: 1px solid var(--slate100);
+	border-radius: 12px;
+	padding: 1.5rem 1.25rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	text-align: left;
+}
+
+.splash-feature i {
+	color: var(--colorDetails);
+	font-size: 1.5rem;
+	margin-bottom: 0.6rem;
+	display: block;
+}
+
+.splash-feature h3 {
+	margin: 0 0 0.5rem 0;
+	font-size: 1.05rem;
+	color: var(--colorDetailsText);
+}
+
+.splash-feature p {
+	margin: 0;
+	color: var(--slate600);
+	font-size: 0.9rem;
+	line-height: 1.55;
+}
+
+.splash-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.85rem;
+}
+
+.splash-cta-btn {
+	background: linear-gradient(135deg, var(--colorDetailsText), var(--colorDetails));
+	color: white;
+	border-color: transparent;
+	font-size: 1.05rem;
+	padding: 0.9rem 2.2rem;
+}
+
+.splash-cta-btn:hover {
+	filter: brightness(1.08);
+}
+
+.splash-secondary-link {
+	background: none;
+	border: none;
+	color: var(--slate500);
+	font-size: 0.9rem;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 0.25rem;
+}
+
+.splash-secondary-link:hover {
+	color: var(--colorDetailsText);
+}
+
+body.dark-theme .splash-feature h3 {
+	color: var(--colorDetails);
+}
+
+@media (max-width: 640px) {
+	.splash-hero h2 {
+		font-size: 1.8rem;
+	}
+	.splash-features {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Listas/tabelas dentro dos cards de Epistasia e Alelos Múltiplos (ABO), na
+   página de teoria de Genética Mendeliana. Reaproveitam as cores de --slate*
+   e --colorDetails já usadas no resto do .info-card. */
+.epistasis-ratio-list {
+	margin: 0;
+	padding-left: 1.2rem;
+	color: var(--slate600);
+	font-size: 0.9rem;
+	line-height: 1.6;
+}
+
+.epistasis-ratio-list li {
+	margin-bottom: 0.35rem;
+}
+
+.epistasis-ratio-list code {
+	background: var(--slate100);
+	padding: 0.1rem 0.35rem;
+	border-radius: 4px;
+	font-family: var(--font-mono);
+}
+
+.abo-genotype-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.88rem;
+	margin-top: 0.5rem;
+}
+
+.abo-genotype-table th,
+.abo-genotype-table td {
+	border: 1px solid var(--slate200);
+	padding: 0.45rem 0.6rem;
+	text-align: left;
+}
+
+.abo-genotype-table th {
+	background: var(--slate50);
+	color: var(--slate700);
+	font-weight: 600;
+}
+
+.abo-genotype-table td {
+	color: var(--slate600);
+}

@@ -1754,6 +1754,148 @@
     }));
   }
 
+  // ─── Epistasia (interação gênica): reaproveita as MESMAS funções puras do
+  // Punnett genérico acima (mendelGameteList, mendelClassifyPair,
+  // mendelFormatTally) — só a etapa final de "genótipo combinado → fenótipo"
+  // muda por cenário, então a proporção nunca pode divergir do que o
+  // cruzamento realmente produz. ─────────────────────────────────────────────
+
+  const EPISTASIS_GENE_A = { letter: 'A', pattern: 'complete' };
+  const EPISTASIS_GENE_B = { letter: 'B', pattern: 'complete' };
+
+  const EPISTASIS_SCENARIOS = {
+    recessive: {
+      title: 'Epistasia Recessiva (proporção esperada 9 : 3 : 4)',
+      example: 'Pelagem de cães (ex: Labradores): o gene E precisa ter ao menos 1 alelo dominante para depositar ' +
+        'QUALQUER pigmento na pelagem. Um cão "ee" fica amarelo, não importa o genótipo do gene B (que decide entre ' +
+        'preto e chocolate) — por isso eeB_ e eebb caem na MESMA categoria final.',
+      classify(clsA, clsB) {
+        if (clsA === 'homRec') return 'Amarelo (eeB_ ou eebb — gene E mascara o gene B)';
+        return clsB === 'homRec' ? 'Chocolate/Marrom (E_bb)' : 'Preto (E_B_)';
+      },
+    },
+    dominant: {
+      title: 'Epistasia Dominante (proporção esperada 12 : 3 : 1)',
+      example: 'Cor da casca da abóbora: um único alelo dominante W (branco) já basta para mascarar completamente ' +
+        'o gene de cor Y — por isso W_Y_ e W_yy caem na MESMA categoria final (branco), sobrando só wwY_ e wwyy ' +
+        'para diferenciar amarelo de verde.',
+      classify(clsA, clsB) {
+        if (clsA !== 'homRec') return 'Branco (W_Y_ ou W_yy — gene W mascara o gene Y)';
+        return clsB === 'homRec' ? 'Verde (wwyy)' : 'Amarelo (wwY_)';
+      },
+    },
+    duplicate_recessive: {
+      title: 'Epistasia Recessiva Duplicada / Complementação Gênica (proporção esperada 9 : 7)',
+      example: 'Cor da flor da ervilha-de-cheiro: os dois genes (C e P) codificam enzimas de uma MESMA via ' +
+        'metabólica de pigmentação — a cor púrpura só aparece se houver ao menos 1 alelo dominante em CADA um dos ' +
+        'dois genes; faltando o dominante em qualquer um deles, a via para e a flor fica branca.',
+      classify(clsA, clsB) {
+        return (clsA !== 'homRec' && clsB !== 'homRec')
+          ? 'Púrpura (C_P_ — dominante presente nos 2 genes)'
+          : 'Branca (falta o dominante em ao menos 1 dos 2 genes)';
+      },
+    },
+    duplicate_dominant: {
+      title: 'Epistasia Dominante Duplicada (proporção esperada 15 : 1)',
+      example: 'Formato da cápsula da bolsa-de-pastor: os dois genes (A e B) têm efeito equivalente e cumulativo — ' +
+        'um único alelo dominante em QUALQUER um dos dois (ou em ambos) já é suficiente para produzir a cápsula ' +
+        'triangular; só o duplo-recessivo (aabb) produz a forma ovoide.',
+      classify(clsA, clsB) {
+        return (clsA !== 'homRec' || clsB !== 'homRec')
+          ? 'Triangular (A_B_, A_bb ou aaB_ — dominante em ao menos 1 gene)'
+          : 'Ovoide (aabb — recessivo nos 2 genes)';
+      },
+    },
+  };
+
+  /**
+   * Calcula a proporção fenotípica de um cruzamento di-híbrido F1 × F1 fixo
+   * (AaBb × AaBb, dominância completa nos 2 genes) reinterpretado segundo um
+   * dos 4 tipos clássicos de epistasia.
+   */
+  function computeEpistasisCross(scenarioKey) {
+    const scenario = EPISTASIS_SCENARIOS[scenarioKey];
+    if (!scenario) return null;
+
+    const gametes1 = mendelGameteList([EPISTASIS_GENE_A, EPISTASIS_GENE_B], ['het', 'het']);
+    const gametes2 = mendelGameteList([EPISTASIS_GENE_A, EPISTASIS_GENE_B], ['het', 'het']);
+    const tally = new Map();
+    let total = 0;
+    for (const g1 of gametes1) {
+      for (const g2 of gametes2) {
+        const clsA = mendelClassifyPair(g1[0], g2[0], 'A');
+        const clsB = mendelClassifyPair(g1[1], g2[1], 'B');
+        const label = scenario.classify(clsA, clsB);
+        tally.set(label, (tally.get(label) || 0) + 1);
+        total++;
+      }
+    }
+    return { scenario, formatted: mendelFormatTally(tally, total), total };
+  }
+
+  // ─── Sistema ABO (alelos múltiplos): mesmo princípio — as combinações de
+  // gametas são geradas e classificadas por regras puras, nunca hardcoded. ────
+
+  /** Prioridade de exibição dos alelos (IA e IB sempre aparecem antes de i, IA antes de IB por convenção alfabética). */
+  const ABO_ALLELE_ORDER = { IA: 0, IB: 1, i: 2 };
+  const ABO_ALLELE_DISPLAY = { IA: 'I<sup>A</sup>', IB: 'I<sup>B</sup>', i: 'i' };
+
+  /** As 6 combinações genotípicas possíveis do sistema ABO, com seus 2 alelos. */
+  const ABO_GENOTYPE_OPTIONS = {
+    AA: ['IA', 'IA'],
+    Ai: ['IA', 'i'],
+    BB: ['IB', 'IB'],
+    Bi: ['IB', 'i'],
+    AB: ['IA', 'IB'],
+    ii: ['i', 'i'],
+  };
+
+  /** Determina o tipo sanguíneo (fenótipo) a partir de um par de alelos ABO — IA e IB são codominantes, ambos dominam i. */
+  function aboPhenotypeFromAlleles(pair) {
+    const hasA = pair.includes('IA');
+    const hasB = pair.includes('IB');
+    if (hasA && hasB) return 'AB';
+    if (hasA) return 'A';
+    if (hasB) return 'B';
+    return 'O';
+  }
+
+  /** Formata um par de alelos ABO para exibição em HTML, sempre na mesma ordem (IA, depois IB, depois i). */
+  function aboDisplayGenotype(pair) {
+    const sorted = pair.slice().sort((a, b) => ABO_ALLELE_ORDER[a] - ABO_ALLELE_ORDER[b]);
+    return sorted.map(a => ABO_ALLELE_DISPLAY[a]).join('');
+  }
+
+  /**
+   * Calcula o cruzamento ABO completo entre 2 genótipos escolhidos: todas as
+   * combinações de gametas possíveis, com genótipo e fenótipo (tipo sanguíneo)
+   * resultante de cada uma.
+   */
+  function computeAboCross(genotype1Key, genotype2Key) {
+    const alleles1 = ABO_GENOTYPE_OPTIONS[genotype1Key];
+    const alleles2 = ABO_GENOTYPE_OPTIONS[genotype2Key];
+    if (!alleles1 || !alleles2) return null;
+
+    const genotypeTally = new Map();
+    const phenotypeTally = new Map();
+    let total = 0;
+    for (const a1 of alleles1) {
+      for (const a2 of alleles2) {
+        const pair = [a1, a2];
+        const genotypeLabel = aboDisplayGenotype(pair);
+        const phenotypeLabel = 'Tipo ' + aboPhenotypeFromAlleles(pair);
+        genotypeTally.set(genotypeLabel, (genotypeTally.get(genotypeLabel) || 0) + 1);
+        phenotypeTally.set(phenotypeLabel, (phenotypeTally.get(phenotypeLabel) || 0) + 1);
+        total++;
+      }
+    }
+    return {
+      genotypeFormatted:  mendelFormatTally(genotypeTally, total),
+      phenotypeFormatted: mendelFormatTally(phenotypeTally, total),
+      total,
+    };
+  }
+
   // ─── Camada de DOM: formulário, quadro de Punnett e resultados ───────────────
 
   const mendel = {
@@ -1783,6 +1925,85 @@
     if (!mendel.els.modal) cacheMendelElements();
     if (!mendel.els.modal) return;
     openModalDialog(mendel.els.modal);
+  }
+
+  /** Abre o modal de Epistasia e já gera o exemplo selecionado no dropdown, para a tela nunca abrir vazia. */
+  function openEpistasisModal() {
+    const modal = document.getElementById('epistasis-modal');
+    if (!modal) return;
+    openModalDialog(modal);
+    renderEpistasisResult();
+  }
+
+  /** Recalcula (via computeEpistasisCross) e renderiza o cenário de epistasia selecionado no dropdown. */
+  function renderEpistasisResult() {
+    const select = document.getElementById('epistasis-scenario-select');
+    const resultsEl = document.getElementById('epistasis-results');
+    const titleEl = document.getElementById('epistasis-results-title');
+    const exampleEl = document.getElementById('epistasis-example-text');
+    const tallyEl = document.getElementById('epistasis-tally');
+    if (!select || !resultsEl) return;
+
+    const result = computeEpistasisCross(select.value);
+    if (!result) return;
+
+    if (titleEl) titleEl.textContent = result.scenario.title;
+    if (exampleEl) exampleEl.textContent = result.scenario.example;
+    if (tallyEl) {
+      tallyEl.innerHTML = '';
+      result.formatted.forEach((f) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${f.ratio}</strong> — ${f.label} <span class="lab-tally-detail">(${f.count}/${result.total} · ${f.percent}%)</span>`;
+        tallyEl.appendChild(li);
+      });
+    }
+    resultsEl.style.display = 'block';
+  }
+
+  /** Abre o modal do Sistema ABO e já calcula o cruzamento com os genótipos padrão selecionados. */
+  function openAboModal() {
+    const modal = document.getElementById('abo-modal');
+    if (!modal) return;
+    openModalDialog(modal);
+    renderAboResult();
+  }
+
+  /** Recalcula (via computeAboCross) e renderiza o cruzamento ABO para os 2 genótipos escolhidos nos selects. */
+  function renderAboResult() {
+    const p1Select = document.getElementById('abo-parent1-select');
+    const p2Select = document.getElementById('abo-parent2-select');
+    const resultsEl = document.getElementById('abo-results');
+    const genotypeTallyEl = document.getElementById('abo-genotype-tally');
+    const phenotypeTallyEl = document.getElementById('abo-phenotype-tally');
+    const explanationEl = document.getElementById('abo-explanation');
+    if (!p1Select || !p2Select || !resultsEl) return;
+
+    const result = computeAboCross(p1Select.value, p2Select.value);
+    if (!result) return;
+
+    if (genotypeTallyEl) {
+      genotypeTallyEl.innerHTML = '';
+      result.genotypeFormatted.forEach((f) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${f.ratio}</strong> — ${f.label} <span class="lab-tally-detail">(${f.percent}%)</span>`;
+        genotypeTallyEl.appendChild(li);
+      });
+    }
+    if (phenotypeTallyEl) {
+      phenotypeTallyEl.innerHTML = '';
+      result.phenotypeFormatted.forEach((f) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${f.ratio}</strong> — ${f.label} <span class="lab-tally-detail">(${f.percent}%)</span>`;
+        phenotypeTallyEl.appendChild(li);
+      });
+    }
+    if (explanationEl) {
+      const phenotypeList = result.phenotypeFormatted.map(f => f.label.replace('Tipo ', '')).join(', ');
+      explanationEl.textContent = result.phenotypeFormatted.length > 1
+        ? `Esse casal pode ter filhos dos seguintes tipos sanguíneos: ${phenotypeList}.`
+        : `Esse casal só pode ter filhos do tipo sanguíneo ${phenotypeList} — os dois genitores não têm alelos suficientes para gerar outro tipo.`;
+    }
+    resultsEl.style.display = 'block';
   }
 
   /** Lê a configuração de um gene (índice 0 ou 1) a partir dos campos do formulário. */
@@ -1843,6 +2064,128 @@
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  // ─── Exportação de visualizações (Heredograma/Cariótipo) como PNG ────────────
+  //
+  // Função genérica, sem dependências externas: funciona tanto para o SVG real
+  // do heredograma quanto para a grade de <div>s do cariótipo. Como o PNG é
+  // rasterizado a partir de um <img> carregando um SVG serializado (via canvas),
+  // as regras CSS externas (classes como .pedigree-line) não se aplicam dentro
+  // dessa renderização isolada — por isso cada elemento clonado recebe seus
+  // estilos computados (cor, largura etc.) copiados diretamente para o atributo
+  // style, "congelando" a aparência atual (tema claro/escuro incluso) antes de
+  // serializar.
+
+  /** Copia, em profundidade, o estilo computado de cada nó de `sourceEl` para o nó correspondente em `targetEl`. */
+  function inlineComputedStylesDeep(sourceEl, targetEl) {
+    const sourceAll = [sourceEl, ...sourceEl.querySelectorAll('*')];
+    const targetAll = [targetEl, ...targetEl.querySelectorAll('*')];
+    for (let i = 0; i < sourceAll.length; i++) {
+      if (!targetAll[i]) continue;
+      const cs = window.getComputedStyle(sourceAll[i]);
+      let cssText = '';
+      for (let j = 0; j < cs.length; j++) {
+        const prop = cs[j];
+        cssText += `${prop}:${cs.getPropertyValue(prop)};`;
+      }
+      targetAll[i].style.cssText = cssText;
+    }
+  }
+
+  /**
+   * Exporta um nó do DOM (um <svg> real, como o do heredograma, OU um container
+   * de <div>s comuns, como a grade do cariótipo) como um arquivo PNG baixável.
+   * @param {Element} sourceNode Nó a exportar — deve estar atualmente visível na página.
+   * @param {string} filename Nome do arquivo baixado (com extensão .png).
+   */
+  function exportNodeAsPng(sourceNode, filename) {
+    if (!sourceNode) return;
+    const isSvg = sourceNode.tagName && sourceNode.tagName.toLowerCase() === 'svg';
+    const rect = sourceNode.getBoundingClientRect();
+    const width = Math.max(1, Math.round(rect.width)) || 600;
+    const height = Math.max(1, Math.round(rect.height)) || 400;
+    const scale = 2; // exporta em resolução dobrada (nítido em telas retina/impressão)
+    const bgColor = getComputedStyle(document.body).getPropertyValue('background-color') || '#ffffff';
+
+    let clone;
+    try {
+      clone = sourceNode.cloneNode(true);
+      inlineComputedStylesDeep(sourceNode, clone);
+    } catch (e) {
+      console.error('Erro ao clonar/estilizar nó para exportação:', e);
+      return;
+    }
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    let svgEl;
+    if (isSvg) {
+      svgEl = clone;
+      svgEl.setAttribute('width', width);
+      svgEl.setAttribute('height', height);
+      svgEl.setAttribute('xmlns', svgNS);
+      const bgRect = document.createElementNS(svgNS, 'rect');
+      bgRect.setAttribute('width', '100%');
+      bgRect.setAttribute('height', '100%');
+      bgRect.setAttribute('fill', bgColor);
+      svgEl.insertBefore(bgRect, svgEl.firstChild);
+    } else {
+      svgEl = document.createElementNS(svgNS, 'svg');
+      svgEl.setAttribute('xmlns', svgNS);
+      svgEl.setAttribute('width', width);
+      svgEl.setAttribute('height', height);
+      const bgRect = document.createElementNS(svgNS, 'rect');
+      bgRect.setAttribute('width', '100%');
+      bgRect.setAttribute('height', '100%');
+      bgRect.setAttribute('fill', bgColor);
+      svgEl.appendChild(bgRect);
+      const fo = document.createElementNS(svgNS, 'foreignObject');
+      fo.setAttribute('width', '100%');
+      fo.setAttribute('height', '100%');
+      clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+      fo.appendChild(clone);
+      svgEl.appendChild(fo);
+    }
+
+    let svgMarkup;
+    try {
+      svgMarkup = new XMLSerializer().serializeToString(svgEl);
+    } catch (e) {
+      console.error('Erro ao serializar SVG para exportação:', e);
+      return;
+    }
+
+    const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+      ctx.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(svgUrl);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement('a');
+        const blobUrl = URL.createObjectURL(blob);
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+      }, 'image/png');
+    };
+    img.onerror = (e) => {
+      console.error('Erro ao carregar SVG serializado para exportação:', e);
+      URL.revokeObjectURL(svgUrl);
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({ icon: 'error', title: 'Não foi possível exportar a imagem.' });
+      }
+    };
+    img.src = svgUrl;
   }
 
   /** Constrói a tabela HTML do quadro de Punnett (gametas nas bordas, genótipos nas células, coloridas por fenótipo). */
@@ -3272,22 +3615,46 @@
     frameshift: { className: 'frameshift', text: 'Deslocamento de Leitura (Frameshift)' },
   };
 
+  /** Nomes amigáveis das 5 categorias do quiz, usados no painel de desempenho do Modo Prática. */
+  const QUIZ_CATEGORY_LABELS = {
+    molecular:  'Genética Molecular',
+    mendelian:  'Genética Mendeliana',
+    population: 'Genética Populacional',
+    pedigree:   'Heredograma',
+    karyotype:  'Cariótipo',
+  };
+
   /** Estado do Modo Desafio. Vive durante a sessão; só persiste o recorde (localStorage). */
   const quiz = {
     active:  false,
     score:   0,
     best:    0,
     answer:  null,       // valor esperado para a pergunta atual (formato depende do tipo)
+    explanation: null,   // 1-2 frases explicando o gabarito da pergunta atual, mostradas após responder
+    currentCategory: null, // categoria da pergunta atual, usada para atualizar categoryStats no Modo Prática
     checked: false,      // impede clicar em mais de uma opção após já ter respondido
     lastPoolKey: null,   // evita repetir a mesma pergunta duas vezes seguidas
     els:     {},         // cache de elementos da UI, preenchido em initQuizUI()
+    // Estatísticas de acertos/erros por categoria da sessão atual de Modo Prática
+    // (zerado a cada startQuiz()). Não existe no Modo Sobrevivência, que só usa
+    // pontuação/recorde de sequência.
+    categoryStats: {},
     // Configuração escolhida na tela de setup (#quiz-setup). 'todas' = qualquer dificuldade.
-    // Todas as 5 categorias começam selecionadas por padrão.
+    // Todas as 5 categorias começam selecionadas por padrão. mode: 'survival' | 'practice'.
     settings: {
+      mode: 'survival',
       difficulty: 'todas',
       categories: new Set(['molecular', 'mendelian', 'population', 'pedigree', 'karyotype']),
     },
   };
+
+  /** Zera as estatísticas por categoria (chamado no início de cada sessão). */
+  function resetQuizCategoryStats() {
+    quiz.categoryStats = {};
+    Object.keys(QUIZ_CATEGORY_LABELS).forEach((cat) => {
+      quiz.categoryStats[cat] = { correct: 0, wrong: 0 };
+    });
+  }
 
   /** Lê o recorde salvo no localStorage (gracioso se indisponível, ex: modo privado). */
   function loadQuizBestScore() {
@@ -3306,6 +3673,14 @@
   }
 
   // ─── Geradores de pergunta ────────────────────────────────────────────────────
+
+  /** Frases curtas (1-2 sentenças) explicando o gabarito de cada tipo de mutação — mostradas após responder. */
+  const MUTATION_EXPLANATIONS = {
+    silent:     'É silenciosa (sinônima) porque, apesar da base trocada, o novo códon ainda especifica o mesmo aminoácido — uma consequência da degeneração do código genético.',
+    missense:   'É missense (sentido trocado) porque a substituição gera um códon que codifica um aminoácido DIFERENTE do original, alterando a proteína a partir desse ponto.',
+    nonsense:   'É nonsense (sem sentido) porque a mudança transforma um códon de aminoácido em um códon de PARADA prematuro, truncando a proteína.',
+    frameshift: 'É frameshift porque o número de bases inseridas/deletadas NÃO é múltiplo de 3 — isso desloca a fase de leitura de todos os códons seguintes ao ponto da mutação.',
+  };
 
   /**
    * Pergunta tipo "mutação": gera uma sequência codificante aleatória, aplica uma
@@ -3345,6 +3720,8 @@
     return {
       type:   'mutation',
       answer: trueType,
+      category: 'molecular',
+      explanation: MUTATION_EXPLANATIONS[trueType],
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Que tipo de mutação ocorreu nesta sequência?</p>
@@ -3387,6 +3764,8 @@
     return {
       type:   'codon',
       answer: correct.name,
+      category: 'molecular',
+      explanation: `Consultando a tabela do código genético, o códon ${codon} corresponde a ${correct.name} — cada um dos 20 aminoácidos costuma ter mais de um códon (degeneração do código).`,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Qual aminoácido este códon de RNAm codifica?</p>
@@ -3423,6 +3802,10 @@
     return {
       type:   'startstop',
       answer: target,
+      category: 'molecular',
+      explanation: asksStart
+        ? `${target} é o único códon de início da tradução — além de sinalizar onde o ribossomo começa, ele também codifica o aminoácido metionina.`
+        : `${target} é um dos 3 códons de parada (UAA, UAG, UGA) — nenhum deles codifica aminoácido, eles apenas encerram a tradução.`,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Qual destes é o códon de ${asksStart ? 'INÍCIO' : 'PARADA'} da tradução?</p>
@@ -3950,6 +4333,110 @@
         'Porque homens têm dois cromossomos X ativos ao mesmo tempo',
       ],
     },
+    // ─── Epistasia (interação gênica entre 2 genes não-alelos) ─────────────────
+    {
+      category: 'mendelian', difficulty: 'medio',
+      question: 'Qual é a principal diferença entre epistasia e dominância?',
+      correct:  'Dominância é a relação entre 2 alelos do MESMO gene; epistasia é a interação entre genes DIFERENTES (não-alelos), em que um mascara o efeito do outro',
+      distractors: [
+        'Não há diferença — são dois nomes para o mesmo fenômeno',
+        'Epistasia só ocorre em genes ligados ao X, dominância só em autossomos',
+        'Dominância envolve 2 genes; epistasia envolve apenas 1 alelo',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'dificil',
+      question: 'Na epistasia recessiva (proporção 9:3:4), o que precisa acontecer para o fenótipo do "gene epistático" mascarar o do outro gene?',
+      correct:  'O indivíduo precisa ser homozigoto recessivo (aa) para o gene epistático — nesse caso, o genótipo do segundo gene (B_ ou bb) deixa de importar para o fenótipo final',
+      distractors: [
+        'Basta ter um único alelo recessivo em qualquer um dos dois genes',
+        'O indivíduo precisa ser heterozigoto para os dois genes ao mesmo tempo',
+        'O gene epistático precisa estar no cromossomo X',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'dificil',
+      question: 'Em um di-híbrido F1 × F1 (AaBb × AaBb) com epistasia DOMINANTE (o alelo A mascara o gene B sempre que presente), qual proporção fenotípica aparece na prole, na ordem "mascarado : B dominante visível : bb visível"?',
+      correct:  '12 : 3 : 1',
+      distractors: ['9 : 3 : 4', '9 : 7', '9 : 3 : 3 : 1'],
+    },
+    {
+      category: 'mendelian', difficulty: 'dificil',
+      question: 'A proporção 9:7 na F2 de um di-híbrido é a marca registrada de qual tipo de interação gênica?',
+      correct:  'Epistasia recessiva duplicada — um fenótipo só aparece se houver ao menos um alelo dominante em CADA um dos dois genes (complementação gênica); qualquer homozigose recessiva num dos dois já basta para o outro fenótipo',
+      distractors: [
+        'Epistasia dominante simples',
+        'Codominância entre os dois genes',
+        'Herança poligênica com 3 genes',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'medio',
+      question: 'A cor da pelagem de labradores é um exemplo clássico de epistasia recessiva: o gene E (preto/marrom) só se expressa se houver ao menos um alelo dominante em outro gene, "B". Um cão "ee" (não deposita nenhum pigmento na pelagem, ficando amarelo) é um exemplo de quê?',
+      correct:  'O genótipo ee no gene epistático mascara completamente o gene B, independente de este ser BB, Bb ou bb',
+      distractors: [
+        'Uma mutação nova, sem relação com os genes B e E',
+        'Um erro de dominância incompleta entre os alelos E e e',
+        'Um exemplo de herança ligada ao sexo',
+      ],
+    },
+    // ─── Alelos múltiplos: Sistema ABO ─────────────────────────────────────────
+    {
+      category: 'mendelian', difficulty: 'facil',
+      question: 'O sistema sanguíneo ABO é o exemplo clássico de qual conceito genético, além da codominância?',
+      correct:  'Alelos múltiplos — existem 3 alelos possíveis para o gene (IA, IB, i) na população, embora cada indivíduo diploide só carregue 2 deles',
+      distractors: [
+        'Herança poligênica, com muitos genes diferentes contribuindo igualmente',
+        'Herança citoplasmática, transmitida apenas pela mãe',
+        'Herança ligada ao Y, transmitida apenas de pai para filho',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'medio',
+      question: 'Qual é a relação de dominância entre os 3 alelos do sistema ABO?',
+      correct:  'IA e IB são codominantes entre si, e ambos são dominantes sobre i (que é recessivo)',
+      distractors: [
+        'IA é dominante sobre IB, que por sua vez é dominante sobre i',
+        'Os 3 alelos são igualmente recessivos entre si',
+        'i é dominante sobre IA e IB',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'medio',
+      question: 'Um indivíduo com genótipo IAi tem qual tipo sanguíneo (fenótipo)?',
+      correct:  'Tipo A (o alelo IA é dominante sobre i, que não se expressa)',
+      distractors: ['Tipo AB', 'Tipo O', 'Tipo B'],
+    },
+    {
+      category: 'mendelian', difficulty: 'medio',
+      question: 'Quantos genótipos ABO diferentes produzem o fenótipo tipo O?',
+      correct:  'Apenas 1: ii (homozigoto recessivo) — é o único jeito de não expressar nenhum antígeno A ou B',
+      distractors: [
+        '2 genótipos, como acontece com os tipos A e B',
+        '3 genótipos, um para cada combinação possível',
+        'O tipo O não tem genótipo definido, é sempre uma mutação nova',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'dificil',
+      question: 'Um casal com tipos sanguíneos A (genótipo IAi) e B (genótipo IBi) pode ter um filho de qual(is) tipo(s) sanguíneo(s)?',
+      correct:  'Qualquer um dos 4: A, B, AB ou O — já que cada pai pode passar seu alelo I ou o alelo i',
+      distractors: [
+        'Só A ou B, nunca AB ou O',
+        'Só AB, porque um pai é A e o outro é B',
+        'Só O, porque IA e IB se anulariam',
+      ],
+    },
+    {
+      category: 'mendelian', difficulty: 'dificil',
+      question: 'Por que o tipo sanguíneo ABO sozinho não é suficiente para provar ou excluir uma paternidade com certeza total, mas ainda pode EXCLUIR um suposto pai em certos casos?',
+      correct:  'Porque, mesmo com poucos alelos possíveis, um filho tipo O (ii) não pode ter um pai homozigoto IAIA ou IBIB — casos assim excluem a paternidade, mas compatibilidade não a comprova (por isso o teste de DNA é usado para confirmação)',
+      distractors: [
+        'Porque o tipo sanguíneo muda ao longo da vida da pessoa',
+        'Porque o sistema ABO tem centenas de alelos possíveis, tornando qualquer combinação compatível',
+        'Porque o tipo sanguíneo do pai não segue nenhuma regra de herança',
+      ],
+    },
   ];
 
   // ─── Banco de perguntas: Genética Populacional ───────────────────────────────
@@ -4368,6 +4855,11 @@
     return {
       type:   'conceptual',
       answer: q.correct,
+      category: q.category,
+      // O texto do gabarito já costuma trazer o "porquê" embutido (não é só um
+      // rótulo curto) — por isso é reaproveitado como explicação em vez de exigir
+      // um campo novo em cada uma das ~100 perguntas do banco.
+      explanation: q.correct,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">${q.question}</p>
@@ -4445,6 +4937,9 @@
     return {
       type:   'mendelian',
       answer: correctRatio,
+      category: 'mendelian',
+      explanation: `No quadro de Punnett para esse cruzamento (${crossLabel}), a proporção ${correctRatio} sai diretamente ` +
+        `da contagem das ${square.total} combinações possíveis de gametas — ${formatted.map(f => `${f.ratio} ${f.label}`).join(', ')}.`,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Cruzamento para o gene "${gene.domName} / ${gene.recName}", com ${crossLabel}:
@@ -4502,6 +4997,8 @@
     return {
       type:   'hardyweinberg',
       answer: correct,
+      category: 'population',
+      explanation: `Como q² = ${qSquaredPct}%, basta tirar a raiz quadrada para achar q: q = √${qSquaredPct}% = ${qPct}%.`,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Numa população em equilíbrio de Hardy-Weinberg, ${qSquaredPct}% dos indivíduos nascem com
@@ -4537,6 +5034,8 @@
     return {
       type:   'pedigree',
       answer: correct,
+      category: 'pedigree',
+      explanation: PEDIGREE_PATTERN_EXPLANATIONS[pattern],
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Observe o heredograma abaixo (quadrados = sexo masculino, círculos = sexo feminino;
@@ -4574,6 +5073,8 @@
     return {
       type:   'karyotype',
       answer: correct,
+      category: 'karyotype',
+      explanation: condition.description,
       render(container) {
         container.innerHTML = `
           <p class="quiz-prompt">Observe o cariótipo abaixo (notação: <strong>${condition.notation}</strong>).
@@ -4652,17 +5153,29 @@
   function initQuizUI() {
     quiz.els = {
       panel:               document.getElementById('quiz-panel'),
+      modeTitle:           document.getElementById('quiz-mode-title'),
+      modeSubtitle:        document.getElementById('quiz-mode-subtitle'),
+      scoreboardSurvival:  document.getElementById('quiz-scoreboard-survival'),
+      scoreboardPractice:  document.getElementById('quiz-scoreboard-practice'),
       score:               document.getElementById('quiz-score'),
       best:                document.getElementById('quiz-best'),
+      practiceCorrect:     document.getElementById('quiz-practice-correct'),
+      practiceTotal:       document.getElementById('quiz-practice-total'),
       setup:               document.getElementById('quiz-setup'),
+      modeChipsWrap:       document.getElementById('quiz-mode-chips'),
       difficultyChipsWrap: document.getElementById('quiz-difficulty-chips'),
       categoryChipsWrap:   document.getElementById('quiz-category-chips'),
       setupHint:           document.getElementById('quiz-setup-hint'),
       startBtn:            document.getElementById('quiz-start-btn'),
       questionArea:        document.getElementById('quiz-question-area'),
       feedback:            document.getElementById('quiz-feedback'),
+      explanation:         document.getElementById('quiz-explanation'),
+      practiceStats:       document.getElementById('quiz-practice-stats'),
+      practiceStatsList:   document.getElementById('quiz-practice-stats-list'),
+      finishPracticeBtn:   document.getElementById('quiz-finish-practice-btn'),
       gameover:            document.getElementById('quiz-gameover'),
       gameoverText:        document.getElementById('quiz-gameover-text'),
+      gameoverStatsList:   document.getElementById('quiz-gameover-stats-list'),
       exitBtn:              document.getElementById('quiz-exit-btn'),
       retryBtn:             document.getElementById('quiz-retry-btn'),
       backBtn:              document.getElementById('quiz-back-btn'),
@@ -4678,6 +5191,19 @@
     if (quiz.els.exitBtn)  quiz.els.exitBtn.addEventListener('click', exitQuiz);
     if (quiz.els.retryBtn) quiz.els.retryBtn.addEventListener('click', startQuiz);
     if (quiz.els.backBtn)  quiz.els.backBtn.addEventListener('click', exitQuiz);
+    if (quiz.els.finishPracticeBtn) quiz.els.finishPracticeBtn.addEventListener('click', () => endQuiz());
+
+    // Chips de modo de jogo (Sobrevivência / Prática) — seleção única
+    const modeChips = quiz.els.modeChipsWrap
+      ? Array.from(quiz.els.modeChipsWrap.querySelectorAll('.quiz-chip')) : [];
+    modeChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        modeChips.forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+        quiz.settings.mode = chip.getAttribute('data-mode');
+        applyQuizModeToSetupUI();
+      });
+    });
 
     // Chips de dificuldade — seleção única (só um pode estar "active" por vez)
     const difficultyChips = quiz.els.difficultyChipsWrap
@@ -4721,6 +5247,21 @@
         startQuiz();
       });
     }
+
+    applyQuizModeToSetupUI();
+  }
+
+  /** Ajusta título, subtítulo e placar visíveis (Sobrevivência vs. Prática) conforme o modo escolhido na tela de setup. */
+  function applyQuizModeToSetupUI() {
+    const isPractice = quiz.settings.mode === 'practice';
+    if (quiz.els.modeTitle) quiz.els.modeTitle.textContent = isPractice ? 'Prática' : 'Sobrevivência';
+    if (quiz.els.modeSubtitle) {
+      quiz.els.modeSubtitle.textContent = isPractice
+        ? 'Responda no seu ritmo: errar não encerra a sessão. Cada pergunta mostra uma explicação, e seu desempenho é acompanhado por assunto.'
+        : 'Responda o máximo de perguntas seguidas que conseguir. Um erro encerra a rodada — escolha abaixo a dificuldade e os assuntos que vão cair no desafio.';
+    }
+    if (quiz.els.scoreboardSurvival) quiz.els.scoreboardSurvival.style.display = isPractice ? 'none' : 'flex';
+    if (quiz.els.scoreboardPractice) quiz.els.scoreboardPractice.style.display = isPractice ? 'flex' : 'none';
   }
 
   /** Exibe uma mensagem de aviso na tela de configuração (ex.: "selecione ao menos uma categoria"). */
@@ -4731,22 +5272,30 @@
   /** Volta para a tela de configuração (dificuldade + categorias), escondendo pergunta/fim de jogo. */
   function showQuizSetup() {
     quiz.active = false;
-    if (quiz.els.setup)        quiz.els.setup.style.display = 'block';
-    if (quiz.els.questionArea) quiz.els.questionArea.style.display = 'none';
-    if (quiz.els.gameover)     quiz.els.gameover.style.display = 'none';
-    if (quiz.els.feedback)     { quiz.els.feedback.textContent = ''; quiz.els.feedback.className = 'quiz-feedback'; }
+    if (quiz.els.setup)          quiz.els.setup.style.display = 'block';
+    if (quiz.els.questionArea)   quiz.els.questionArea.style.display = 'none';
+    if (quiz.els.gameover)       quiz.els.gameover.style.display = 'none';
+    if (quiz.els.practiceStats)  quiz.els.practiceStats.style.display = 'none';
+    if (quiz.els.feedback)       { quiz.els.feedback.textContent = ''; quiz.els.feedback.className = 'quiz-feedback'; }
+    if (quiz.els.explanation)    { quiz.els.explanation.style.display = 'none'; quiz.els.explanation.textContent = ''; }
     setQuizSetupHint('');
   }
 
-  /** Reinicia o placar e renderiza a primeira pergunta da rodada, usando a configuração escolhida. */
+  /** Reinicia o placar (e, no Modo Prática, as estatísticas por categoria) e renderiza a primeira pergunta. */
   function startQuiz() {
     quiz.active = true;
     quiz.score  = 0;
     quiz.lastPoolKey = null;
-    if (quiz.els.score)        quiz.els.score.textContent = '0';
-    if (quiz.els.setup)        quiz.els.setup.style.display = 'none';
-    if (quiz.els.gameover)     quiz.els.gameover.style.display = 'none';
-    if (quiz.els.questionArea) quiz.els.questionArea.style.display = 'block';
+    resetQuizCategoryStats();
+    if (quiz.els.score)          quiz.els.score.textContent = '0';
+    if (quiz.els.practiceCorrect) quiz.els.practiceCorrect.textContent = '0';
+    if (quiz.els.practiceTotal)   quiz.els.practiceTotal.textContent = '0';
+    if (quiz.els.setup)          quiz.els.setup.style.display = 'none';
+    if (quiz.els.gameover)       quiz.els.gameover.style.display = 'none';
+    if (quiz.els.questionArea)   quiz.els.questionArea.style.display = 'block';
+    const isPractice = quiz.settings.mode === 'practice';
+    if (quiz.els.practiceStats) quiz.els.practiceStats.style.display = isPractice ? 'block' : 'none';
+    if (isPractice) renderPracticeStats(quiz.els.practiceStatsList);
     nextQuestion();
   }
 
@@ -4769,7 +5318,8 @@
    */
   function nextQuestion() {
     quiz.checked = false;
-    if (quiz.els.feedback) { quiz.els.feedback.textContent = ''; quiz.els.feedback.className = 'quiz-feedback'; }
+    if (quiz.els.feedback)    { quiz.els.feedback.textContent = ''; quiz.els.feedback.className = 'quiz-feedback'; }
+    if (quiz.els.explanation) { quiz.els.explanation.style.display = 'none'; quiz.els.explanation.textContent = ''; }
 
     let pool = buildQuestionPool(quiz.settings.categories, quiz.settings.difficulty);
     if (pool.length === 0) pool = buildQuestionPool(quiz.settings.categories, 'todas');
@@ -4789,25 +5339,65 @@
     if (!question) return; // extremamente improvável (ex.: buildMutationQuestion falhou repetidamente)
 
     quiz.answer = question.answer;
+    quiz.explanation = question.explanation || null;
+    quiz.currentCategory = question.category || null;
     if (quiz.els.questionArea) question.render(quiz.els.questionArea);
   }
 
-  /** Avalia a opção clicada, dá feedback visual e decide se continua ou encerra a sequência. */
+  /** Mostra a explicação de 1-2 frases do gabarito da pergunta atual (se houver uma cadastrada). */
+  function showQuizExplanation() {
+    if (!quiz.els.explanation) return;
+    if (!quiz.explanation) { quiz.els.explanation.style.display = 'none'; return; }
+    quiz.els.explanation.innerHTML = `<i class="fas fa-lightbulb"></i> <strong>Por quê:</strong> ${quiz.explanation}`;
+    quiz.els.explanation.style.display = 'block';
+  }
+
+  /**
+   * Constrói a lista de <li> com a barra de acerto por categoria, usada tanto no
+   * painel ao vivo do Modo Prática quanto no resumo final da sessão.
+   */
+  function renderPracticeStats(listEl) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    Object.keys(QUIZ_CATEGORY_LABELS).forEach((cat) => {
+      if (!quiz.settings.categories.has(cat)) return;
+      const stat = quiz.categoryStats[cat] || { correct: 0, wrong: 0 };
+      const total = stat.correct + stat.wrong;
+      const pct = total > 0 ? Math.round((stat.correct / total) * 100) : 0;
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span>${QUIZ_CATEGORY_LABELS[cat]}</span>
+        <span class="quiz-practice-stats-bar-wrap"><span class="quiz-practice-stats-bar" style="width:${pct}%"></span></span>
+        <span>${stat.correct}/${total || 0}${total > 0 ? ` (${pct}%)` : ''}</span>
+      `;
+      listEl.appendChild(li);
+    });
+  }
+
+  /** Avalia a opção clicada, dá feedback visual, mostra a explicação e decide se continua ou encerra a sequência. */
   function submitQuizAnswer(value, btnEl) {
     if (quiz.checked) return; // ignora cliques extras após já ter respondido
     quiz.checked = true;
 
     const isCorrect = value === quiz.answer;
+    const isPractice = quiz.settings.mode === 'practice';
     const optionButtons = quiz.els.questionArea
       ? Array.from(quiz.els.questionArea.querySelectorAll('.quiz-option'))
       : [];
     optionButtons.forEach((btn) => { btn.disabled = true; });
     btnEl.classList.add(isCorrect ? 'quiz-correct' : 'quiz-incorrect');
 
+    // No Modo Prática, contabiliza o acerto/erro por categoria, independente do resultado geral.
+    if (isPractice && quiz.currentCategory && quiz.categoryStats[quiz.currentCategory]) {
+      quiz.categoryStats[quiz.currentCategory][isCorrect ? 'correct' : 'wrong'] += 1;
+      renderPracticeStats(quiz.els.practiceStatsList);
+    }
+
     if (isCorrect) {
       quiz.score += 1;
       if (quiz.els.score) quiz.els.score.textContent = String(quiz.score);
-      if (quiz.score > quiz.best) {
+      if (quiz.els.practiceCorrect) quiz.els.practiceCorrect.textContent = String(quiz.score);
+      if (!isPractice && quiz.score > quiz.best) {
         quiz.best = quiz.score;
         saveQuizBestScore(quiz.best);
         if (quiz.els.best) quiz.els.best.textContent = String(quiz.best);
@@ -4816,7 +5406,6 @@
         quiz.els.feedback.textContent = '✅ Correto! Próxima pergunta…';
         quiz.els.feedback.className = 'quiz-feedback quiz-feedback-correct';
       }
-      setTimeout(nextQuestion, 1100);
     } else {
       // Destaca também qual era a opção correta, usando o valor exato (não texto) de cada botão.
       const correctBtn = optionButtons.find((btn) => btn.dataset.quizValue === String(quiz.answer));
@@ -4826,21 +5415,48 @@
         quiz.els.feedback.textContent = '❌ Resposta incorreta.';
         quiz.els.feedback.className = 'quiz-feedback quiz-feedback-incorrect';
       }
-      setTimeout(() => endQuiz(), 900);
+    }
+
+    showQuizExplanation();
+
+    if (isPractice) {
+      // Modo Prática: nunca encerra por errar. Total de "respondidas" conta certas + erradas.
+      const totalAnswered = Object.values(quiz.categoryStats).reduce((sum, s) => sum + s.correct + s.wrong, 0);
+      if (quiz.els.practiceTotal) quiz.els.practiceTotal.textContent = String(totalAnswered);
+      setTimeout(nextQuestion, isCorrect ? 1400 : 2600); // erro fica mais tempo na tela para dar tempo de ler a explicação
+    } else if (isCorrect) {
+      setTimeout(nextQuestion, 1400);
+    } else {
+      setTimeout(() => endQuiz(), 2600);
     }
   }
 
-  /** Encerra a sessão de sobrevivência e mostra a tela de fim de jogo com o placar final. */
+  /** Encerra a sessão (sobrevivência OU prática) e mostra a tela de fim de jogo com o resumo correspondente. */
   function endQuiz() {
-    if (quiz.els.questionArea) quiz.els.questionArea.style.display = 'none';
-    if (quiz.els.gameover) quiz.els.gameover.style.display = 'block';
+    quiz.active = false;
+    if (quiz.els.questionArea)  quiz.els.questionArea.style.display = 'none';
+    if (quiz.els.practiceStats) quiz.els.practiceStats.style.display = 'none';
+    if (quiz.els.gameover)      quiz.els.gameover.style.display = 'block';
+
+    const isPractice = quiz.settings.mode === 'practice';
     if (quiz.els.gameoverText) {
-      const isNewRecord = quiz.score > 0 && quiz.score === quiz.best;
-      quiz.els.gameoverText.innerHTML =
-        `Você acertou <strong>${quiz.score}</strong> pergunta${quiz.score === 1 ? '' : 's'} seguida${quiz.score === 1 ? '' : 's'}.` +
-        (isNewRecord
-          ? ' <strong>🏆 Novo recorde!</strong>'
-          : ` Recorde atual: <strong>${quiz.best}</strong>.`);
+      if (isPractice) {
+        const totalAnswered = Object.values(quiz.categoryStats).reduce((sum, s) => sum + s.correct + s.wrong, 0);
+        quiz.els.gameoverText.innerHTML = totalAnswered > 0
+          ? `Sessão de prática encerrada. Você acertou <strong>${quiz.score}</strong> de <strong>${totalAnswered}</strong> pergunta${totalAnswered === 1 ? '' : 's'} respondida${totalAnswered === 1 ? '' : 's'}. Confira abaixo seu desempenho por assunto:`
+          : 'Sessão de prática encerrada antes de responder qualquer pergunta.';
+      } else {
+        const isNewRecord = quiz.score > 0 && quiz.score === quiz.best;
+        quiz.els.gameoverText.innerHTML =
+          `Você acertou <strong>${quiz.score}</strong> pergunta${quiz.score === 1 ? '' : 's'} seguida${quiz.score === 1 ? '' : 's'}.` +
+          (isNewRecord
+            ? ' <strong>🏆 Novo recorde!</strong>'
+            : ` Recorde atual: <strong>${quiz.best}</strong>.`);
+      }
+    }
+    if (quiz.els.gameoverStatsList) {
+      if (isPractice) renderPracticeStats(quiz.els.gameoverStatsList);
+      else quiz.els.gameoverStatsList.innerHTML = '';
     }
   }
 
@@ -4902,6 +5518,8 @@
     const btnCrispr = document.getElementById('btn-crispr');
     const btnReplicate = document.getElementById('btn-replicate');
     const btnOpenMendel = document.getElementById('btn-open-mendel');
+    const btnOpenEpistasis = document.getElementById('btn-open-epistasis');
+    const btnOpenAbo = document.getElementById('btn-open-abo');
     if (btnClear)      btnClear.addEventListener('click', clearSequence);
     if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
     if (btnExport)     btnExport.addEventListener('click', openExportModal);
@@ -4910,18 +5528,32 @@
     if (btnCrispr)     btnCrispr.addEventListener('click', openCrisprModal);
     if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
     if (btnOpenMendel) btnOpenMendel.addEventListener('click', openMendelModal);
+    if (btnOpenEpistasis) btnOpenEpistasis.addEventListener('click', openEpistasisModal);
+    if (btnOpenAbo)       btnOpenAbo.addEventListener('click', openAboModal);
+
+    const epistasisGenerateBtn = document.getElementById('epistasis-generate-btn');
+    const epistasisScenarioSelect = document.getElementById('epistasis-scenario-select');
+    if (epistasisGenerateBtn) epistasisGenerateBtn.addEventListener('click', renderEpistasisResult);
+    if (epistasisScenarioSelect) epistasisScenarioSelect.addEventListener('change', renderEpistasisResult);
+
+    const aboGenerateBtn = document.getElementById('abo-generate-btn');
+    if (aboGenerateBtn) aboGenerateBtn.addEventListener('click', renderAboResult);
 
     // Modais de exportar/importar/animar sequência/construir cruzamento/CRISPR/replicação
     const exportModal = document.getElementById('export-modal');
     const importModal = document.getElementById('import-modal');
     const ribosomeModal = document.getElementById('ribosome-modal');
     const mendelModal = document.getElementById('mendel-modal');
+    const epistasisModal = document.getElementById('epistasis-modal');
+    const aboModal = document.getElementById('abo-modal');
     const crisprModal = document.getElementById('crispr-modal');
     const replicationModal = document.getElementById('replication-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
     const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
     const mendelCloseBtn = document.getElementById('mendel-modal-close');
+    const epistasisCloseBtn = document.getElementById('epistasis-modal-close');
+    const aboCloseBtn = document.getElementById('abo-modal-close');
     const crisprCloseBtn = document.getElementById('crispr-modal-close');
     const replicationCloseBtn = document.getElementById('replication-modal-close');
     const exportCopySeqBtn  = document.getElementById('export-copy-seq');
@@ -4953,11 +5585,13 @@
     if (importCloseBtn)      importCloseBtn.addEventListener('click', () => closeModal(importModal));
     if (ribosomeCloseBtn)    ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
     if (mendelCloseBtn)      mendelCloseBtn.addEventListener('click', () => closeModal(mendelModal));
+    if (epistasisCloseBtn)   epistasisCloseBtn.addEventListener('click', () => closeModal(epistasisModal));
+    if (aboCloseBtn)         aboCloseBtn.addEventListener('click', () => closeModal(aboModal));
     if (crisprCloseBtn)      crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
     if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, crisprModal, replicationModal];
+    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, epistasisModal, aboModal, crisprModal, replicationModal];
     allSeqModals.forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
@@ -5072,6 +5706,34 @@
     if (nondisModeMiBtn)   nondisModeMiBtn.addEventListener('click', () => setNondisMode('MI'));
     if (nondisModeMiiBtn)  nondisModeMiiBtn.addEventListener('click', () => setNondisMode('MII'));
     if (nondisSimulateBtn) nondisSimulateBtn.addEventListener('click', runNondisjunctionSimulation);
+
+    // Exportação como PNG (Heredograma e Cariótipo)
+    const pedigreeExportBtn = document.getElementById('pedigree-export-btn');
+    const karyoExportBtn    = document.getElementById('karyo-export-btn');
+    if (pedigreeExportBtn) {
+      pedigreeExportBtn.addEventListener('click', () => {
+        const svg = document.querySelector('#pedigree-svg-wrapper svg');
+        if (!svg) {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'info', title: 'Gere um heredograma primeiro para poder exportá-lo.' });
+          }
+          return;
+        }
+        exportNodeAsPng(svg, 'heredograma.png');
+      });
+    }
+    if (karyoExportBtn) {
+      karyoExportBtn.addEventListener('click', () => {
+        const grid = document.getElementById('karyo-grid');
+        if (!grid || !grid.children.length) {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'info', title: 'Visualize um cariótipo primeiro para poder exportá-lo.' });
+          }
+          return;
+        }
+        exportNodeAsPng(grid, 'cariotipo.png');
+      });
+    }
 
     // Controles do editor CRISPR-Cas9
     const crisprLoadDemoBtn    = document.getElementById('crispr-load-demo');
