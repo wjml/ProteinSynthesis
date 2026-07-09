@@ -259,7 +259,15 @@ body {
 	display: flex;
 	flex-direction: column;
 	width: 100vw;
+	/* 100vh no mobile é calculado com a barra de endereço RECOLHIDA — ao
+	   carregar a página com a barra visível, o conteúdo real ocupa menos
+	   altura que isso e sobra espaço/corta layout; ao rolar e a barra
+	   recolher, tudo "pula". 100dvh (dynamic viewport height) acompanha a
+	   barra em tempo real. Mantido 100vh como fallback: navegadores sem
+	   suporte a dvh (~irrelevante em 2026, mas seguro) simplesmente ignoram
+	   a segunda declaração e ficam com a primeira. */
 	height: 100vh;
+	height: 100dvh;
 	background: var(--bgPage);
 	transition: background 0.2s ease-in-out, font-size 0.2s ease-in-out;
 }
@@ -649,6 +657,7 @@ nav #logo img {
 		flex-grow: 1;
 	}
 }
+
 
 /* Menu label group for collapsible-toggle buttons (Genética Clássica, Genética
    Molecular, Simuladores). Sem padding-left próprio: o alinhamento horizontal

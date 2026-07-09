@@ -58,6 +58,25 @@
 	animation: pageEnter 0.35s ease forwards;
 }
 
+/* Os 2.5rem (40px) de padding em cada lado somam 80px — num iPhone SE de
+   320px de largura lógica isso deixa só 240px de conteúdo útil, menos que
+   o minmax(280px, 1fr) de .educational-grid logo abaixo, o que forçava
+   os info-card a ultrapassar a tela (rolagem horizontal indesejada onde
+   nenhum outro elemento da página rola). Reduzido em dois estágios,
+   seguindo a mesma escala de breakpoints (640/480) já usada no resto do
+   projeto (ver comentário sobre a convenção em fixed-elements.css). */
+@media (max-width: 640px) {
+	.content.active {
+		padding: 1.5rem;
+	}
+}
+
+@media (max-width: 480px) {
+	.content.active {
+		padding: 1rem;
+	}
+}
+
 @keyframes pageEnter {
 	from {
 		opacity: 0;
@@ -91,12 +110,31 @@
 	font-size: 1.1rem;
 }
 
+@media (max-width: 640px) {
+	.page-header h2 {
+		font-size: 1.6rem;
+	}
+
+	.page-header p {
+		font-size: 1rem;
+	}
+}
+
 /* Educational Grid Layout */
 .educational-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: 1.5rem;
 	margin-bottom: 2rem;
+}
+
+/* Margem de segurança extra abaixo de 480px (ex.: 320px lógicos do iPhone
+   SE) — combinado com o padding já reduzido de .content.active acima,
+   evita que o card fique espremido bem na borda exata da tela. */
+@media (max-width: 480px) {
+	.educational-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 /* Info Cards */
@@ -853,8 +891,20 @@
 
 .seq-modal-close {
 	position: absolute;
-	top: 14px;
-	right: 14px;
+	/* 44×44px é o alvo de toque mínimo recomendado (Apple HIG/WCAG) — antes,
+	   a área clicável era só o glifo "×" em si (~22×22px pelo font-size),
+	   pequeno demais para tocar com confiança num modal que abre e fecha o
+	   tempo todo (CRISPR, replicação, ribossomo, importar/exportar
+	   sequência etc.). top/right ajustados de 14px para 6px para que o
+	   glifo centralizado dentro da nova caixa de 44px fique visualmente
+	   quase no mesmo lugar de antes. */
+	top: 6px;
+	right: 6px;
+	width: 44px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	background: none;
 	border: none;
 	color: var(--slate500);
@@ -1028,11 +1078,30 @@
 	overflow-x: auto;
 	min-height: 80px;
 	display: flex;
-	justify-content: center;
+	/* justify-content: safe center — evita o "bug" clássico de flexbox onde
+	   um item maior que o container fica centralizado mesmo dentro de um
+	   pai com scroll, cortando o início do conteúdo de forma inacessível
+	   (não dá pra rolar até ele). "safe" cai para o alinhamento inicial
+	   quando o conteúdo não cabe. Navegadores sem suporte a "safe" (raros
+	   em 2026) ignoram essa linha e mantêm a primeira declaração abaixo. */
+	justify-content: flex-start;
+	justify-content: safe center;
 }
 
 .pedigree-svg-wrapper svg {
+	width: 600px;
 	max-width: 100%;
+	/* O heredograma é gerado com viewBox="0 0 600 380" e os rótulos de
+	   texto (font-size: 11px) são medidos NESSE espaço de coordenadas —
+	   ao encolher o SVG inteiro para caber em telas pequenas via
+	   max-width:100%, o texto encolhe junto (numa tela de ~340px de
+	   largura útil, a escala cai para ~0.55×, deixando os rótulos com
+	   uns 6px reais, ilegíveis). min-width mantém um tamanho mínimo
+	   legível; o wrapper acima já tem overflow-x:auto, então abaixo
+	   desse ponto o heredograma passa a rolar horizontalmente em vez de
+	   continuar encolhendo — o mesmo padrão já usado em .karyo-grid e
+	   .mendel-punnett-wrapper para conteúdo largo. */
+	min-width: 480px;
 	height: auto;
 }
 

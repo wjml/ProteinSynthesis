@@ -2414,3 +2414,29 @@ body.dark-theme .lab-export-btn {
         grid-template-columns: 1fr;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Evita o zoom automático do Safari iOS ao focar campos de formulário
+   ═══════════════════════════════════════════════════════════════════════
+   iOS aplica zoom de página automaticamente quando o elemento focado tem
+   font-size computado menor que 16px — caso de .lab-input (todo input/
+   select dos laboratórios: CRISPR, Hardy-Weinberg, cariótipo, feedback
+   etc., ~14px), .ribo-speed-select (velocidade do ribossomo/replicação,
+   ~13px) e .seq-modal-textarea, de pages.css (importar/exportar
+   sequência, ~14px). O usuário toca um campo, a tela dá um "pulo" de
+   zoom, e geralmente precisa dar pinch-to-zoom de volta manualmente.
+   Sobrescrever só abaixo de 640px preserva o tamanho visual mais
+   compacto em telas maiores, onde o problema não existe.
+   IMPORTANTE: precisa continuar DEPOIS das três regras originais na
+   ordem de carregamento (fixed-elements.css → pages.css → app.css) — como
+   a especificidade é igual (uma classe cada), quem vem depois no
+   documento é quem vence. Esta é a última folha de estilo do <head>,
+   então basta a regra existir em algum ponto deste arquivo. */
+@media (max-width: 640px) {
+
+    .lab-input,
+    .ribo-speed-select,
+    .seq-modal-textarea {
+        font-size: 16px;
+    }
+}
