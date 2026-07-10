@@ -5526,6 +5526,16 @@
 
     // Botões de inserção de base (A/T/C/G) — antes eram onclick="insertBase('A')" inline no HTML
     document.querySelectorAll('.btn-base[data-base]').forEach((btn) => {
+      // mousedown com preventDefault() evita que o navegador mova o foco pro
+      // próprio botão ao ser clicado. Sem isso, o clique "rouba" o foco do
+      // sequenceChar que a pessoa tinha selecionado (por exemplo, ao escolher
+      // onde aplicar uma mutação de adição/substituição) — e, no momento em
+      // que insertBase() lê document.activeElement, ele já não é mais aquele
+      // input, e sim o próprio botão. O resultado, sem essa correção, é a base
+      // sempre acabar inserida no final da sequência, ignorando a posição
+      // selecionada. Como isso acontece no mousedown (antes do click), o
+      // clique em si continua dispachando insertBase() normalmente.
+      btn.addEventListener('mousedown', (event) => event.preventDefault());
       btn.addEventListener('click', () => insertBase(btn.dataset.base));
     });
 
