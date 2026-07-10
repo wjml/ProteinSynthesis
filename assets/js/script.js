@@ -284,9 +284,34 @@
     input.maxLength = 1;
     input.value = value.toUpperCase();
     input.setAttribute('aria-label', ariaLabel);
+    // inputmode="none" pede pro navegador não abrir o teclado virtual ao focar este
+    // campo — a ideia é que a pessoa monte a sequência clicando nos botões A/T/C/G
+    // (ver insertBase()), não digitando num teclado na tela. Não afeta teclado físico/
+    // bluetooth, nem os listeners de keypress/keydown abaixo, que continuam funcionando
+    // normalmente para quem realmente quiser digitar (ex.: no desktop).
+    input.setAttribute('inputmode', 'none');
     input.addEventListener('keypress', charInput);
     input.addEventListener('keydown', actsLikeUniqueInput);
     return input;
+  }
+
+  /**
+   * Move o foco para `el` sem deixar o navegador abrir o teclado virtual —
+   * usado nos pontos em que o foco é só "lembrete de posição" após um clique em
+   * botão (inserir base, carregar exemplo, sequência aleatória etc.), não uma
+   * intenção real de digitar. inputmode="none" (ver newSequenceChar()) já resolve
+   * a maioria dos casos, mas alguns navegadores (principalmente versões mais
+   * antigas do Safari iOS) ainda abrem o teclado num focus() disparado por script,
+   * ignorando o inputmode. Marcar o campo como readonly no instante do focus() é o
+   * truque clássico e mais confiável pra evitar isso — o teclado só aparece quando o
+   * SO decide mostrá-lo no momento do foco, então removê-lo logo em seguida não
+   * reabre nada.
+   */
+  function focusWithoutKeyboard(el) {
+    if (!el) return;
+    el.setAttribute('readonly', 'readonly');
+    el.focus({ preventScroll: true });
+    setTimeout(() => el.removeAttribute('readonly'), 100);
   }
 
   /** Cria e retorna um elemento de aminoácido completo com rótulos e event listeners. */
@@ -1222,13 +1247,13 @@
         activeEl.value = base;
         if (rnaEl) rnaEl.value = transcribe(base);
         const next = activeEl.nextElementSibling;
-        if (next && next.classList.contains('sequenceChar')) next.focus();
+        if (next && next.classList.contains('sequenceChar')) focusWithoutKeyboard(next);
       } else {
         const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
         const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
         textboxDna[0].insertBefore(newDna, activeEl.nextElementSibling);
         textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-        newDna.focus();
+        focusWithoutKeyboard(newDna);
       }
     } else {
       // Nenhum input focado: anexa ao final
@@ -1236,7 +1261,7 @@
       const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
       textboxDna[0].insertBefore(newDna, blankSpace);
       textboxRna[0].appendChild(newRna);
-      newDna.focus();
+      focusWithoutKeyboard(newDna);
     }
 
     if (!skipRender) {
@@ -1403,7 +1428,7 @@
       textboxDna[0].insertBefore(lastDnaInput, blankSpace);
       textboxRna[0].appendChild(newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro'));
     }
-    if (lastDnaInput) lastDnaInput.focus();
+    if (lastDnaInput) focusWithoutKeyboard(lastDnaInput);
 
     translate();
     treatSequence();
