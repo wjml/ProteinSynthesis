@@ -6,8 +6,14 @@
      controle" de quem está operando o simulador. Neutra o bastante pra não
      competir com a serifada nos títulos.
    - IBM Plex Mono nas sequências de bases, códons e qualquer dado técnico —
-     já era usada parcialmente (só trocou de família); ver --font-mono. */
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+     já era usada parcialmente (só trocou de família); ver --font-mono.
+
+   O carregamento dessas fontes NÃO está mais aqui via @import: um @import
+   de CSS só é descoberto depois que o navegador já baixou e começou a
+   parsear este arquivo, criando uma requisição em cascata (HTML → CSS →
+   @import → fonte). Ver as tags <link rel="preconnect"> e <link
+   rel="stylesheet"> no <head> do index.html, descobertas assim que o HTML
+   chega, em paralelo com o resto do carregamento. */
 
 *,
 *::before,

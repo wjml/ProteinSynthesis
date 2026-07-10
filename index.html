@@ -7,8 +7,35 @@
     <meta name="description"
         content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo.">
     <meta name="theme-color" content="#0f172a">
+
+    <!-- Compartilhamento em redes sociais / apps de mensagem (WhatsApp, Discord,
+         grupos de estudo etc.) — importante aqui porque o app já gera links
+         compartilháveis de sequência (?seq=...) que alunos e professores trocam
+         diretamente. Sem essas tags o link aparece sem preview. -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Protein Synthesis | Simulador de Genética">
+    <meta property="og:description"
+        content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo.">
+    <meta property="og:image" content="assets/images/Logo.svg">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Protein Synthesis | Simulador de Genética">
+    <meta name="twitter:description"
+        content="Simulador interativo de genética: DNA, RNA, síntese de proteínas, mutações, CRISPR, cruzamentos mendelianos, heredogramas, genética populacional e cariótipo.">
+    <meta name="twitter:image" content="assets/images/Logo.svg">
+
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/images/icon-beta.png" type="image">
+
+    <!-- Preconnect + link direto no HTML em vez de @import no CSS: o navegador
+         descobre e começa a resolver DNS/TLS para fonts.gstatic.com em paralelo
+         com o resto do carregamento, em vez de só depois de baixar e parsear
+         fixed-elements.css. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+
     <link rel="stylesheet" href="assets/style/fixed-elements.css">
     <link rel="stylesheet" href="assets/style/pages.css">
     <link rel="stylesheet" href="assets/style/app.css">
@@ -2055,7 +2082,9 @@
         </a>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8.19.1/dist/sweetalert2.all.js"
+        integrity="sha384-EvYp5Uviyrd841zSOtW2A0NPCN9vTz5656SFwSexBa4fpAaJ/RwCVKHmgaMWvkoj"
+        crossorigin="anonymous"></script>
     <script src="assets/js/dom.js"></script>
     <script src="assets/js/script.js"></script>
     <script>
