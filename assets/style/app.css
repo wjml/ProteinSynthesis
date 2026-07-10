@@ -444,6 +444,11 @@
 }
 
 /* Red */
+.mutation-type-badge.stoploss {
+    background-color: var(--colorEmerald);
+}
+
+/* Green */
 .mutation-type-badge.frameshift {
     background-color: var(--colorFrameshift);
 }

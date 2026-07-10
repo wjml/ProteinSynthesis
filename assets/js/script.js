@@ -835,9 +835,18 @@
   /** Complemento de base RNA-RNA (para calcular o anticódon do tRNA a partir do códon do mRNA). */
   const RNA_COMPLEMENT = { A: 'U', U: 'A', C: 'G', G: 'C' };
 
-  /** Calcula o anticódon do tRNA que pareia com um códon de mRNA dado. */
+  /**
+   * Calcula o anticódon do tRNA que pareia com um códon de mRNA dado, já na
+   * convenção padrão de escrita 5'→3' (a mesma usada para o próprio códon).
+   *
+   * O pareamento códon-anticódon é ANTIPARALELO: a 1ª base do códon (5')
+   * pareia com a ÚLTIMA base do anticódon (3'), não com a primeira. Por
+   * isso não basta trocar cada base pela complementar mantendo a ordem —
+   * é preciso complementar E inverter (reverse complement). Ex.: códon
+   * AUG → anticódon CAU (não UAC).
+   */
   function anticodonFor(codon) {
-    return codon.split('').map(b => RNA_COMPLEMENT[b] || b).join('');
+    return codon.split('').map(b => RNA_COMPLEMENT[b] || b).reverse().join('');
   }
 
   // ─── Animação do Ribossomo ("Ribossomo em Ação") ─────────────────────────────
@@ -1211,7 +1220,19 @@
       return;
     }
 
-    // 4. Missense — aminoácido(s) diferente(s) incorporados
+    // 4. Stop-loss — o próprio códon de parada foi alterado e deixou de sinalizar o fim
+    if (type === 'stoploss') {
+      badge.className   = 'mutation-type-badge stoploss';
+      badge.textContent = 'Perda do Stop (Stop-Loss)';
+      desc.innerHTML    =
+        `A ${mechanism} alterou justamente o <strong>códon de parada original</strong>, transformando-o em um ` +
+        `códon comum. A tradução deixa de parar onde deveria e continua incorporando aminoácidos de uma região ` +
+        `que originalmente não fazia parte da proteína — o resultado é uma proteína mais longa e, com frequência, ` +
+        `disfuncional ou instável.`;
+      return;
+    }
+
+    // 5. Missense — aminoácido(s) diferente(s) incorporados
     badge.className   = 'mutation-type-badge missense';
     badge.textContent = 'Sentido Trocado (Missense)';
     desc.innerHTML    =
@@ -3601,7 +3622,7 @@
   /**
    * Classifica uma mutação comparando duas sequências de DNA (original e mutada),
    * em string puro — mesma regra de negócio de classifyMutation(), mas retornando
-   * apenas a chave do tipo ('frameshift'|'silent'|'nonsense'|'missense'), sem
+   * apenas a chave do tipo ('frameshift'|'silent'|'nonsense'|'stoploss'|'missense'), sem
    * mexer em nenhum elemento da UI real.
    * @returns {string|null} null se as sequências forem idênticas (sem mutação).
    */
@@ -3618,6 +3639,15 @@
     const aaChanged = origChain.join(',') !== mutChain.join(',');
 
     if (!aaChanged) return 'silent';
+
+    // Perda do stop (stop-loss/nonstop): só faz sentido como conceito quando o
+    // comprimento em BASES não mudou (diff===0) — o códon de parada foi
+    // TROCADO por outro códon, não inserido/deletado — e a proteína resultante
+    // ficou mais LONGA, porque a tradução deixou de parar onde parava antes.
+    // Sem a checagem diff===0, uma inserção in-frame comum (que não toca o
+    // stop) também alongaria a proteína e seria confundida com stop-loss.
+    if (diff === 0 && mutChain.length > origChain.length) return 'stoploss';
+
     if (mutChain.length < origChain.length) return 'nonsense';
     return 'missense';
   }
@@ -3637,6 +3667,7 @@
     silent:     { className: 'silent',     text: 'Silenciosa (Sinônima)' },
     missense:   { className: 'missense',   text: 'Sentido Trocado (Missense)' },
     nonsense:   { className: 'nonsense',   text: 'Sem Sentido (Nonsense)' },
+    stoploss:   { className: 'stoploss',   text: 'Perda do Stop (Stop-Loss)' },
     frameshift: { className: 'frameshift', text: 'Deslocamento de Leitura (Frameshift)' },
   };
 
@@ -3704,6 +3735,7 @@
     silent:     'É silenciosa (sinônima) porque, apesar da base trocada, o novo códon ainda especifica o mesmo aminoácido — uma consequência da degeneração do código genético.',
     missense:   'É missense (sentido trocado) porque a substituição gera um códon que codifica um aminoácido DIFERENTE do original, alterando a proteína a partir desse ponto.',
     nonsense:   'É nonsense (sem sentido) porque a mudança transforma um códon de aminoácido em um códon de PARADA prematuro, truncando a proteína.',
+    stoploss:   'É perda do stop (stop-loss) porque a mudança atinge justamente o códon de PARADA original, transformando-o num códon comum — a tradução "vaza" para além de onde deveria parar, produzindo uma proteína mais longa que a original.',
     frameshift: 'É frameshift porque o número de bases inseridas/deletadas NÃO é múltiplo de 3 — isso desloca a fase de leitura de todos os códons seguintes ao ponto da mutação.',
   };
 
