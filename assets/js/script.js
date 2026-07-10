@@ -715,10 +715,22 @@
   // ─── Processamento de sequência ───────────────────────────────────────────────
 
   /**
-   * Aplica classes CSS de cor e posição de códon em todas as quatro linhas de sequência,
-   * em seguida dispara a análise de mutação e a injeção de rótulos de códon.
+   * Aplica as classes CSS de cor e posição de códon nas quatro linhas de sequência
+   * (DNA/RNA principal + DNA/RNA do painel de mutação).
+   *
+   * BUGFIX (alinhamento aminoácido × códon): isolada de treatSequence() porque
+   * translateStrand() precisa dessas classes JÁ aplicadas antes de medir
+   * offsetLeft (o .codon-utr-end tem margin-right:8px que desloca a posição
+   * de todo mundo depois da UTR). Antes, todo call site fazia
+   * `translate(); treatSequence();` nessa ordem — ou seja, translateStrand()
+   * sempre lia o offsetLeft com as classes ainda da tecla ANTERIOR, um passo
+   * atrasado. Isso só não quebrava por acaso quando o comprimento da UTR não
+   * mudava de uma tecla pra outra; ao digitar algo como "AATACGGG", no
+   * instante em que o AUG se completa o quadro de leitura muda e o spacer
+   * fica com a largura errada — o aminoácido sai desalinhado do códon.
+   * Ver a chamada em translate() logo abaixo.
    */
-  function treatSequence() {
+  function syncFrameClasses() {
     // Cada par DNA/RNA (o do simulador principal e o do painel de mutação) tem
     // seu próprio quadro de leitura — achado uma vez a partir da fita de RNA
     // daquele par, e reaproveitado tanto pra fita de DNA quanto pra fita de RNA
@@ -731,7 +743,16 @@
     const mutFrameStart = findFirstStartIndex(readSequence(mutRnaChars));
     applyCodonClasses(textboxDna[1].getElementsByClassName('sequenceChar'), mutFrameStart);
     applyCodonClasses(mutRnaChars, mutFrameStart);
+  }
 
+  /**
+   * Garante as classes de códon em dia (syncFrameClasses) e então dispara a
+   * análise de mutação e a injeção de rótulos de códon. Chamada depois de
+   * translate() em todo call site — mutationDifference() lê os cards de
+   * aminoácido que só existem depois que translateStrand() rodou.
+   */
+  function treatSequence() {
+    syncFrameClasses();
     mutationDifference();
     updateCodonLabels();
   }
@@ -843,15 +864,40 @@
     // mostrar um card vazio pra bases que nunca chegam a ser lidas). Mas pra
     // ela continuar alinhada embaixo da fileira de RNA — que SIM mostra a
     // UTR, só que com um estilo apagado — precisamos de um espaço reservado
-    // do mesmo tamanho antes do primeiro slot de verdade. Medimos esse
-    // tamanho direto do layout real (offsetLeft da base onde o AUG começa)
-    // em vez de recalcular em pixels manualmente — mesmo motivo do
-    // updateCodonLabels(): não quebra quando o CSS responsivo muda o tamanho
-    // das caixas em telas menores.
+    // do mesmo tamanho antes do primeiro slot de verdade.
+    //
+    // BUGFIX (alinhamento aminoácido × códon): a versão anterior usava
+    // rnaChars[frameStart].offsetLeft direto como largura do spacer. Isso
+    // erra de dois jeitos:
+    //   1) offsetLeft já embute o padding-left da PRÓPRIA fileira de RNA —
+    //      mas o spacer nasce dentro de .output-aminoacids, que tem seu
+    //      PRÓPRIO padding-left/border independente. Usar offsetLeft como
+    //      largura do spacer conta esse padding duas vezes.
+    //   2) .output-aminoacids usa `gap: 8px` no flexbox pra separar os
+    //      cards de aminoácido entre si — gap insere esse espaço entre TODO
+    //      par de itens adjacentes, inclusive entre o spacer (1º filho) e o
+    //      primeiro card real, sem equivalente na fileira de RNA (lá o
+    //      respiro UTR→1º códon vem só da margem pontual de
+    //      .codon-utr-end).
+    // A correção mede em qual posição X (relativa à borda esquerda de CADA
+    // fileira) o AUG começa, e calcula o quanto falta preencher no OUTRO
+    // container pra chegar nessa mesma posição X — descontando o que o
+    // border/padding/gap PRÓPRIOS de .output-aminoacids já empurram de
+    // graça. Assim funciona não importa se os dois containers têm
+    // padding/border iguais ou não, e não quebra se o CSS responsivo mudar
+    // esses valores em telas menores.
     if (frameStart > 0 && rnaChars[frameStart]) {
+      const rnaBox = rnaChars[frameStart].parentElement;
+      const targetX = rnaChars[frameStart].getBoundingClientRect().left - rnaBox.getBoundingClientRect().left;
+
+      const outCS          = getComputedStyle(outputContainer);
+      const outBorderLeft  = parseFloat(outCS.borderLeftWidth) || 0;
+      const outPaddingLeft = parseFloat(outCS.paddingLeft) || 0;
+      const outGap         = parseFloat(outCS.columnGap) || 0;
+
       const spacer = document.createElement('div');
       spacer.className = 'output-aminoacids-utr-spacer';
-      spacer.style.width = rnaChars[frameStart].offsetLeft + 'px';
+      spacer.style.width = Math.max(0, targetX - outBorderLeft - outPaddingLeft - outGap) + 'px';
       outputContainer.appendChild(spacer);
     }
 
@@ -1110,6 +1156,11 @@
    * BUGFIX: a variável `aminoacids` não era declarada no original, tornando-se global.
    */
   function translate() {
+    // BUGFIX: garante que .codon-utr/.codon-utr-end já estejam aplicadas
+    // ANTES de translateStrand() medir offsetLeft pra montar o spacer da
+    // UTR — ver nota em syncFrameClasses(). Sem isso, o spacer é medido com
+    // o layout de uma tecla atrás e o aminoácido sai desalinhado do códon.
+    syncFrameClasses();
     translateStrand(rnaSequenceChars, outputAminoacids[0]);
     updateCounters();
   }
