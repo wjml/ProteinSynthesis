@@ -15,9 +15,6 @@
   /** Bases nitrogenadas válidas para inserção no DNA. */
   const VALID_BASES = new Set(['A', 'T', 'C', 'G']);
 
-  /** Códons de parada do mRNA. */
-  const STOP_CODONS = new Set(['UAA', 'UAG', 'UGA']);
-
   /**
    * Transcrição: base do DNA molde → base equivalente no mRNA.
    * Substitui a função transcribe() com switch.
@@ -205,13 +202,31 @@
   /**
    * Aplica as classes CSS de cor de base e posição de códon a uma coleção de inputs.
    * Substitui os 4 loops idênticos em treatSequence().
+   *
+   * `frameStart` é a posição (em bases) onde o AUG de verdade começa nessa
+   * sequência (achado via findFirstStartIndex() na fita de RNA correspondente,
+   * e reaproveitado tanto pra fita de DNA quanto pra fita de RNA, já que as
+   * duas têm o mesmo comprimento e a mesma correspondência posição a posição).
+   * Bases ANTES do frameStart são a UTR 5' — não fazem parte de nenhum códon,
+   * então recebem a classe 'codon-utr' em vez de agrupamento em trincas.
+   * Se frameStart for -1 (nenhum AUG na sequência), agrupa a partir da
+   * posição 0 como um recurso puramente visual (não há tradução de verdade
+   * pra alinhar de qualquer forma).
    */
-  function applyCodonClasses(chars) {
+  function applyCodonClasses(chars, frameStart) {
+    const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
     for (let i = 0; i < chars.length; i++) {
       const val = chars[i].value.toUpperCase();
       let cls = 'sequenceChar base-' + val;
-      if (i % 3 === 0)      cls += ' codon-start';
-      else if (i % 3 === 2) cls += ' codon-end';
+
+      if (hasFrame && i < frameStart) {
+        cls += ' codon-utr';
+        if (i === frameStart - 1) cls += ' codon-utr-end'; // último da UTR: respiro antes do 1º códon real
+      } else {
+        const rel = hasFrame ? i - frameStart : i;
+        if (rel % 3 === 0)      cls += ' codon-start';
+        else if (rel % 3 === 2) cls += ' codon-end';
+      }
       chars[i].className = cls;
     }
   }
@@ -704,10 +719,19 @@
    * em seguida dispara a análise de mutação e a injeção de rótulos de códon.
    */
   function treatSequence() {
-    applyCodonClasses(dnaSequenceChars);
-    applyCodonClasses(rnaSequenceChars);
-    applyCodonClasses(textboxDna[1].getElementsByClassName('sequenceChar'));
-    applyCodonClasses(textboxRna[1].getElementsByClassName('sequenceChar'));
+    // Cada par DNA/RNA (o do simulador principal e o do painel de mutação) tem
+    // seu próprio quadro de leitura — achado uma vez a partir da fita de RNA
+    // daquele par, e reaproveitado tanto pra fita de DNA quanto pra fita de RNA
+    // (mesma posição, mesma correspondência base a base).
+    const mainFrameStart = findFirstStartIndex(readSequence(rnaSequenceChars));
+    applyCodonClasses(dnaSequenceChars, mainFrameStart);
+    applyCodonClasses(rnaSequenceChars, mainFrameStart);
+
+    const mutRnaChars   = textboxRna[1].getElementsByClassName('sequenceChar');
+    const mutFrameStart = findFirstStartIndex(readSequence(mutRnaChars));
+    applyCodonClasses(textboxDna[1].getElementsByClassName('sequenceChar'), mutFrameStart);
+    applyCodonClasses(mutRnaChars, mutFrameStart);
+
     mutationDifference();
     updateCodonLabels();
   }
@@ -733,64 +757,77 @@
     const seq = readSequence(rnaSequenceChars);
     if (seq.length < 3) return;
 
-    let inCoding = false;
-
-    for (let c = 0; c < Math.floor(seq.length / 3); c++) {
-      const codon  = seq.substr(c * 3, 3);
-      const isStop = STOP_CODONS.has(codon);
+    // Reaproveita walkCodingRegion() em vez de reimplementar a busca de AUG/STOP
+    // aqui — essa duplicação era justamente uma das duas cópias que carregavam
+    // o bug de quadro de leitura fixo na posição 0. Uma só fonte de verdade agora.
+    let wasActive = false;
+    walkCodingRegion(seq, (codon, aminoacid, isActive, baseIndex) => {
       let kind = null;
+      if (isActive && !wasActive) kind = 'start';
+      else if (!isActive && wasActive) kind = 'stop';
+      wasActive = isActive;
+      if (!kind) return;
 
-      if (!inCoding && codon === 'AUG') {
-        inCoding = true;
-        kind = 'start';
-      } else if (isStop) {
-        inCoding = false;
-        kind = 'stop';
-      }
-      // AUG enquanto inCoding=true → sem rótulo (ribossomo já em andamento)
+      const startChar = rnaSequenceChars[baseIndex];
+      if (!startChar) return;
 
-      if (kind) {
-        const startChar = rnaSequenceChars[c * 3];
-        if (!startChar) continue;
-
-        const lbl = document.createElement('div');
-        lbl.className   = 'codon-label codon-label-' + kind;
-        lbl.textContent = kind === 'start' ? 'INÍCIO' : 'PARADA';
-        lbl.style.left  = startChar.offsetLeft + 'px';
-        rnaBox.appendChild(lbl);
-      }
-    }
+      const lbl = document.createElement('div');
+      lbl.className   = 'codon-label codon-label-' + kind;
+      lbl.textContent = kind === 'start' ? 'INÍCIO' : 'PARADA';
+      lbl.style.left  = startChar.offsetLeft + 'px';
+      rnaBox.appendChild(lbl);
+    });
   }
 
   /**
-   * Percorre uma sequência de RNA códon a códon, aplicando a única regra de fase de
-   * leitura aberta (ORF) do app: `hasStart` vira true no primeiro AUG e volta a false
-   * em cada STOP (permitindo múltiplas ORFs numa mesma sequência). Para cada códon,
-   * invoca onCodon(codon, aminoacid, isActive) — isActive é o mesmo valor de hasStart
-   * já ajustado, ou seja, true para o AUG e para todos os códons até (mas não incluindo)
-   * o STOP que os encerra.
-   *
-   * UNIFICAÇÃO: essa regra existia duplicada em translateStrand() e translateProteinChainPure().
-   * Agora ambas — e a nova animação do ribossomo (buildRibosomeSteps()) — usam esta função,
-   * então uma mudança na regra de ORF só precisa ser feita aqui.
-   *
-   * @param {string} rnaSeq
-   * @param {function(codon:string, aminoacid:object, isActive:boolean)} onCodon
+   * Encontra a posição do primeiro AUG na sequência de RNA — em QUALQUER
+   * posição, não necessariamente múltipla de 3 (a UTR 5' pode ter qualquer
+   * comprimento). Retorna -1 se não houver nenhum AUG.
    */
-  function walkCodingRegion(rnaSeq, onCodon) {
-    let hasStart = false;
-    for (let i = 0; i < rnaSeq.length; i += 3) {
-      const codon     = rnaSeq.substr(i, 3);
-      const aminoacid = CODON_TABLE[codon];
-      if (!aminoacid) continue;
-
-      if (aminoacid.abbrevName === 'MET')  hasStart = true;
-      if (aminoacid.abbrevName === 'STOP') hasStart = false;
-
-      onCodon(codon, aminoacid, hasStart);
-    }
+  function findFirstStartIndex(rnaSeq) {
+    return rnaSeq.indexOf('AUG');
   }
 
+  /**
+   * Percorre uma sequência de RNA procurando ORFs (do AUG ao primeiro STOP em
+   * fase). A busca pelo AUG escaneia base a base — não fica presa a posições
+   * múltiplas de 3 a partir do início da string —, então uma UTR 5' de
+   * qualquer comprimento (1, 2, 4 bases...) antes do AUG real é reconhecida
+   * corretamente. UNIFICAÇÃO: essa regra existia duplicada em applyCodonClasses(),
+   * updateCodonLabels() e translateProteinChainPure(); agora só existe aqui.
+   *
+   * Depois de encontrar um AUG e percorrer até o STOP correspondente (ou até
+   * o fim da sequência, se não houver STOP), a busca recomeça a partir dali —
+   * permitindo múltiplas ORFs na mesma sequência, cada uma na fase que seu
+   * próprio AUG define (não precisa ser a mesma fase da ORF anterior).
+   *
+   * Para cada códon dentro de uma ORF, invoca onCodon(codon, aminoacid, isActive, baseIndex).
+   * isActive é true para o AUG e todos os códons até (mas não incluindo) o STOP.
+   * baseIndex é a posição (em bases) onde aquele códon começa na sequência —
+   * usado por updateCodonLabels() para posicionar os rótulos INÍCIO/PARADA.
+   *
+   * Bases antes do primeiro AUG, ou fora de qualquer ORF, NÃO disparam onCodon.
+   */
+  function walkCodingRegion(rnaSeq, onCodon) {
+    let i = 0;
+    while (i <= rnaSeq.length - 3) {
+      const startIdx = rnaSeq.indexOf('AUG', i);
+      if (startIdx === -1) break;
+
+      let j = startIdx;
+      while (j + 3 <= rnaSeq.length) {
+        const codon     = rnaSeq.substr(j, 3);
+        const aminoacid = CODON_TABLE[codon];
+        if (!aminoacid) break; // não deveria ocorrer com RNA válido, mas defensivo
+
+        const isStop = aminoacid.abbrevName === 'STOP';
+        onCodon(codon, aminoacid, !isStop, j);
+        j += 3;
+        if (isStop) break;
+      }
+      i = j;
+    }
+  }
   /**
    * Traduz a sequência de RNA de uma fita específica em aminoácidos e renderiza no container dado.
    * Generaliza a lógica usada tanto pela fita ativa (live) quanto pela fita de comparação (baseline),
@@ -799,7 +836,25 @@
   function translateStrand(rnaChars, outputContainer) {
     outputContainer.innerHTML = '';
 
-    const sequence = readSequence(rnaChars);
+    const sequence   = readSequence(rnaChars);
+    const frameStart = findFirstStartIndex(sequence);
+
+    // A fileira de aminoácidos não tem um "slot" pra UTR 5' (não faz sentido
+    // mostrar um card vazio pra bases que nunca chegam a ser lidas). Mas pra
+    // ela continuar alinhada embaixo da fileira de RNA — que SIM mostra a
+    // UTR, só que com um estilo apagado — precisamos de um espaço reservado
+    // do mesmo tamanho antes do primeiro slot de verdade. Medimos esse
+    // tamanho direto do layout real (offsetLeft da base onde o AUG começa)
+    // em vez de recalcular em pixels manualmente — mesmo motivo do
+    // updateCodonLabels(): não quebra quando o CSS responsivo muda o tamanho
+    // das caixas em telas menores.
+    if (frameStart > 0 && rnaChars[frameStart]) {
+      const spacer = document.createElement('div');
+      spacer.className = 'output-aminoacids-utr-spacer';
+      spacer.style.width = rnaChars[frameStart].offsetLeft + 'px';
+      outputContainer.appendChild(spacer);
+    }
+
     walkCodingRegion(sequence, (codon, aminoacid, isActive) => {
       outputContainer.appendChild(isActive ? newAminoacid(aminoacid) : newAminoacid());
     });
@@ -820,13 +875,18 @@
   function buildRibosomeSteps(rnaSeq) {
     const steps = [];
     let inOrf = false;
+    let done  = false; // trava depois da 1ª ORF completa — necessário agora que
+                        // walkCodingRegion() encontra ORFs em qualquer fase, não
+                        // só na mesma fase da primeira
     walkCodingRegion(rnaSeq, (codon, aminoacid, isActive) => {
+      if (done) return;
       if (isActive) {
         steps.push({ codon, aminoacid, kind: inOrf ? 'add' : 'start' });
         inOrf = true;
       } else if (inOrf && aminoacid.abbrevName === 'STOP') {
         steps.push({ codon, aminoacid, kind: 'stop' });
         inOrf = false; // encerra após a primeira ORF completa
+        done  = true;
       }
     });
     return steps;

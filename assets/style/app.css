@@ -231,24 +231,53 @@
     flex: 0 0 auto;
 }
 
-/* Amino acid grid: 120px = 3 × 40px (one codon), gap: 8px matches codon-end margin */
+/* Trocado de CSS Grid pra Flexbox: cada card .aminoacid já tem largura fixa
+   própria (width/min-width/max-width: 120px, ver mais abaixo), então o grid
+   nunca foi estritamente necessário pro tamanho dos cards — só pro
+   espaçamento uniforme, que gap:8px em flex resolve igual. A troca foi
+   necessária pra caber o .output-aminoacids-utr-spacer (largura variável,
+   calculada em JS): um grid com grid-auto-columns:120px força TODO item,
+   inclusive o espaçador, a ocupar uma trilha de 120px cheios — flex permite
+   que cada item tenha sua própria largura de verdade. */
 .sequence .output-aminoacids {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 120px;
-    gap: 8px;
-    justify-content: start;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
     border: 1px solid var(--slate200);
     border-radius: 8px;
     /* scrollbar hidden — driven by DNA row via JS */
     overflow-x: hidden;
-    /* padding-right is larger than left to compensate for the trailing
-       codon-end margin (8 px) present in DNA/RNA rows but absent in the
-       grid (gap only between items, not after the last one):
-       left=6px, right=6+8=14px  → scrollWidth matches DNA/RNA */
+    /* padding-right é maior que o left pra compensar a margem à direita (8px)
+       presente nas fileiras de DNA/RNA mas ausente aqui (gap só existe
+       ENTRE itens, não depois do último):
+       left=6px, right=6+8=14px  → scrollWidth bate com DNA/RNA */
     padding: 6px 14px 6px 6px;
     min-height: 176px;
+}
+
+/* Espaço reservado antes do 1º slot de aminoácido, do tamanho exato da UTR 5'
+   (bases antes do AUG real) — mantém a fileira de aminoácidos alinhada
+   embaixo da fileira de RNA. Largura definida em JS (translateStrand()); não
+   cresce nem encolhe. */
+.sequence .output-aminoacids-utr-spacer {
+    flex: 0 0 auto;
+    height: 1px;
+}
+
+/* Bases antes do AUG real (UTR 5') — não fazem parte de nenhum códon, então
+   ficam com aparência apagada em vez do agrupamento de trincas normal. */
+.sequence .sequenceChar.codon-utr {
+    opacity: 0.5;
+    border-style: dashed !important;
+}
+
+/* Última base da UTR: mesmo respiro visual usado entre trincas de códon,
+   pra separar claramente "não traduzido" de "início da tradução real". */
+.sequence .sequenceChar.codon-utr-end {
+    margin-right: 8px !important;
 }
 
 .textbox-dna {
@@ -2374,7 +2403,6 @@ body.dark-theme .lab-export-btn {
     }
 
     .sequence .output-aminoacids {
-        grid-auto-columns: 96px;
         gap: 6px;
         min-height: 140px;
         padding: 4px 10px 4px 4px;
