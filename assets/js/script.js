@@ -28,6 +28,15 @@
   const RNA_BASE_TO_DNA = { A: 'T', U: 'A', C: 'G', G: 'C' };
 
   /**
+   * Complemento de DNA-DNA (pareamento de bases padrão, A-T e C-G) — não
+   * confundir com DNA_TO_RNA acima, que modela TRANSCRIÇÃO (DNA→RNA). Esta
+   * aqui é a 2ª fita da dupla-hélice de verdade: a fita complementar,
+   * antiparalela à fita molde que a pessoa digita. Usado por
+   * renderComplementaryStrand().
+   */
+  const COMPLEMENT_DNA = { A: 'T', T: 'A', C: 'G', G: 'C' };
+
+  /**
    * Tabela de tradução: códon mRNA → aminoácido.
    * Substitui o switch de 60+ casos em translate().
    */
@@ -141,6 +150,12 @@
   const blankSpace       = document.getElementById('blank-space');
   const dnaSequenceChars = textboxDna[0].getElementsByClassName('sequenceChar');
   const rnaSequenceChars = textboxRna[0].getElementsByClassName('sequenceChar');
+  // [0] = simulador principal, [1] = painel de mutação — mesma indexação de
+  // textboxDna/textboxRna/outputAminoacids. Ver renderComplementaryStrand().
+  const complementContainers = [
+    document.getElementById('textbox-dna-complement-0'),
+    document.getElementById('textbox-dna-complement-1'),
+  ];
   const addButton        = document.getElementById('add');
   const deleteButton     = document.getElementById('delete');
   const replaceButton    = document.getElementById('replace');
@@ -229,6 +244,64 @@
       }
       chars[i].className = cls;
     }
+  }
+
+  /**
+   * Renderiza a fita complementar de DNA — a 2ª fita da dupla-hélice, derivada
+   * da fita molde por pareamento padrão (A-T, C-G; ver COMPLEMENT_DNA acima).
+   * Cada base entra na MESMA posição de índice da base molde correspondente
+   * (é um "emparelhamento direto", igual ao já usado pra gerar a fita de RNA
+   * — não inverte a ordem). Reaproveita o mesmo frameStart de
+   * applyCodonClasses() pra manter o agrupamento visual por códon (as
+   * margens de 8px entre trincas) idêntico ao da fita molde acima, senão as
+   * duas fileiras iriam desalinhando conforme a sequência cresce.
+   *
+   * Usa <span>, não <input>: é conteúdo só de leitura, sempre derivado da
+   * fita molde, e por isso nunca deve entrar em nenhuma coleção
+   * .sequenceChar usada pra tradução/mutação em outras funções — daí a
+   * classe própria .complementChar (ver app.css).
+   */
+  function renderComplementaryStrand(dnaChars, container, frameStart) {
+    if (!container) return;
+    const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < dnaChars.length; i++) {
+      const val  = dnaChars[i].value.toUpperCase();
+      const comp = COMPLEMENT_DNA[val] || '';
+      const span = document.createElement('span');
+      let cls = 'complementChar' + (comp ? ' base-' + comp : '');
+
+      if (hasFrame && i < frameStart) {
+        cls += ' codon-utr';
+        if (i === frameStart - 1) cls += ' codon-utr-end';
+      } else {
+        const rel = hasFrame ? i - frameStart : i;
+        if (rel % 3 === 0)      cls += ' codon-start';
+        else if (rel % 3 === 2) cls += ' codon-end';
+      }
+      span.className = cls;
+      span.textContent = comp;
+      frag.appendChild(span);
+    }
+
+    container.innerHTML = '';
+    container.appendChild(frag);
+  }
+
+  /**
+   * Percentual de Guanina + Citosina numa coleção de bases (DNA ou RNA — G e C
+   * significam a mesma coisa nos dois alfabetos, então a mesma função serve
+   * pras duas fitas). Usado no contador "GC:" da barra de estatísticas.
+   */
+  function computeGCContent(chars) {
+    if (!chars.length) return 0;
+    let gcCount = 0;
+    for (let i = 0; i < chars.length; i++) {
+      const val = chars[i].value.toUpperCase();
+      if (val === 'G' || val === 'C') gcCount++;
+    }
+    return Math.round((gcCount / chars.length) * 100);
   }
 
   /**
@@ -541,7 +614,7 @@
 
   let _scrollLock = false;
 
-  /** Sincroniza o scroll horizontal de todas as linhas (DNA, RNA, aminoácidos). */
+  /** Sincroniza o scroll horizontal de todas as linhas (DNA, RNA, aminoácidos, fita complementar). */
   function scrollUnique() {
     if (_scrollLock) return;
     _scrollLock = true;
@@ -550,6 +623,7 @@
       textboxDna[i].scrollLeft       = sl;
       textboxRna[i].scrollLeft       = sl;
       outputAminoacids[i].scrollLeft = sl;
+      if (complementContainers[i]) complementContainers[i].scrollLeft = sl;
     }
     _scrollLock = false;
   }
@@ -738,11 +812,14 @@
     const mainFrameStart = findFirstStartIndex(readSequence(rnaSequenceChars));
     applyCodonClasses(dnaSequenceChars, mainFrameStart);
     applyCodonClasses(rnaSequenceChars, mainFrameStart);
+    renderComplementaryStrand(dnaSequenceChars, complementContainers[0], mainFrameStart);
 
     const mutRnaChars   = textboxRna[1].getElementsByClassName('sequenceChar');
+    const mutDnaChars   = textboxDna[1].getElementsByClassName('sequenceChar');
     const mutFrameStart = findFirstStartIndex(readSequence(mutRnaChars));
-    applyCodonClasses(textboxDna[1].getElementsByClassName('sequenceChar'), mutFrameStart);
+    applyCodonClasses(mutDnaChars, mutFrameStart);
     applyCodonClasses(mutRnaChars, mutFrameStart);
+    renderComplementaryStrand(mutDnaChars, complementContainers[1], mutFrameStart);
   }
 
   /**
@@ -1169,6 +1246,7 @@
   function updateCounters() {
     const codonCounter     = document.getElementById('codon-counter');
     const aminoacidCounter = document.getElementById('aminoacid-counter');
+    const gcCounter         = document.getElementById('gc-counter');
     if (!codonCounter || !aminoacidCounter) return;
 
     const totalCodons = Math.floor(rnaSequenceChars.length / 3);
@@ -1177,6 +1255,9 @@
 
     codonCounter.textContent     = totalCodons;
     aminoacidCounter.textContent = activeAAs;
+    // GC é igual em qualquer uma das duas fitas (G sempre pareia com C), então
+    // calcular em cima da fita molde já representa a dupla-hélice inteira.
+    if (gcCounter) gcCounter.textContent = computeGCContent(dnaSequenceChars) + '%';
   }
 
   // ─── Análise de mutação ───────────────────────────────────────────────────────
@@ -5629,6 +5710,20 @@
   }
 
   // ─── Vinculação de eventos ────────────────────────────────────────────────────
+
+  // Botão "Fita complementar" — mostra/esconde a 2ª fita da dupla-hélice
+  // (ver renderComplementaryStrand() e body.show-complementary-strand em app.css).
+  // Um único toggle controla as duas fileiras (simulador principal + painel de
+  // mutação) de uma vez: se a pessoa quer ver a fita complementar, faz sentido
+  // ver nas duas, não só numa.
+  const toggleComplementaryBtn = document.getElementById('toggle-complementary-strand');
+  if (toggleComplementaryBtn) {
+    toggleComplementaryBtn.addEventListener('click', function () {
+      const isOn = document.body.classList.toggle('show-complementary-strand');
+      toggleComplementaryBtn.setAttribute('aria-pressed', String(isOn));
+      toggleComplementaryBtn.querySelector('i').className = isOn ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
+  }
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
   for (let i = 0; i < textboxDna.length; i++) {

@@ -602,6 +602,8 @@
                     <div class="counters">
                         <span class="counter-item">Códons: <strong id="codon-counter">0</strong></span>
                         <span class="counter-item">Aminoácidos: <strong id="aminoacid-counter">0</strong></span>
+                        <span class="counter-item" title="Percentual de Guanina + Citosina na fita molde de DNA">GC:
+                            <strong id="gc-counter">0%</strong></span>
                     </div>
                     <div class="action-buttons">
                         <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
@@ -647,9 +649,24 @@
                     </div>
                 </div>
                 <div class="sequence">
-                    <div class="label">DNA</div>
-                    <div class="textbox-dna">
-                        <span id="blank-space"></span>
+                    <div class="label">DNA
+                        <button type="button" class="strand-toggle-btn" id="toggle-complementary-strand"
+                            aria-pressed="false" title="Mostrar a outra fita da dupla-hélice, complementar à fita molde">
+                            <i class="fas fa-eye"></i> Fita complementar
+                        </button>
+                    </div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita molde">3'</span>
+                        <div class="textbox-dna">
+                            <span id="blank-space"></span>
+                        </div>
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' da fita molde">5'</span>
+                    </div>
+                    <div class="strand-row complementary-strand-row"
+                        aria-label="Fita complementar de DNA, pareada com a fita molde acima">
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' da fita complementar">5'</span>
+                        <div class="textbox-dna-complement" id="textbox-dna-complement-0"></div>
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita complementar">3'</span>
                     </div>
                     <div class="label">RNAm
                         <div class="process-box">
@@ -657,21 +674,48 @@
                         </div>
                     </div>
 
-                    <div class="textbox-rna"></div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' do RNAm">5'</span>
+                        <div class="textbox-rna"></div>
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' do RNAm">3'</span>
+                    </div>
                     <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)
                         <div class="process-box">
                             <span>↓ TRADUÇÃO </span>
                         </div>
                     </div>
-                    <div class="output-aminoacids"></div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-spacer" aria-hidden="true"></span>
+                        <div class="output-aminoacids"></div>
+                        <span class="strand-end-badge strand-end-badge-spacer" aria-hidden="true"></span>
+                    </div>
                 </div>
                 <div class="sequence to-mutate">
                     <div class="label">DNA</div>
-                    <div class="textbox-dna"></div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita molde">3'</span>
+                        <div class="textbox-dna"></div>
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' da fita molde">5'</span>
+                    </div>
+                    <div class="strand-row complementary-strand-row"
+                        aria-label="Fita complementar de DNA, pareada com a fita molde acima">
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' da fita complementar">5'</span>
+                        <div class="textbox-dna-complement" id="textbox-dna-complement-1"></div>
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita complementar">3'</span>
+                    </div>
                     <div class="label">RNAm</div>
-                    <div class="textbox-rna"></div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' do RNAm">5'</span>
+                        <div class="textbox-rna"></div>
+                        <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' do RNAm">3'</span>
+                    </div>
                     <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)</div>
-                    <div class="output-aminoacids"></div>
+                    <div class="strand-row">
+                        <span class="strand-end-badge strand-end-badge-spacer" aria-hidden="true"></span>
+                        <div class="output-aminoacids"></div>
+                        <span class="strand-end-badge strand-end-badge-spacer" aria-hidden="true"></span>
+                    </div>
+
                 </div>
                 <div class="mutation-panel" style="display: none;">
                     <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
@@ -1970,7 +2014,11 @@
 
             <div class="crispr-step">
                 <span class="lab-label">Sequência de DNA atual (fita ativa do simulador)</span>
-                <div class="crispr-sequence-display" id="crispr-sequence-display"></div>
+                <div class="strand-row strand-row-crispr">
+                    <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita molde">3'</span>
+                    <div class="crispr-sequence-display" id="crispr-sequence-display"></div>
+                    <span class="strand-end-badge strand-end-badge-5" title="Extremidade 5' da fita molde">5'</span>
+                </div>
                 <button type="button" class="crispr-link-btn" id="crispr-load-demo">Carregar sequência de
                     exemplo com alvo válido</button>
             </div>
@@ -2035,7 +2083,7 @@
 
             <div class="repl-ladder-wrapper" id="repl-ladder-wrapper">
                 <div class="repl-ends-row">
-                    <span class="repl-end-label">3'</span><span class="repl-end-label">5'</span>
+                    <span class="repl-end-label repl-end-label-3">3'</span><span class="repl-end-label repl-end-label-5">5'</span>
                 </div>
                 <div class="repl-row repl-row-new-lagging" id="repl-row-new-lagging"></div>
                 <div class="repl-row repl-row-template2" id="repl-row-template2"></div>
@@ -2047,7 +2095,7 @@
                 <div class="repl-row repl-row-template1" id="repl-row-template1"></div>
                 <div class="repl-row repl-row-new-leading" id="repl-row-new-leading"></div>
                 <div class="repl-ends-row">
-                    <span class="repl-end-label">5'</span><span class="repl-end-label">3'</span>
+                    <span class="repl-end-label repl-end-label-5">5'</span><span class="repl-end-label repl-end-label-3">3'</span>
                 </div>
                 <p class="repl-daughter-caption repl-daughter-caption-top" id="repl-daughter-caption-2"
                     style="display:none;">

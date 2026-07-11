@@ -194,6 +194,181 @@
     overflow-x: hidden;
 }
 
+/* ── Indicação de sentido 5'→3' das fitas ────────────────────────────────
+   .strand-row é um envelope flex por FORA de .textbox-dna/.textbox-rna — os
+   badges não entram na coleção de .sequenceChar nem tocam no conteúdo
+   rolável, então nenhuma conta de offsetLeft em SI muda. Só que o cálculo do
+   spacer da UTR (translateStrand(), em script.js) precisa que a fileira de
+   RNA e a fileira de aminoácidos comecem na MESMA posição X absoluta na
+   tela — ele mede a distância do códon até a borda esquerda de CADA
+   fileira, e essas duas medidas só coincidem se as fileiras nascerem no
+   mesmo X. Colocar um badge "5'" antes de .textbox-rna desloca essa fileira
+   pra direita; por isso .output-aminoacids (que não tem badge — proteína
+   não tem 5'/3') ganha um espaçador INVISÍVEL do mesmo tamanho logo abaixo,
+   pra continuar começando exatamente no mesmo X. Ver .strand-end-badge-spacer.
+
+   min-width:0 nos filhos flex é necessário pra caixa da sequência continuar
+   podendo encolher/rolar (overflow-x:auto) — sem isso o flexbox tende a
+   usar a largura do CONTEÚDO como mínimo e o scroll para de funcionar em
+   sequências longas. */
+.strand-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.strand-row .textbox-dna,
+.strand-row .textbox-rna,
+.strand-row .output-aminoacids,
+.strand-row .crispr-sequence-display {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.strand-row-crispr {
+    margin-bottom: 6px;
+}
+
+.strand-row .crispr-sequence-display {
+    margin-bottom: 0;
+}
+
+.strand-end-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 22px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.72rem;
+    line-height: 1;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+/* Mesmo tamanho de .strand-end-badge (mesma largura fixa de 28px), só que
+   sem cor/texto visível — existe só pra "empurrar" .output-aminoacids pro
+   mesmo X que .textbox-rna, já que proteína não tem extremidade 5'/3' de
+   verdade pra rotular (o equivalente seria N-terminal/C-terminal, outro dia). */
+.strand-end-badge-spacer {
+    visibility: hidden;
+}
+
+/* Convenção fixa no app inteiro: azul = extremidade 5', roxo = extremidade 3'
+   (mesmas cores reaproveitadas nos rótulos da Replicação do DNA). */
+.strand-end-badge-5 {
+    background: var(--colorSkyBg);
+    color: var(--colorSkyText);
+    border-color: var(--colorSky);
+}
+
+.strand-end-badge-3 {
+    background: var(--colorPurpleBg);
+    color: var(--colorPurpleText);
+    border-color: var(--colorPurple);
+}
+
+/* ── Botão "Fita complementar" (label do DNA) ────────────────────────────── */
+.strand-toggle-btn {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--slate300);
+    background: var(--white);
+    color: var(--slate600);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.strand-toggle-btn:hover {
+    background: var(--slate50);
+    border-color: var(--slate400);
+}
+
+.strand-toggle-btn[aria-pressed="true"] {
+    background: var(--colorDetailsBgAlpha);
+    color: var(--colorDetailsText);
+    border-color: var(--colorDetails);
+}
+
+/* ── Fita complementar (2ª fita da dupla-hélice, derivada da fita molde) ──
+   Escondida por padrão — só aparece com body.show-complementary-strand,
+   alternado pelo #toggle-complementary-strand (ver script.js). */
+.complementary-strand-row {
+    display: none;
+}
+
+body.show-complementary-strand .complementary-strand-row {
+    display: flex;
+}
+
+.sequence .textbox-dna-complement {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: hidden;
+    /* scroll dirigido pela fita molde — mesmo mecanismo de .textbox-rna */
+    border: 1px solid var(--slate200);
+    border-radius: 8px;
+    padding: 6px;
+    background: var(--slate50);
+    min-height: 46px;
+    box-sizing: border-box;
+}
+
+/* .complementChar é a versão "somente leitura" de .sequenceChar — um <span>,
+   não um <input>, pra nunca poder entrar em nenhuma coleção .sequenceChar
+   usada pra tradução/mutação em script.js (ver renderComplementaryStrand()).
+   Por isso repete aqui as mesmas regras visuais de posição de códon
+   (.codon-end/.codon-utr/.codon-utr-end) e cor de base (.base-A etc.) já
+   definidas pra .sequenceChar — é a única forma de manter as duas fileiras
+   pareadas base a base, coluna por coluna, conforme a sequência cresce. */
+.sequence .complementChar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+    margin: 2px 0;
+    border-radius: 6px;
+    border: 1px dashed var(--slate300);
+    color: var(--slate400);
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.sequence .complementChar.codon-end,
+.sequence .complementChar.codon-utr-end {
+    margin-right: 8px !important;
+}
+
+.sequence .complementChar.codon-utr {
+    opacity: 0.5;
+}
+
+.sequence .complementChar.base-A { color: var(--baseA); }
+.sequence .complementChar.base-T { color: var(--baseT); }
+.sequence .complementChar.base-C { color: var(--baseC); }
+.sequence .complementChar.base-G { color: var(--baseG); }
+
 /* ── Codon role labels (INÍCIO / PARADA) ─────────────────────────────── */
 .codon-label {
     position: absolute;
@@ -1095,12 +1270,36 @@ button.quiz-option.quiz-option-text {
     margin: 18px 0 4px;
 }
 
+/* Reaproveita o mesmo par de cores de .strand-end-badge-5/-3 (ver app.css,
+   perto de .textbox-dna/.textbox-rna) — o primeiro rótulo da trilha é
+   sempre 5' e o último é sempre 3', então dá pra colorir por posição sem
+   precisar mudar o HTML. */
 .ribo-utr-label {
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 22px;
+    padding: 0 6px;
+    box-sizing: border-box;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--slate500);
+    font-size: 0.72rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+.ribo-utr-label:first-of-type {
+    background: var(--colorSkyBg);
+    color: var(--colorSkyText);
+    border-color: var(--colorSky);
+}
+
+.ribo-utr-label:last-of-type {
+    background: var(--colorPurpleBg);
+    color: var(--colorPurpleText);
+    border-color: var(--colorPurple);
 }
 
 .ribo-codons {
@@ -1933,11 +2132,36 @@ body.dark-theme .lab-export-btn {
 .repl-ends-row {
     display: flex;
     justify-content: space-between;
+    padding: 0 2px;
+}
+
+.repl-end-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 20px;
+    padding: 0 6px;
+    box-sizing: border-box;
     font-family: var(--font-mono);
     font-weight: 700;
-    font-size: 0.75rem;
-    color: var(--slate400);
-    padding: 0 2px;
+    font-size: 0.72rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+/* Mesmo par de cores de .strand-end-badge-5/-3, reaproveitado aqui pra
+   manter a mesma convenção visual (azul=5', roxo=3') em todo o app. */
+.repl-end-label-5 {
+    background: var(--colorSkyBg);
+    color: var(--colorSkyText);
+    border-color: var(--colorSky);
+}
+
+.repl-end-label-3 {
+    background: var(--colorPurpleBg);
+    color: var(--colorPurpleText);
+    border-color: var(--colorPurple);
 }
 
 .repl-row {
@@ -2393,6 +2617,17 @@ body.dark-theme .lab-export-btn {
     .sequence .textbox-rna {
         padding-top: 20px;
         min-height: 60px;
+    }
+
+    .strand-row {
+        gap: 4px;
+    }
+
+    .strand-end-badge {
+        width: 22px;
+        height: 18px;
+        padding: 0 4px;
+        font-size: 0.62rem;
     }
 
     .codon-label {
