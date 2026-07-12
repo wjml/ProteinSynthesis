@@ -180,6 +180,36 @@
 	margin: 0 0 1rem 0;
 }
 
+.info-card ul {
+	margin: 0;
+	padding-left: 1.2rem;
+	color: var(--slate600);
+	line-height: 1.6;
+	font-size: 0.95rem;
+}
+
+.info-card li {
+	margin-bottom: 0.5rem;
+}
+
+.info-card li:last-child {
+	margin-bottom: 0;
+}
+
+/* Bloco de citação sugerida (ver seção "Como Citar Este Simulador" em
+   Sobre & Tutorial) — visual de referência bibliográfica, com recuo e borda
+   lateral, pra se diferenciar do texto corrido normal do .info-card. */
+.citation-block {
+	background: var(--slate50);
+	border-left: 3px solid var(--colorDetails);
+	border-radius: 4px;
+	padding: 0.9rem 1rem;
+	font-size: 0.88rem;
+	line-height: 1.7;
+	color: var(--slate700);
+	margin: 0;
+}
+
 /* Nitrogenous Bases List & Badges */
 .base-list {
 	padding: 0;

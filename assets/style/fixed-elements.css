@@ -65,6 +65,49 @@ h4 {
 	border: 0;
 }
 
+/* Link "pular para o conteúdo" — primeiro elemento focável da página (ver
+   <body> em index.html). Some visualmente (mesma técnica de clip-rect de
+   .visually-hidden acima) até ganhar foco via teclado; aí vira um banner
+   visível no canto superior esquerdo. Existe pra quem navega por teclado
+   não precisar tabular pela barra lateral inteira toda vez pra chegar no
+   conteúdo — WCAG 2.4.1 (Bypass Blocks). O alvo (#visible-page) tem
+   tabindex="-1" pra o foco de fato PULAR pra lá ao ativar o link, não só
+   rolar a tela até ele. */
+.skip-link {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.skip-link:focus {
+	position: fixed;
+	top: 12px;
+	left: 12px;
+	width: auto;
+	height: auto;
+	padding: 12px 20px;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background: var(--colorDetailsText);
+	/* #0f766e — 5.47:1 contra texto branco, folga confortável acima do piso
+	   de 4.5:1 do WCAG AA pra texto normal. */
+	color: white;
+	font-weight: 700;
+	font-size: 0.95rem;
+	border-radius: 8px;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	text-decoration: none;
+	z-index: 9999;
+}
+
 :root {
 	/* ===== Tipografia — três papéis, três famílias. Ver o @import no topo
 	   do arquivo para as origens/pesos carregados de cada uma. */
@@ -179,11 +222,20 @@ h4 {
 	/* Teal 300 — texto sobre fundo escuro */
 
 	/* ===== Bases nitrogenadas — cor de identidade de cada base, consistente
-	   entre a fita do simulador, os badges e os botões de inserção. ===== */
-	--baseA: #1e88e5;
-	--baseT: #f57c00;
-	--baseC: #43a047;
-	--baseG: #e53935;
+	   entre a fita do simulador, os badges e os botões de inserção.
+	   BUGFIX (contraste/WCAG AA): os tons originais (mantidos como estão no
+	   modo escuro, ver body.dark-theme) falhavam contraste no modo claro —
+	   #f57c00 (T) media 2.70:1 contra fundo branco, abaixo até do mínimo de
+	   3:1 pra texto grande em negrito (WCAG AA), e #43a047 (C) passava
+	   raspando em 3.30:1. Os valores abaixo são versões escurecidas das
+	   MESMAS matizes (mesmo hue/saturação, só reduz luminosidade), todas
+	   >= 4.5:1 contra branco — o piso de texto NORMAL, não só o de texto
+	   grande, já que essas cores reaparecem em botões menores (.btn-base)
+	   além da fita de sequência. ===== */
+	--baseA: #1878cd;
+	--baseT: #b85d00;
+	--baseC: #37833a;
+	--baseG: #e32c27;
 	--baseU: #8e24aa;
 
 	/* ===== Categorias adicionais (tipos de mutação, propriedades de
@@ -342,6 +394,27 @@ body.dark-theme .lab-section-title {
 body.dark-theme {
 	--colorInfoTextStrong: #60a5fa;
 	/* Blue 400 — ~5,75:1 contra o card escuro do app */
+}
+
+/* As bases nitrogenadas (ver --baseA..U acima) precisam de um valor DIFERENTE
+   no escuro, não só herdar o token do claro: os tons escurecidos calibrados
+   pra passar 4.5:1 contra fundo BRANCO (modo claro) perdem contraste contra
+   o fundo ESCURO do modo escuro (#0f172a) — ex.: o T escurecido (#b85d00)
+   cairia pra ~3.9:1 contra o escuro, e o C escurecido (#37833a) pra ~3.8:1.
+   Testado com as duas fitas em ambos os temas:
+   - A, T, C: o tom ORIGINAL (do claro, antes desta correção) já passa
+     4.5:1+ contra o fundo escuro sem precisar mudar — só não pode ser usado
+     no claro (é onde falhava). Restaurados aqui.
+   - G: o original passava só 4.22:1 contra o escuro (abaixo do piso de
+     texto normal) — clareado ligeiramente pra ~4.55:1.
+   - U: o original era o pior caso de todos no escuro — só 2.54:1, nem o
+     mínimo de texto grande (3:1) alcançava. Clareado bastante, pra ~4.5:1. */
+body.dark-theme {
+	--baseA: #1e88e5;
+	--baseT: #f57c00;
+	--baseC: #43a047;
+	--baseG: #e74643;
+	--baseU: #bd50da;
 }
 
 body.dark-theme .quiz-score-item strong {

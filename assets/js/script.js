@@ -16,6 +16,13 @@
   const VALID_BASES = new Set(['A', 'T', 'C', 'G']);
 
   /**
+   * Chave de localStorage onde a sequência de DNA atual é salva automaticamente
+   * a cada mudança — pra sobreviver a um F5/fechar aba sem querer. Ver
+   * saveSequenceAutosave()/restoreSequenceAutosave()/clearSequenceAutosave().
+   */
+  const DNA_AUTOSAVE_KEY = 'proteinSynthesis.dnaAutosave';
+
+  /**
    * Transcrição: base do DNA molde → base equivalente no mRNA.
    * Substitui a função transcribe() com switch.
    */
@@ -832,6 +839,7 @@
     syncFrameClasses();
     mutationDifference();
     updateCodonLabels();
+    saveSequenceAutosave();
   }
 
   /**
@@ -1560,6 +1568,8 @@
     outputAminoacids[0].innerHTML = '';
     if (outputAminoacids[1]) outputAminoacids[1].innerHTML = '';
 
+    clearSequenceAutosave();
+
     const appBtn = document.getElementById('app');
     if (appBtn) appBtn.click();
 
@@ -1625,6 +1635,51 @@
     }
 
     return { clean, hadInvalid };
+  }
+
+  /**
+   * Salva a sequência de DNA atual (fita ativa do simulador principal) no
+   * localStorage a cada mudança — chamada de dentro de treatSequence(), o
+   * mesmo ponto único que já recalcula todo o resto após qualquer edição.
+   * Graciosa se localStorage estiver indisponível (modo privado, cookies
+   * bloqueados etc.), mesmo padrão de saveQuizBestScore(). Sequência vazia
+   * não é salva — não faz sentido "restaurar" um simulador em branco, e
+   * assim uma sessão nova não sobrescreve silenciosamente um autosave válido
+   * de uma aba anterior.
+   */
+  function saveSequenceAutosave() {
+    try {
+      const dnaSeq = readSequence(dnaSequenceChars);
+      if (dnaSeq) window.localStorage.setItem(DNA_AUTOSAVE_KEY, dnaSeq);
+    } catch (e) { /* localStorage indisponível — segue sem persistir */ }
+  }
+
+  /** Apaga o autosave — chamada por clearSequence(), pra "Limpar tudo" não voltar sozinho no próximo F5. */
+  function clearSequenceAutosave() {
+    try { window.localStorage.removeItem(DNA_AUTOSAVE_KEY); } catch (e) { /* indisponível, nada a fazer */ }
+  }
+
+  /**
+   * Restaura a última sequência autosalva, se existir — chamada uma única vez
+   * na inicialização, e só quando não há sequência compartilhada via URL (a
+   * URL tem prioridade: ver loadSequenceFromUrl()). Mesma sanitização usada
+   * pra sequência compartilhada, por segurança (localStorage pode ter sido
+   * editado manualmente via devtools).
+   */
+  function restoreSequenceAutosave() {
+    let raw;
+    try { raw = window.localStorage.getItem(DNA_AUTOSAVE_KEY); } catch (e) { return false; }
+    if (!raw) return false;
+
+    const { clean } = sanitizeDnaInput(raw);
+    if (!clean) return false;
+
+    const appBtn = document.getElementById('app');
+    if (appBtn) appBtn.click();
+
+    loadSequenceFromString(clean);
+    showInfo('Sequência restaurada', 'Continuamos de onde você parou — a última sequência editada foi recuperada automaticamente.');
+    return true;
   }
 
   /**
@@ -1749,21 +1804,24 @@
   /**
    * Verifica se a URL atual contém uma sequência compartilhada (?seq=...) e,
    * em caso positivo, navega para o simulador e a carrega automaticamente.
-   * Permite que professores distribuam desafios prontos por link.
+   * Permite que professores distribuam desafios prontos por link. Retorna
+   * true/false pra quem chama saber se deve tentar restoreSequenceAutosave()
+   * em seguida — o link da URL tem prioridade sobre o autosave local.
    */
   function loadSequenceFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const raw = params.get('seq');
-    if (!raw) return;
+    if (!raw) return false;
 
     const { clean } = sanitizeDnaInput(raw);
-    if (!clean) return;
+    if (!clean) return false;
 
     const appBtn = document.getElementById('app');
     if (appBtn) appBtn.click();
 
     loadSequenceFromString(clean);
     showInfo('Sequência carregada!', 'Uma sequência de DNA foi importada automaticamente via link compartilhado.');
+    return true;
   }
 
   // ─── Doenças genéticas reais ─────────────────────────────────────────────────
@@ -6083,8 +6141,11 @@
       });
     });
 
-    // Carrega automaticamente uma sequência compartilhada via link (?seq=...), se presente
-    loadSequenceFromUrl();
+    // Carrega automaticamente uma sequência compartilhada via link (?seq=...), se presente;
+    // senão, tenta restaurar a última sequência autosalva localmente (ver DNA_AUTOSAVE_KEY).
+    // A URL tem prioridade — um link de desafio não deve ser ofuscado pelo autosave de uma
+    // sessão anterior no mesmo navegador.
+    if (!loadSequenceFromUrl()) restoreSequenceAutosave();
   });
 
   // Nenhuma exportação global é necessária: os cartões de doença e os botões de base

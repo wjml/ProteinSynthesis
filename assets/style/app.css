@@ -60,11 +60,19 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    /* .label fica na fileira ACIMA de .strand-row — sem esse padding, o
+       conteúdo alinhado à direita aqui (botão "Fita complementar", pills
+       TRANSCRIÇÃO/TRADUÇÃO via .process-box) fica alinhado com a borda do
+       CARTÃO, não com a caixa de DNA/RNA/proteína de verdade, que termina
+       34px antes por causa do badge 5'/3' (28px de largura + 6px de gap do
+       .strand-row — ver .strand-end-badge/.strand-row acima). Precisa ficar
+       em sincronia com esses dois valores; se um mudar, este também precisa
+       mudar (ver espelho no breakpoint de 480px mais adiante). */
+    padding-right: 34px;
 }
 
 .process-box {
     margin-left: auto;
-    margin-right: 7px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -85,11 +93,23 @@
     color: var(--colorWarningText);
 }
 
-/* Sequence Nucleotide Character Inputs */
+/* Sequence Nucleotide Character Inputs
+   ─────────────────────────────────────────────────────────────────────
+   AUDITORIA !important (removidos daqui até .mutated abaixo, e replicados
+   em .codon-utr/.codon-utr-end mais adiante): testei removendo os 19 usos
+   de !important deste arquivo e comparando estilo computado antes/depois
+   em todo estado visual que os toca (foco, UTR, códon, mutação, mobile,
+   quiz) — resultado idêntico em todos. Não eram necessários: cada regra
+   "mais específica" abaixo (.codon-end, :focus, .mutated etc.) já tem MAIS
+   classes que esta regra base (.sequence .sequenceChar, só 2), então já
+   ganha a cascata sozinha, sem precisar forçar com !important. Se algum
+   dia precisar sobrepor a cor/borda de uma base a partir de uma classe com
+   a MESMA ou MENOS especificidade que a regra em conflito, aí sim
+   !important volta a fazer sentido — mas teste antes de reintroduzir. */
 .sequence .sequenceChar {
     font-family: var(--font-mono);
     text-align: center;
-    border: 1px solid var(--slate300) !important;
+    border: 1px solid var(--slate300);
     font-size: 24px;
     width: 40px;
     height: 40px;
@@ -103,13 +123,13 @@
 }
 
 .sequence .sequenceChar:focus {
-    border-color: var(--colorDetails) !important;
+    border-color: var(--colorDetails);
     box-shadow: 0 0 0 3px rgba(var(--colorDetailsRgb), 0.2);
 }
 
 /* Codon Triplet Grouping Spacing — 8 px gap aligns with amino acid cards */
 .sequence .sequenceChar.codon-end {
-    margin-right: 8px !important;
+    margin-right: 8px;
 }
 
 /* Background for read-only segments */
@@ -149,9 +169,9 @@
 
 /* Mutated bases highlighting */
 .sequence .sequenceChar.mutated {
-    border-color: var(--colorError) !important;
-    background-color: var(--colorErrorBg) !important;
-    color: var(--colorError) !important;
+    border-color: var(--colorError);
+    background-color: var(--colorErrorBg);
+    color: var(--colorError);
 }
 
 .sequence.to-mutate,
@@ -280,7 +300,9 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    /* padding vertical de 5px (era 3px) — o botão media 20px de altura, 4px
+       abaixo do mínimo de alvo de toque do WCAG 2.5.8 (24×24px CSS). */
+    padding: 5px 10px;
     border-radius: 999px;
     border: 1px solid var(--slate300);
     background: var(--white);
@@ -357,7 +379,7 @@ body.show-complementary-strand .complementary-strand-row {
 
 .sequence .complementChar.codon-end,
 .sequence .complementChar.codon-utr-end {
-    margin-right: 8px !important;
+    margin-right: 8px;
 }
 
 .sequence .complementChar.codon-utr {
@@ -446,13 +468,13 @@ body.show-complementary-strand .complementary-strand-row {
    ficam com aparência apagada em vez do agrupamento de trincas normal. */
 .sequence .sequenceChar.codon-utr {
     opacity: 0.5;
-    border-style: dashed !important;
+    border-style: dashed;
 }
 
 /* Última base da UTR: mesmo respiro visual usado entre trincas de códon,
    pra separar claramente "não traduzido" de "início da tradução real". */
 .sequence .sequenceChar.codon-utr-end {
-    margin-right: 8px !important;
+    margin-right: 8px;
 }
 
 .textbox-dna {
@@ -504,8 +526,8 @@ body.show-complementary-strand .complementary-strand-row {
 }
 
 .aminoacid.mutated {
-    border-color: var(--colorError) !important;
-    background-color: var(--colorErrorBg) !important;
+    border-color: var(--colorError);
+    background-color: var(--colorErrorBg);
 }
 
 .aminoacid.not-availlable {
@@ -1087,17 +1109,22 @@ button.quiz-option:disabled {
     font-size: 1.1rem;
 }
 
+/* !important removido — .quiz-incorrect testado ao vivo (respondendo
+   errado no quiz) e confirmado idêntico; .quiz-correct tem a mesma
+   estrutura de seletor e por isso deve se comportar igual, mas não
+   cheguei a clicar numa resposta certa pra confirmar ao vivo. Ver
+   auditoria completa na nota de .sequenceChar no topo do arquivo. */
 button.quiz-option.quiz-correct {
     border-color: var(--colorSuccess);
-    background: var(--colorSuccessBgVivid) !important;
-    color: var(--colorSuccessText) !important;
+    background: var(--colorSuccessBgVivid);
+    color: var(--colorSuccessText);
     font-weight: 600;
 }
 
 button.quiz-option.quiz-incorrect {
     border-color: var(--colorErrorStrong);
-    background: var(--colorErrorBgVivid) !important;
-    color: var(--colorErrorText) !important;
+    background: var(--colorErrorBgVivid);
+    color: var(--colorErrorText);
     font-weight: 600;
 }
 
@@ -2599,13 +2626,13 @@ body.dark-theme .lab-export-btn {
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
     .sequence .sequenceChar {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 18px !important;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
     }
 
     .sequence .sequenceChar.codon-end {
-        margin-right: 6px !important;
+        margin-right: 6px;
     }
 
     .sequence .textbox-dna,
@@ -2628,6 +2655,12 @@ body.dark-theme .lab-export-btn {
         height: 18px;
         padding: 0 4px;
         font-size: 0.62rem;
+    }
+
+    /* Espelha o padding-right de .sequence .label (ver comentário lá) com o
+       track menor do mobile: badge 22px + gap 4px do .strand-row = 26px. */
+    .sequence .label {
+        padding-right: 26px;
     }
 
     .codon-label {

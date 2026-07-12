@@ -46,6 +46,7 @@
 </head>
 
 <body>
+    <a href="#visible-page" class="skip-link">Pular para o conteúdo</a>
     <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
     <div class="main">
         <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-expanded="false"
@@ -143,7 +144,7 @@
                 <li class="empty"></li>
             </ul>
         </nav>
-        <div id="visible-page">
+        <div id="visible-page" tabindex="-1">
             <!-- ═══ SPLASH / PÁGINA INICIAL ═══════════════════════════════════════════
                  Primeira coisa que quem abre o link vê — antes disso, o app caía direto
                  na página de DNA sem nenhum contexto sobre o que é o simulador. É uma
@@ -970,6 +971,62 @@
                                 traduzidos.</li>
                         </ul>
                     </details>
+                </div>
+
+                <h3 class="app-info-subheading"><i class="fas fa-flask"></i> Simplificações do Modelo Didático</h3>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-circle-info"></i> O que este simulador simplifica — e por quê</h3>
+                        <p>Como todo modelo de ensino, este simulador prioriza clareza sobre completude. As
+                            simplificações abaixo são escolhas pedagógicas deliberadas, não lacunas — do mesmo jeito
+                            que um livro-texto declara o escopo de cada capítulo.</p>
+                        <ul>
+                            <li><strong>Sem íntrons/splicing:</strong> o fluxo DNA→RNAm→proteína aqui é direto, como
+                                em procariotos. Em eucariotos, o pré-RNAm passa por remoção de íntrons antes da
+                                tradução.</li>
+                            <li><strong>Um único código genético:</strong> a Tabela de Códons usada é o código
+                                padrão (nuclear). Não são modeladas variações, como o código mitocondrial humano, que
+                                reatribui alguns códons.</li>
+                            <li><strong>Tradução sempre no primeiro AUG:</strong> não é modelado o scanning do
+                                ribossomo nem o contexto de Kozak, que na célula real influenciam qual AUG é
+                                reconhecido como início.</li>
+                            <li><strong>Pareamento simplificado da fita complementar:</strong> a dupla-hélice é
+                                representada com as duas fitas alinhadas base a base — didaticamente correto quanto
+                                ao pareamento (A-T, C-G), mas não uma projeção 3D da hélice real.</li>
+                            <li><strong>Sem hipótese do wobble:</strong> o pareamento códon-anticódon é tratado como
+                                estritamente complementar; a degenerescência na terceira base do anticódon não é
+                                modelada.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="app-info-subheading"><i class="fas fa-book"></i> Referências &amp; Como Citar</h3>
+                <div class="educational-grid">
+                    <div class="info-card">
+                        <h3><i class="fas fa-book-open"></i> Referências</h3>
+                        <p>O conteúdo científico deste simulador segue a literatura padrão de Biologia Molecular e
+                            Genética:</p>
+                        <ul>
+                            <li>ALBERTS, B. et al. <em>Molecular Biology of the Cell</em>. 6. ed. Nova York: Garland
+                                Science.</li>
+                            <li>WATSON, J. D. et al. <em>Molecular Biology of the Gene</em>. 7. ed. Boston: Pearson.
+                            </li>
+                            <li>GRIFFITHS, A. J. F. et al. <em>Introduction to Genetic Analysis</em>. 11. ed. Nova
+                                York: W. H. Freeman.</li>
+                            <li>NELSON, D. L.; COX, M. M. <em>Lehninger Principles of Biochemistry</em>. 7. ed. Nova
+                                York: W. H. Freeman.</li>
+                            <li>NATIONAL CENTER FOR BIOTECHNOLOGY INFORMATION (NCBI). <em>The Genetic Codes</em>.
+                                Disponível em: ncbi.nlm.nih.gov.</li>
+                        </ul>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fas fa-quote-right"></i> Como Citar Este Simulador</h3>
+                        <p>Se for referenciar este simulador em trabalho acadêmico, um formato sugerido (adapte a URL
+                            e a data de acesso):</p>
+                        <p class="citation-block">LOURENÇO, W. J. M. <em>Protein Synthesis: Simulador de Genética
+                                Molecular</em>. Versão 1.2, Julho de 2026. Disponível em: [inserir URL]. Acesso em:
+                            [inserir data].</p>
+                    </div>
                 </div>
             </div>
 
