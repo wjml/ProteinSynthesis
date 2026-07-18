@@ -382,38 +382,59 @@
 }
 
 /* DNA Helix Animation */
+/* ── Dupla Hélice 3D — giro genuíno, não ilusão 2D ───────────────────────
+   ANTES: cada bolinha só se movia em translateX (esquerda↔direita) e um
+   scale() calibrado à mão simulava "ficar maior/menor" pra fingir
+   profundidade; a linha de conexão encolhia via scaleX(0) pra fingir
+   "ficar de perfil". Funcionava, mas era gambiarra 2D — dava pra perceber
+   que não girava de verdade.
+   AGORA: usa perspective + rotateY + translateZ de verdade. Cada anel
+   (.base-pair) recebe um ângulo ESTÁTICO baseado em --i (o efeito espiral
+   — cada anel um pouco girado em relação ao de cima), e o conjunto INTEIRO
+   (.dna-helix) gira como corpo rígido via uma única animação. Dentro de
+   cada anel, os dois pontos ficam presos em translateZ(+raio) e
+   translateZ(-raio) — literalmente um na frente, um atrás, ao longo do
+   eixo Z — e a barra que os conecta é só uma barra normal girada 90° em Y
+   pra deitar ao longo desse mesmo eixo.
+   O ganho não é só visual: o navegador cuida sozinho do "fica menor
+   quando mais longe" (perspective) e do "fica fino quando de perfil"
+   (projeção em Z) — nenhum keyframe manual de scale/opacity precisa
+   simular isso, é geometria 3D de verdade. */
 .helix-animation-container {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 140px;
+	height: 160px;
 	margin-top: 15px;
 	overflow: hidden;
+	perspective: 500px;
+	/* "distância da câmera" — controla o quanto o giro parece profundo */
 }
 
 .dna-helix {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-	padding: 10px 0;
+	position: relative;
+	transform-style: preserve-3d;
+	animation: helixSpin 6s linear infinite;
 }
 
 .base-pair {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 150px;
-	height: 10px;
 	position: relative;
+	height: 12px;
+	margin: 7px 0;
+	transform-style: preserve-3d;
+	/* ângulo fixo por anel — é isso que cria a espiral (cada anel um pouco
+	   mais girado que o de cima), independente do giro geral animado */
+	transform: rotateY(calc(var(--i) * 30deg));
 }
 
 .base-pair .dot {
+	position: absolute;
+	top: 50%;
+	left: 50%;
 	width: 12px;
 	height: 12px;
+	margin: -6px 0 0 -6px;
 	border-radius: 50%;
-	position: absolute;
-	animation: rotateStrand 2.4s infinite ease-in-out;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -434,62 +455,35 @@
 }
 
 .base-pair .dot:first-child {
-	left: 0;
-	animation-delay: calc(var(--i) * -0.22s);
+	transform: translateZ(60px);
 }
 
 .base-pair .dot:last-child {
-	right: 0;
-	animation-delay: calc(var(--i) * -0.22s - 1.2s);
+	transform: translateZ(-60px);
 }
 
 .base-pair .line {
-	height: 2px;
-	background: var(--slate300);
-	width: 100%;
 	position: absolute;
-	left: 0;
-	top: 5px;
-	z-index: -1;
-	transform: scaleX(0);
-	animation: scaleLine 2.4s infinite ease-in-out;
-	animation-delay: calc(var(--i) * -0.22s);
-	transform-origin: center;
+	top: 50%;
+	left: 50%;
+	width: 120px;
+	height: 2px;
+	margin-top: -1px;
+	margin-left: -60px;
+	background: var(--slate300);
+	transform: rotateY(90deg);
+	/* deita a barra (que nasce se estendendo em X) ao longo do eixo Z —
+	   exatamente a linha reta que liga translateZ(-60px) a translateZ(60px)
+	   acima, sem precisar calcular pontos manualmente */
 }
 
-@keyframes rotateStrand {
-
-	0%,
-	100% {
-		transform: translateX(0) scale(1.1);
-		z-index: 2;
+@keyframes helixSpin {
+	from {
+		transform: rotateY(0deg);
 	}
 
-	25% {
-		transform: translateX(69px) scale(0.85);
-	}
-
-	50% {
-		transform: translateX(138px) scale(1.1);
-		z-index: -1;
-	}
-
-	75% {
-		transform: translateX(69px) scale(1.35);
-	}
-}
-
-@keyframes scaleLine {
-
-	0%,
-	50%,
-	100% {
-		transform: scaleX(1);
-	}
-
-	25%,
-	75% {
-		transform: scaleX(0);
+	to {
+		transform: rotateY(360deg);
 	}
 }
 

@@ -1377,7 +1377,11 @@ button.quiz-option.quiz-option-text {
     left: 0;
     width: 44px;
     height: 30px;
-    transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    /* BUGFIX: "top" entrou na lista de transições — agora que o marcador
+       também acompanha a linha (ver positionRibosomeMarker() em script.js),
+       a mudança de linha precisa ser tão suave quanto a horizontal, senão
+       ele "pula" abruptamente ao trocar de linha. */
+    transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1), top 0.45s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
 }
 
@@ -1408,23 +1412,27 @@ button.quiz-option.quiz-option-text {
     flex-direction: column;
 }
 
-/* Palco onde o tRNA entra, pareia e sai */
+/* Palco onde o tRNA entra, pareia e sai.
+   BUGFIX: era `justify-content:center` (flexbox) — o tRNA ficava sempre no
+   meio, independente de onde o ribossomo estivesse na trilha de códons.
+   Agora é um container posicionado (position:relative) e o próprio
+   .ribo-trna vira position:absolute com `left` controlado por JS em
+   positionRibosomeMarker(), pra acompanhar o códon atual de verdade. */
 .ribo-stage-area {
     position: relative;
     height: 78px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
 }
 
 .ribo-trna {
+    position: absolute;
+    bottom: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     opacity: 0;
     transform: translateY(26px) scale(0.85);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition: opacity 0.35s ease, transform 0.35s ease, left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ribo-trna.is-visible {

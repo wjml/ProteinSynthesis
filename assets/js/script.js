@@ -1065,6 +1065,7 @@
       controls:     document.getElementById('ribo-controls'),
       codonsTrack:  document.getElementById('ribo-codons'),
       marker:       document.getElementById('ribo-ribosome-marker'),
+      stageArea:    document.getElementById('ribo-stage-area'),
       trna:         document.getElementById('ribo-trna'),
       trnaAnticodon:document.getElementById('ribo-trna-anticodon'),
       trnaCargo:    document.getElementById('ribo-trna-cargo'),
@@ -1139,12 +1140,46 @@
   }
 
   /** Move o marcador do ribossomo para centralizá-lo sobre a pílula de códon no índice dado. */
+  /**
+   * Posiciona o marcador do ribossomo em cima do códon atual — e, desde a
+   * correção abaixo, também alinha o palco do tRNA horizontalmente com ele.
+   *
+   * BUGFIX #1 (marcador perdia a linha): .ribo-codons quebra linha em
+   * sequências longas (flex-wrap:wrap — necessário pra caber num modal
+   * estreito). O marcador só ajustava `left`, nunca `top`; ao passar pra
+   * 2ª linha, o códon atual descia mas o marcador ficava preso na 1ª linha,
+   * flutuando longe de onde deveria estar. Agora também lê pill.offsetTop.
+   *
+   * BUGFIX #2 (tRNA sempre no centro): o palco onde o tRNA entra
+   * (.ribo-stage-area) é um elemento IRMÃO de .ribo-codons, não um filho —
+   * antes ele só usava `justify-content:center` no CSS, sempre no meio,
+   * não importa onde o ribossomo estivesse na trilha. Isso quebrava a
+   * ilusão de que o tRNA está entregando o aminoácido bem ali. Como os
+   * dois elementos têm sistemas de coordenadas locais DIFERENTES (mesmo
+   * problema de fundo da correção de alinhamento do simulador principal —
+   * ver syncFrameClasses()/translateStrand() acima), a reconciliação usa
+   * getBoundingClientRect() dos dois lados em vez de offsetLeft cru.
+   */
   function positionRibosomeMarker(stepIndex) {
     const els  = ribosome.els;
     const pill = els.codonsTrack.querySelectorAll('.ribo-codon')[stepIndex];
     if (!pill) return;
+
     const left = pill.offsetLeft + pill.offsetWidth / 2 - els.marker.offsetWidth / 2;
     els.marker.style.left = Math.max(0, left) + 'px';
+    els.marker.style.top = pill.offsetTop + 'px';
+
+    if (els.stageArea && els.trna) {
+      const pillRect  = pill.getBoundingClientRect();
+      const stageRect = els.stageArea.getBoundingClientRect();
+      const pillCenterInStage = (pillRect.left + pillRect.width / 2) - stageRect.left;
+      const trnaWidth = els.trna.offsetWidth || 60;
+      const clamped = Math.min(
+        Math.max(pillCenterInStage - trnaWidth / 2, 0),
+        Math.max(stageRect.width - trnaWidth, 0)
+      );
+      els.trna.style.left = clamped + 'px';
+    }
   }
 
   /** Atualiza o texto/ícone do botão Play/Pause conforme o estado atual. */
