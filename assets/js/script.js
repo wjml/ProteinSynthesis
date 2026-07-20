@@ -23,6 +23,14 @@
   const DNA_AUTOSAVE_KEY = 'proteinSynthesis.dnaAutosave';
 
   /**
+   * Chave de localStorage pra lembrar se a pessoa deixou a fita complementar
+   * ligada — mesmo padrão do tema escuro (THEME_STORAGE_KEY em dom.js):
+   * preferência de exibição, persiste entre sessões. Ver o listener de
+   * #toggle-complementary-strand mais abaixo.
+   */
+  const SHOW_COMPLEMENTARY_STRAND_KEY = 'proteinSynthesis.showComplementaryStrand';
+
+  /**
    * Transcrição: base do DNA molde → base equivalente no mRNA.
    * Substitui a função transcribe() com switch.
    */
@@ -5809,14 +5817,107 @@
   // Um único toggle controla as duas fileiras (simulador principal + painel de
   // mutação) de uma vez: se a pessoa quer ver a fita complementar, faz sentido
   // ver nas duas, não só numa.
+  //
+  // BUGFIX: preferência agora persiste entre sessões (localStorage), igual o
+  // tema escuro (ver THEME_STORAGE_KEY em dom.js) — antes resetava pra
+  // desligado a cada F5, inconsistente com o resto do app.
   const toggleComplementaryBtn = document.getElementById('toggle-complementary-strand');
+
+  function applyComplementaryStrandVisibility(isOn) {
+    document.body.classList.toggle('show-complementary-strand', isOn);
+    if (toggleComplementaryBtn) {
+      toggleComplementaryBtn.setAttribute('aria-pressed', String(isOn));
+      const icon = toggleComplementaryBtn.querySelector('i');
+      if (icon) icon.className = isOn ? 'fas fa-eye-slash' : 'fas fa-eye';
+    }
+  }
+
   if (toggleComplementaryBtn) {
     toggleComplementaryBtn.addEventListener('click', function () {
-      const isOn = document.body.classList.toggle('show-complementary-strand');
-      toggleComplementaryBtn.setAttribute('aria-pressed', String(isOn));
-      toggleComplementaryBtn.querySelector('i').className = isOn ? 'fas fa-eye-slash' : 'fas fa-eye';
+      const isOn = !document.body.classList.contains('show-complementary-strand');
+      applyComplementaryStrandVisibility(isOn);
+      try {
+        localStorage.setItem(SHOW_COMPLEMENTARY_STRAND_KEY, isOn ? '1' : '0');
+      } catch (e) {
+        // localStorage indisponível (modo privado etc.) — funciona só nesta sessão.
+      }
     });
   }
+
+  /**
+   * Colar uma sequência inteira na caixa de DNA — antes só dava pra digitar
+   * base por base, o que não faz sentido pra sequências vindas de fora
+   * (NCBI, um livro, outra ferramenta). Só liga na fita molde principal
+   * (textboxDna[0]) — mesmo escopo de insertBase(), o painel de mutação
+   * não é editável diretamente.
+   *
+   * Limpeza aplicada ao texto colado, nessa ordem:
+   *   1) remove linha(s) de cabeçalho FASTA (">accession descrição...") —
+   *      sem isso, letras A/T/C/G incidentais no próprio texto do
+   *      cabeçalho (ex.: "beta" tem A e T) vazariam pra sequência.
+   *   2) maiúsculas, e U→T — trata RNA colado por engano como DNA
+   *      equivalente, em vez de simplesmente descartar essas bases.
+   *   3) descarta qualquer caractere que não seja A/T/C/G (espaços,
+   *      números de posição, quebras de linha internas etc.).
+   *
+   * PASTE_MAX_BASES existe só pra proteger a UI: colar um cromossomo
+   * inteiro por engano (milhões de caracteres) inseriria um DOM element
+   * por base, um de cada vez — sem limite isso poderia travar a aba.
+   */
+  const PASTE_MAX_BASES = 600;
+
+  function cleanPastedSequence(raw) {
+    const withoutHeaders = raw
+      .split('\n')
+      .filter(line => !line.trim().startsWith('>'))
+      .join('');
+    const upper = withoutHeaders.toUpperCase().replace(/U/g, 'T');
+    const bases = upper.replace(/[^ATCG]/g, '');
+    // Conta as letras do texto original (A-Z, já sem o cabeçalho FASTA) pra
+    // medir que FRAÇÃO delas virou base válida — não basta ter ENCONTRADO
+    // alguma base, texto qualquer ("mUndo" tem um U, que vira T) pode
+    // acidentalmente "achar" uma ou duas. Uma sequência de verdade deve ser
+    // quase 100% A/T/C/G; texto solto normalmente fica bem abaixo disso.
+    const totalLetters = (upper.match(/[A-Z]/g) || []).length;
+    return { bases, totalLetters };
+  }
+
+  textboxDna[0].addEventListener('paste', function (event) {
+    event.preventDefault();
+    const raw = (event.clipboardData || window.clipboardData).getData('text');
+    if (!raw) return;
+
+    const { bases: cleaned, totalLetters } = cleanPastedSequence(raw);
+    const looksLikeSequence = cleaned.length > 0 && (cleaned.length / totalLetters) >= 0.7;
+    if (!looksLikeSequence) {
+      showAlert('Nada para colar', 'O texto colado não parece ser uma sequência de DNA/RNA válida.');
+      return;
+    }
+    let bases = cleaned;
+
+    const wasTruncated = bases.length > PASTE_MAX_BASES;
+    if (wasTruncated) bases = bases.slice(0, PASTE_MAX_BASES);
+
+    // BUGFIX: clicar numa caixa de DNA vazia já cria uma caixinha vazia (ver
+    // activateDnaInput()) só pra ter algo focado — sem isso, colar direto
+    // deixava essa caixa vazia sobrando no meio da sequência, ANTES das
+    // bases coladas. Se é isso que está focado agora, remove antes de inserir.
+    const activeEl = document.activeElement;
+    if (activeEl && activeEl.classList.contains('sequenceChar') &&
+        textboxDna[0].contains(activeEl) && activeEl.value === '') {
+      const rnaEl = getRnaEquivalent(activeEl);
+      activeEl.remove();
+      if (rnaEl) rnaEl.remove();
+    }
+
+    for (const base of bases) insertBase(base, { skipRender: true });
+    translate();
+    treatSequence();
+
+    if (wasTruncated) {
+      showInfo('Sequência cortada', `Foram inseridas as ${PASTE_MAX_BASES} primeiras bases — a sequência colada era maior que o limite.`);
+    }
+  });
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
   for (let i = 0; i < textboxDna.length; i++) {
@@ -6175,6 +6276,15 @@
         }
       });
     });
+
+    // Restaura a preferência de "fita complementar" ANTES da sequência ser
+    // renderizada pela 1ª vez (linha abaixo) — assim, se estava ligada, a
+    // fita já nasce visível e preenchida, sem piscar entre estados.
+    try {
+      applyComplementaryStrandVisibility(localStorage.getItem(SHOW_COMPLEMENTARY_STRAND_KEY) === '1');
+    } catch (e) {
+      // localStorage indisponível — fica no padrão (desligado).
+    }
 
     // Carrega automaticamente uma sequência compartilhada via link (?seq=...), se presente;
     // senão, tenta restaurar a última sequência autosalva localmente (ver DNA_AUTOSAVE_KEY).
