@@ -2327,6 +2327,117 @@ body.dark-theme .lab-export-btn {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   Gerador de Exercícios com Gabarito
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.exercise-gen-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.exercise-gen-controls .btn-control {
+    height: 38px;
+}
+
+.exercise-gen-preview {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--slate200);
+    border-radius: 8px;
+    background: var(--slate50);
+}
+
+.exercise-gen-preview:empty::before {
+    content: "Escolha a quantidade e o tamanho, depois clique em \"Gerar\".";
+    display: block;
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--slate400);
+    font-size: 0.88rem;
+}
+
+.exercise-gen-item {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 4px 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--slate200);
+    font-size: 0.85rem;
+}
+
+.exercise-gen-item:last-child {
+    border-bottom: none;
+}
+
+.exercise-gen-item-num {
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--colorDetailsText);
+    background: var(--colorDetailsBg);
+    border-radius: 6px;
+}
+
+.exercise-gen-item-dna {
+    font-family: var(--font-mono);
+    color: var(--slate700);
+    letter-spacing: 0.03em;
+}
+
+.exercise-gen-item-protein {
+    color: var(--slate500);
+}
+
+.exercise-gen-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+/* Conteúdo formatado pra impressão/gabarito — nunca aparece na tela normal,
+   só quando body.printing-exercise-set está ativo (ver @media print
+   abaixo) E o container específico tem .exercise-print-active (alternado
+   por printExerciseContent() em script.js, um de cada vez: nunca os dois
+   juntos numa mesma impressão). */
+.exercise-printable {
+    display: none;
+}
+
+.exercise-print-title {
+    font-family: var(--font-serif);
+    margin-bottom: 1.5rem;
+}
+
+.exercise-print-list {
+    padding-left: 1.4rem;
+}
+
+.exercise-print-item {
+    margin-bottom: 1.3rem;
+    line-height: 1.9;
+    page-break-inside: avoid;
+}
+
+.exercise-print-item .exercise-print-dna {
+    font-family: var(--font-mono);
+    letter-spacing: 0.03em;
+}
+
+.exercise-print-item .exercise-print-blank {
+    display: inline-block;
+    min-width: 260px;
+    border-bottom: 1px solid #000;
+    margin-left: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    Genética Populacional (Hardy-Weinberg)
    ═══════════════════════════════════════════════════════════════════════ */
 

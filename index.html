@@ -626,6 +626,8 @@
                                         class="fas fa-file-export"></i> Exportar</button>
                                 <button id="btn-import" class="more-actions-item" role="menuitem"><i
                                         class="fas fa-file-import"></i> Importar</button>
+                                <button id="btn-exercise-generator" class="more-actions-item" role="menuitem"><i
+                                        class="fas fa-list-check"></i> Gerar Exercícios</button>
                             </div>
                         </div>
                     </div>
@@ -649,7 +651,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="sequence">
+                <div class="sequence" id="main-sequence-panel">
                     <div class="label">DNA
                         <button type="button" class="strand-toggle-btn" id="toggle-complementary-strand"
                             aria-pressed="false" title="Mostrar a outra fita da dupla-hélice, complementar à fita molde">
@@ -1612,7 +1614,7 @@
                     <div class="karyo-grid" id="karyo-grid"></div>
 
                     <button type="button" class="btn-control lab-export-btn" id="karyo-export-btn">
-                        <i class="fas fa-image"></i> Exportar como PNG
+                        <i class="fas fa-image"></i> Exportar como imagem (SVG)
                     </button>
 
                     <p class="lab-explanation" id="karyo-description"></p>
@@ -1754,6 +1756,13 @@
             <textarea id="export-seq-link" class="seq-modal-textarea" rows="2" readonly></textarea>
             <button id="export-copy-link" class="btn-control seq-modal-action"><i class="fas fa-link"></i> Copiar
                 link</button>
+
+            <label class="seq-modal-label">Imagem</label>
+            <p class="seq-modal-desc">Baixa uma imagem (SVG) do simulador (DNA, RNAm e proteína) do jeito que está
+                agora — abre em qualquer navegador e dá pra inserir direto no Slides/Docs/Word, para colar num
+                trabalho, slide ou prova.</p>
+            <button id="export-image-btn" class="btn-control seq-modal-action"><i class="fas fa-image"></i> Baixar
+                como imagem (SVG)</button>
 
             <span id="export-feedback" class="seq-modal-feedback"></span>
         </div>
@@ -2177,6 +2186,65 @@
                     <option value="250" selected>Normal</option>
                     <option value="120">Rápida</option>
                 </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Gerador de Exercícios com Gabarito -->
+    <div id="exercise-generator-modal" class="seq-modal-overlay" style="display:none;" role="dialog" aria-modal="true"
+        aria-labelledby="exercise-generator-modal-title">
+        <div class="seq-modal lab-modal-lg">
+            <button class="seq-modal-close lab-modal-close" id="exercise-generator-modal-close">&times;</button>
+            <h3 class="lab-modal-title" id="exercise-generator-modal-title"><i class="fas fa-list-check"></i> Gerador
+                de Exercícios</h3>
+            <p class="lab-modal-desc">Gera uma sequência de DNA diferente para cada aluno — dificulta cola, e você
+                recebe o gabarito de todas prontas pra corrigir.</p>
+
+            <div class="exercise-gen-controls">
+                <label class="lab-field">Quantidade
+                    <select class="lab-input" id="exercise-gen-count">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="30">30</option>
+                        <option value="40">40</option>
+                    </select>
+                </label>
+                <label class="lab-field">Tamanho de cada sequência
+                    <select class="lab-input" id="exercise-gen-length">
+                        <option value="4">Curto (4 códons)</option>
+                        <option value="7" selected>Médio (7 códons)</option>
+                        <option value="11">Longo (11 códons)</option>
+                    </select>
+                </label>
+                <button type="button" class="btn-control" id="exercise-gen-generate-btn">
+                    <i class="fas fa-dice"></i> Gerar
+                </button>
+            </div>
+
+            <div id="exercise-gen-preview" class="exercise-gen-preview" aria-live="polite"></div>
+
+            <div class="exercise-gen-actions" id="exercise-gen-actions" hidden>
+                <button type="button" class="btn-control seq-modal-action" id="exercise-gen-print-worksheet">
+                    <i class="fas fa-print"></i> Imprimir lista de exercícios
+                </button>
+                <button type="button" class="btn-control seq-modal-action" id="exercise-gen-print-key">
+                    <i class="fas fa-print"></i> Imprimir gabarito
+                </button>
+                <button type="button" class="btn-control seq-modal-action" id="exercise-gen-download-txt">
+                    <i class="fas fa-download"></i> Baixar tudo (.txt)
+                </button>
+            </div>
+
+            <!-- Conteúdo só visível na impressão (ver body.printing-exercise-set em pages.css) —
+                 populado por renderExerciseGenPrintables() em script.js. -->
+            <div id="exercise-worksheet-printable" class="exercise-printable">
+                <h2 class="exercise-print-title">Lista de Exercícios — Síntese de Proteínas</h2>
+                <ol id="exercise-worksheet-list" class="exercise-print-list"></ol>
+            </div>
+            <div id="exercise-answerkey-printable" class="exercise-printable">
+                <h2 class="exercise-print-title">Gabarito — Síntese de Proteínas</h2>
+                <ol id="exercise-answerkey-list" class="exercise-print-list"></ol>
             </div>
         </div>
     </div>

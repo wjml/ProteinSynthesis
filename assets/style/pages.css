@@ -1400,6 +1400,31 @@ details.version-card ul {
 		font-size: 0.75rem;
 		color: #555;
 	}
+
+	/* Gerador de Exercícios: imprime SÓ a lista de exercícios ou SÓ o
+	   gabarito (nunca os dois, nunca o resto do app/modal) — truque clássico
+	   de "imprimir só este elemento": esconde tudo, reexibe apenas a
+	   subárvore marcada. Ativado/desativado por printExerciseContent() em
+	   script.js, nunca direto pelo CSS. */
+	body.printing-exercise-set * {
+		visibility: hidden;
+	}
+
+	body.printing-exercise-set .exercise-print-active,
+	body.printing-exercise-set .exercise-print-active * {
+		visibility: visible;
+	}
+
+	body.printing-exercise-set .exercise-print-active {
+		display: block !important;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		padding: 1.5cm;
+		color: black !important;
+		background: white !important;
+	}
 }
 /* ═══════════════════════════════════════════════════════════════════════
    Splash / Página Inicial — primeira tela ao abrir o app, antes do DNA.

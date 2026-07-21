@@ -230,6 +230,81 @@
   }
 
   /**
+   * Traduz uma string de DNA molde inteira (DNA → RNAm → proteína) sem tocar
+   * no DOM — todo o resto do motor de tradução do app (translate(),
+   * translateStrand()) é acoplado aos elementos .sequenceChar reais da tela.
+   * Usada pelo Gerador de Exercícios, que precisa calcular o gabarito de
+   * várias sequências de uma vez, nenhuma delas necessariamente a que está
+   * no simulador no momento.
+   *
+   * Assume uma DNA já válida (como as geradas por generateRandomCodingDna():
+   * começa em TAC=AUG, sempre um múltiplo de 3 bases). Para além disso, para
+   * no primeiro STOP encontrado — mesma regra de leitura do resto do app.
+   */
+  function translateDnaHeadless(dnaSeq) {
+    let rna = '';
+    for (const base of dnaSeq) rna += transcribe(base);
+
+    const codons = [];
+    const aminoAcids = [];
+    for (let i = 0; i + 3 <= rna.length; i += 3) {
+      const codon = rna.slice(i, i + 3);
+      const info = CODON_TABLE[codon];
+      codons.push(codon);
+      if (!info) break; // não deveria acontecer com sequência gerada por generateRandomCodingDna()
+      if (info.abbrevName === 'STOP') break;
+      aminoAcids.push(info);
+    }
+
+    return { dnaSeq, rna, codons, aminoAcids };
+  }
+
+  /**
+   * Gera `count` exercícios distintos — cada um uma sequência de DNA válida
+   * de `numCodons` códons, já traduzida (ver translateDnaHeadless() acima).
+   * "Distintos" na prática, não garantido matematicamente: com sequências de
+   * 4+ códons aleatórios, a chance de colisão é desprezível pro tamanho de
+   * turma que esse recurso é pensado pra atender (até ~40) — mas ainda
+   * assim tenta algumas vezes antes de desistir e aceitar uma repetição, só
+   * pra não travar em looping infinito num caso extremo (numCodons muito
+   * pequeno).
+   *
+   * BUGFIX (sequência mais curta que o pedido): generateRandomCodingDna()
+   * sorteia os códons do meio livremente, sem evitar que um deles caia por
+   * acaso num padrão de parada (ATT/ATC/ACT em DNA) — ~4,7% de chance por
+   * códon do meio. Pra uma sequência "Sequência aleatória" avulsa isso é
+   * até interessante (mutação sem querer gerando parada precoce, cenário
+   * biológico real), mas aqui a pessoa escolheu um tamanho específico
+   * ("Longo, 11 códons") esperando um exercício daquele tamanho de verdade
+   * — por isso essa função tenta de novo até a tradução render exatamente
+   * numCodons-2 aminoácidos (o -2 é o INÍCIO e o STOP final, que não
+   * contam como aminoácido).
+   */
+  function generateExerciseSet(count, numCodons) {
+    // -1: desconta só o códon de PARADA final. O de início (TAC/AUG) conta
+    // como aminoácido de verdade (Metionina) na proteína — só é "especial"
+    // por sinalizar onde a leitura começa, não deixa de ser traduzido.
+    const expectedAminoAcids = numCodons - 1;
+    const seen = new Set();
+    const exercises = [];
+    for (let i = 0; i < count; i++) {
+      let dnaSeq, translated;
+      let attempts = 0;
+      do {
+        dnaSeq = generateRandomCodingDna(numCodons);
+        translated = translateDnaHeadless(dnaSeq);
+        attempts++;
+      } while (
+        (seen.has(dnaSeq) || translated.aminoAcids.length !== expectedAminoAcids)
+        && attempts < 30
+      );
+      seen.add(dnaSeq);
+      exercises.push(translated);
+    }
+    return exercises;
+  }
+
+  /**
    * Aplica as classes CSS de cor de base e posição de códon a uma coleção de inputs.
    * Substitui os 4 loops idênticos em treatSequence().
    *
@@ -2405,18 +2480,56 @@
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
-  // ─── Exportação de visualizações (Heredograma/Cariótipo) como PNG ────────────
+  // ─── Exportação de visualizações (Heredograma/Cariótipo/Simulador) como PNG ──
   //
   // Função genérica, sem dependências externas: funciona tanto para o SVG real
-  // do heredograma quanto para a grade de <div>s do cariótipo. Como o PNG é
-  // rasterizado a partir de um <img> carregando um SVG serializado (via canvas),
-  // as regras CSS externas (classes como .pedigree-line) não se aplicam dentro
-  // dessa renderização isolada — por isso cada elemento clonado recebe seus
-  // estilos computados (cor, largura etc.) copiados diretamente para o atributo
-  // style, "congelando" a aparência atual (tema claro/escuro incluso) antes de
+  // do heredograma quanto para containers de <div>s comuns (cariótipo, o
+  // simulador de DNA/RNA/proteína). Como o PNG é rasterizado a partir de um
+  // <img> carregando um SVG serializado (via canvas), as regras CSS externas
+  // (classes como .pedigree-line) não se aplicam dentro dessa renderização
+  // isolada — por isso cada elemento clonado recebe seus estilos computados
+  // (cor, largura etc.) copiados diretamente para o atributo style,
+  // "congelando" a aparência atual (tema claro/escuro incluso) antes de
   // serializar.
+  //
+  // BUGFIX (canvas contaminado): o link do Google Fonts no <head> não tem
+  // crossorigin — então "IBM Plex Mono"/"Work Sans"/"IBM Plex Serif" (as
+  // fontes usadas em quase todo o app, via --font-mono/--font-sans/
+  // --font-serif) carregam em modo opaco (no-cors). Um <canvas> que rasteriza
+  // QUALQUER texto usando uma fonte carregada assim fica "contaminado" —
+  // toBlob()/toDataURL() passam a lançar erro de segurança, mesmo o texto
+  // sendo 100% conteúdo local. Não rolava com o heredograma/cariótipo (pouco
+  // ou nenhum texto com fonte customizada), mas quebrava a exportação do
+  // simulador (a fita inteira usa --font-mono). A correção troca essas 3
+  // fontes web por equivalentes de sistema SÓ na cópia usada pra exportar —
+  // a página real e as fontes carregadas nela não mudam em nada.
 
-  /** Copia, em profundidade, o estilo computado de cada nó de `sourceEl` para o nó correspondente em `targetEl`. */
+  const WEB_FONT_TO_SYSTEM_FALLBACK = [
+    { match: /IBM Plex Mono|Roboto Mono/i, fallback: 'ui-monospace, "SFMono-Regular", Consolas, monospace' },
+    { match: /IBM Plex Serif/i,            fallback: 'Georgia, "Times New Roman", serif' },
+    { match: /Work Sans/i,                 fallback: '"Segoe UI", Arial, sans-serif' },
+  ];
+
+  /** Se `fontFamilyValue` referencia uma das fontes web do Google Fonts, troca por um equivalente de sistema. */
+  function sanitizeFontFamilyForExport(fontFamilyValue) {
+    for (const { match, fallback } of WEB_FONT_TO_SYSTEM_FALLBACK) {
+      if (match.test(fontFamilyValue)) return fallback;
+    }
+    return fontFamilyValue;
+  }
+
+  /**
+   * Copia, em profundidade, o estilo computado de cada nó de `sourceEl` para o nó correspondente em `targetEl`.
+   *
+   * BUGFIX (caixas de sequência exportadas em branco): cloneNode(true) NÃO
+   * copia a propriedade .value viva de <input>/<textarea> quando ela foi
+   * setada via JS (como todo sequenceChar é preenchido) — só preserva o
+   * atributo value="" estático original. O clone saía com todas as letras
+   * em branco, apesar do resto do estilo estar certo. Aqui, além do estilo,
+   * copia .value pro clone como ATRIBUTO de verdade (setAttribute, não só
+   * a propriedade JS) — só assim ele sobrevive à serialização XML que vem
+   * a seguir.
+   */
   function inlineComputedStylesDeep(sourceEl, targetEl) {
     const sourceAll = [sourceEl, ...sourceEl.querySelectorAll('*')];
     const targetAll = [targetEl, ...targetEl.querySelectorAll('*')];
@@ -2426,9 +2539,20 @@
       let cssText = '';
       for (let j = 0; j < cs.length; j++) {
         const prop = cs[j];
-        cssText += `${prop}:${cs.getPropertyValue(prop)};`;
+        let value = cs.getPropertyValue(prop);
+        if (prop === 'font-family') value = sanitizeFontFamilyForExport(value);
+        cssText += `${prop}:${value};`;
       }
       targetAll[i].style.cssText = cssText;
+
+      const tag = sourceAll[i].tagName;
+      if (tag === 'INPUT') {
+        targetAll[i].setAttribute('value', sourceAll[i].value);
+      } else if (tag === 'TEXTAREA') {
+        // <textarea> ignora o atributo value pra exibição — precisa do
+        // conteúdo de texto de verdade.
+        targetAll[i].textContent = sourceAll[i].value;
+      }
     }
   }
 
@@ -2438,6 +2562,40 @@
    * @param {Element} sourceNode Nó a exportar — deve estar atualmente visível na página.
    * @param {string} filename Nome do arquivo baixado (com extensão .png).
    */
+  /**
+   * BUGFIX (canvas contaminado — afetava cariótipo e agora também o
+   * simulador): SVG com <foreignObject> embutindo HTML é tratado como
+   * "inseguro" pelo navegador na hora de LER os pixels de volta do canvas
+   * (toBlob/toDataURL) — mesmo o conteúdo sendo 100% local, sem nenhum
+   * recurso de origem cruzada de verdade envolvido. Isso não é uma falha de
+   * rede nem de fonte: é assim que o navegador trata QUALQUER
+   * SVG+foreignObject por padrão, sempre. Descobri isso tentando exportar o
+   * simulador — e ao investigar, achei que o export de cariótipo (que já
+   * existia antes, mesmo mecanismo) tinha o mesmo problema, silenciosamente
+   * quebrado.
+   *
+   * O heredograma nunca teve esse problema porque é SVG NATIVO de verdade
+   * (sem foreignObject) — por isso esse caminho continua rasterizando via
+   * canvas normalmente, é comprovadamente confiável.
+   *
+   * Para conteúdo baseado em <div> (cariótipo, simulador), a correção evita
+   * o canvas por completo: baixa o SVG serializado diretamente como arquivo
+   * .svg. Abre normal em qualquer navegador/leitor de imagem moderno, e dá
+   * pra inserir direto no Google Slides/Docs e no Word (2016+) — não é um
+   * PNG raster de verdade, mas é 100% confiável, o que vale mais aqui.
+   */
+  function downloadSvgBlob(svgMarkup, filename) {
+    const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename.replace(/\.png$/i, '.svg');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  }
+
   function exportNodeAsPng(sourceNode, filename) {
     if (!sourceNode) return;
     const isSvg = sourceNode.tagName && sourceNode.tagName.toLowerCase() === 'svg';
@@ -2491,6 +2649,14 @@
       svgMarkup = new XMLSerializer().serializeToString(svgEl);
     } catch (e) {
       console.error('Erro ao serializar SVG para exportação:', e);
+      return;
+    }
+
+    // Conteúdo com foreignObject (isSvg === false) baixa direto como .svg —
+    // ver bloco de comentário grande acima. Só SVG nativo de verdade segue
+    // pro canvas/PNG, que continua confiável nesse caso.
+    if (!isSvg) {
+      downloadSvgBlob(svgMarkup, filename);
       return;
     }
 
@@ -3804,6 +3970,125 @@
     replication.strand2 = complementStrand(replication.strand1);
     resetReplicationAnimation();
     openModalDialog(replication.els.modal);
+  }
+
+  // ─── Gerador de Exercícios com Gabarito ──────────────────────────────────────
+  //
+  // Diferente dos outros modais de "mais ações", não depende da sequência
+  // atualmente no simulador — gera as suas próprias, do zero, cada vez que
+  // "Gerar" é clicado. Guarda o último lote gerado em memória (variável
+  // `exerciseSet` abaixo) pra imprimir/baixar reaproveitarem sem regenerar
+  // (regenerar mudaria o gabarito sem a pessoa pedir).
+
+  let exerciseSet = [];
+
+  function openExerciseGeneratorModal() {
+    const modal = document.getElementById('exercise-generator-modal');
+    openModalDialog(modal);
+  }
+
+  /** MET, PRO, PHE... → "MET–PRO–PHE" (travessão, não hífen, pra não confundir com códons negativos/intervalos). */
+  function formatAminoAcidChain(aminoAcids) {
+    return aminoAcids.map(aa => aa.abbrevName).join('–');
+  }
+
+  /** Preenche a prévia dentro do modal (o que a pessoa vê na tela antes de imprimir/baixar). */
+  function renderExercisePreview(exercises) {
+    const preview = document.getElementById('exercise-gen-preview');
+    if (!preview) return;
+    preview.innerHTML = '';
+    exercises.forEach((ex, i) => {
+      const item = document.createElement('div');
+      item.className = 'exercise-gen-item';
+      item.innerHTML = `
+        <span class="exercise-gen-item-num">${i + 1}</span>
+        <span class="exercise-gen-item-dna">DNA: ${ex.dnaSeq}</span>
+        <span class="exercise-gen-item-protein">${ex.aminoAcids.length} aminoácido${ex.aminoAcids.length === 1 ? '' : 's'} — ${formatAminoAcidChain(ex.aminoAcids)}</span>
+      `;
+      preview.appendChild(item);
+    });
+  }
+
+  /** Preenche os dois containers só-de-impressão (lista em branco pro aluno + gabarito preenchido). */
+  function renderExercisePrintables(exercises) {
+    const worksheetList = document.getElementById('exercise-worksheet-list');
+    const answerKeyList = document.getElementById('exercise-answerkey-list');
+    if (!worksheetList || !answerKeyList) return;
+
+    worksheetList.innerHTML = '';
+    answerKeyList.innerHTML = '';
+
+    exercises.forEach((ex) => {
+      const wItem = document.createElement('li');
+      wItem.className = 'exercise-print-item';
+      wItem.innerHTML = `
+        DNA molde: <span class="exercise-print-dna">3'-${ex.dnaSeq}-5'</span><br>
+        RNAm: <span class="exercise-print-blank"></span><br>
+        Proteína (sequência de aminoácidos): <span class="exercise-print-blank"></span>
+      `;
+      worksheetList.appendChild(wItem);
+
+      const kItem = document.createElement('li');
+      kItem.className = 'exercise-print-item';
+      kItem.innerHTML = `
+        DNA molde: <span class="exercise-print-dna">3'-${ex.dnaSeq}-5'</span><br>
+        RNAm: <span class="exercise-print-dna">5'-${ex.rna}-3'</span><br>
+        Proteína: ${formatAminoAcidChain(ex.aminoAcids)}
+        (${ex.aminoAcids.map(aa => aa.name).join(', ')})
+      `;
+      answerKeyList.appendChild(kItem);
+    });
+  }
+
+  /**
+   * Imprime SÓ o container `containerId` (lista de exercícios OU gabarito) —
+   * ver truque de "imprimir só este elemento" em @media print, pages.css.
+   * afterprint desfaz a marcação depois, disparado uma única vez por chamada
+   * (não empilha listeners a cada clique).
+   */
+  function printExerciseContent(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.classList.add('exercise-print-active');
+    document.body.classList.add('printing-exercise-set');
+
+    const cleanup = () => {
+      document.body.classList.remove('printing-exercise-set');
+      container.classList.remove('exercise-print-active');
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+  }
+
+  /** Baixa lista de exercícios + gabarito juntos num único .txt — cópia rápida pra colar em outro editor. */
+  function downloadExercisesAsText(exercises) {
+    let text = 'LISTA DE EXERCÍCIOS — SÍNTESE DE PROTEÍNAS\n';
+    text += '='.repeat(50) + '\n\n';
+    exercises.forEach((ex, i) => {
+      text += `${i + 1}. DNA molde: 3'-${ex.dnaSeq}-5'\n`;
+      text += `   RNAm: ____________________________\n`;
+      text += `   Proteína: ____________________________\n\n`;
+    });
+
+    text += '\n' + '='.repeat(50) + '\n';
+    text += 'GABARITO\n';
+    text += '='.repeat(50) + '\n\n';
+    exercises.forEach((ex, i) => {
+      text += `${i + 1}. DNA molde: 3'-${ex.dnaSeq}-5'\n`;
+      text += `   RNAm: 5'-${ex.rna}-3'\n`;
+      text += `   Proteína: ${formatAminoAcidChain(ex.aminoAcids)} (${ex.aminoAcids.map(aa => aa.name).join(', ')})\n\n`;
+    });
+
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'exercicios-sintese-proteinas.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
   }
 
   /**
@@ -5998,6 +6283,9 @@
     if (btnOpenEpistasis) btnOpenEpistasis.addEventListener('click', openEpistasisModal);
     if (btnOpenAbo)       btnOpenAbo.addEventListener('click', openAboModal);
 
+    const btnExerciseGenerator = document.getElementById('btn-exercise-generator');
+    if (btnExerciseGenerator) btnExerciseGenerator.addEventListener('click', openExerciseGeneratorModal);
+
     const epistasisGenerateBtn = document.getElementById('epistasis-generate-btn');
     const epistasisScenarioSelect = document.getElementById('epistasis-scenario-select');
     if (epistasisGenerateBtn) epistasisGenerateBtn.addEventListener('click', renderEpistasisResult);
@@ -6005,6 +6293,32 @@
 
     const aboGenerateBtn = document.getElementById('abo-generate-btn');
     if (aboGenerateBtn) aboGenerateBtn.addEventListener('click', renderAboResult);
+
+    const exerciseGenGenerateBtn = document.getElementById('exercise-gen-generate-btn');
+    const exerciseGenActions     = document.getElementById('exercise-gen-actions');
+    if (exerciseGenGenerateBtn) {
+      exerciseGenGenerateBtn.addEventListener('click', () => {
+        const count     = Number(document.getElementById('exercise-gen-count').value) || 10;
+        const numCodons = Number(document.getElementById('exercise-gen-length').value) || 7;
+        exerciseSet = generateExerciseSet(count, numCodons);
+        renderExercisePreview(exerciseSet);
+        renderExercisePrintables(exerciseSet);
+        if (exerciseGenActions) exerciseGenActions.hidden = false;
+      });
+    }
+
+    const exerciseGenPrintWorksheetBtn = document.getElementById('exercise-gen-print-worksheet');
+    const exerciseGenPrintKeyBtn       = document.getElementById('exercise-gen-print-key');
+    const exerciseGenDownloadBtn       = document.getElementById('exercise-gen-download-txt');
+    if (exerciseGenPrintWorksheetBtn) {
+      exerciseGenPrintWorksheetBtn.addEventListener('click', () => printExerciseContent('exercise-worksheet-printable'));
+    }
+    if (exerciseGenPrintKeyBtn) {
+      exerciseGenPrintKeyBtn.addEventListener('click', () => printExerciseContent('exercise-answerkey-printable'));
+    }
+    if (exerciseGenDownloadBtn) {
+      exerciseGenDownloadBtn.addEventListener('click', () => downloadExercisesAsText(exerciseSet));
+    }
 
     // Modais de exportar/importar/animar sequência/construir cruzamento/CRISPR/replicação
     const exportModal = document.getElementById('export-modal');
@@ -6015,6 +6329,7 @@
     const aboModal = document.getElementById('abo-modal');
     const crisprModal = document.getElementById('crispr-modal');
     const replicationModal = document.getElementById('replication-modal');
+    const exerciseGeneratorModal = document.getElementById('exercise-generator-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
     const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
@@ -6023,8 +6338,10 @@
     const aboCloseBtn = document.getElementById('abo-modal-close');
     const crisprCloseBtn = document.getElementById('crispr-modal-close');
     const replicationCloseBtn = document.getElementById('replication-modal-close');
+    const exerciseGeneratorCloseBtn = document.getElementById('exercise-generator-modal-close');
     const exportCopySeqBtn  = document.getElementById('export-copy-seq');
     const exportCopyLinkBtn = document.getElementById('export-copy-link');
+    const exportImageBtn    = document.getElementById('export-image-btn');
     const importLoadBtn  = document.getElementById('import-load-btn');
     const importSeqInput = document.getElementById('import-seq-input');
 
@@ -6056,9 +6373,10 @@
     if (aboCloseBtn)         aboCloseBtn.addEventListener('click', () => closeModal(aboModal));
     if (crisprCloseBtn)      crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
     if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
+    if (exerciseGeneratorCloseBtn) exerciseGeneratorCloseBtn.addEventListener('click', () => closeModal(exerciseGeneratorModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, epistasisModal, aboModal, crisprModal, replicationModal];
+    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, epistasisModal, aboModal, crisprModal, replicationModal, exerciseGeneratorModal];
     allSeqModals.forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
@@ -6198,7 +6516,7 @@
           }
           return;
         }
-        exportNodeAsPng(grid, 'cariotipo.png');
+        exportNodeAsPng(grid, 'cariotipo.svg');
       });
     }
 
@@ -6223,6 +6541,25 @@
     if (exportCopyLinkBtn) {
       exportCopyLinkBtn.addEventListener('click', () =>
         copyTextareaContent('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
+    }
+    if (exportImageBtn) {
+      exportImageBtn.addEventListener('click', () => {
+        const feedback = document.getElementById('export-feedback');
+        const dnaSeq = readSequence(dnaSequenceChars);
+        if (!dnaSeq) {
+          if (feedback) {
+            feedback.textContent = 'A sequência está vazia — insira bases no simulador antes de exportar.';
+            feedback.classList.add('error');
+          }
+          return;
+        }
+        const panel = document.getElementById('main-sequence-panel');
+        exportNodeAsPng(panel, 'simulador-genetica.svg');
+        if (feedback) {
+          feedback.textContent = 'Imagem baixada!';
+          feedback.classList.remove('error');
+        }
+      });
     }
 
     if (importLoadBtn) importLoadBtn.addEventListener('click', handleImportSubmit);
