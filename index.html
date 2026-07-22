@@ -606,14 +606,18 @@
                                          CODON_TABLE e AMINOACIDS_DB — mesma fonte de verdade da tabela abaixo. -->
                                 </div>
                                 <div class="codon-wheel-side">
+                                    <button type="button" class="codon-wheel-send-btn" id="codon-wheel-send-btn" disabled>
+                                        <i class="fas fa-paper-plane"></i> Enviar para o simulador
+                                    </button>
                                     <button type="button" class="codon-wheel-reset-btn" id="codon-wheel-reset-btn">
                                         <i class="fas fa-rotate-left"></i> Limpar seleção
                                     </button>
                                     <ol class="codon-wheel-instructions">
                                         <li><strong>Anel interno:</strong> escolha a 1ª base</li>
                                         <li><strong>Anel do meio:</strong> escolha a 2ª base</li>
-                                        <li><strong>Anel externo:</strong> escolha a 3ª base — completa o códon e
-                                            insere no simulador</li>
+                                        <li><strong>Anel externo:</strong> escolha a 3ª base — completa o códon</li>
+                                        <li>Toque em <strong>Enviar para o simulador</strong> para inserir o códon
+                                            escolhido</li>
                                     </ol>
                                     <p class="visually-hidden" id="codon-wheel-status" aria-live="polite"></p>
                                 </div>

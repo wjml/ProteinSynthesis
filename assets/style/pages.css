@@ -1410,11 +1410,41 @@
 }
 
 .codon-wheel-side {
+	position: relative;
 	flex: 1 1 220px;
 	max-width: 280px;
 	display: flex;
 	flex-direction: column;
 	gap: 1rem;
+}
+
+.codon-wheel-send-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	align-self: flex-start;
+	padding: 8px 14px;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	background: var(--colorDetails);
+	color: var(--white);
+	font-family: var(--font-sans);
+	font-weight: 600;
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.codon-wheel-send-btn:hover:not(:disabled) {
+	filter: brightness(1.08);
+}
+
+/* Fica desabilitado até a roda ter um códon completo (1ª+2ª+3ª base) — ver
+   renderCodonWheelState(), que alterna o atributo "disabled" a cada seleção. */
+.codon-wheel-send-btn:disabled {
+	background: var(--slate200);
+	color: var(--slate500);
+	cursor: not-allowed;
 }
 
 .codon-wheel-reset-btn {
@@ -1544,6 +1574,24 @@
 	font-size: 8px;
 	font-weight: 700;
 	fill: var(--chem-text, var(--slate700));
+}
+
+/* Letrinha da 3ª base dentro do anel 3 (ver buildCodonWheel()). Some por
+   padrão — com as 64 fatias do anel juntas, mostrar as 64 letras de uma vez
+   poluiria a roda; ela só aparece quando a fatia sai do estado apagado
+   (.dimmed), ou seja, quando já é uma 3ª base compatível com a 1ª/2ª base
+   escolhidas até agora — o mesmo gatilho que já controla o "foco" do anel 3
+   (ver renderCodonWheelState()). */
+.codon-wheel-ring3-base-label {
+	font-size: 9px;
+	font-weight: 800;
+	fill: var(--slate800);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+}
+
+.codon-wheel-ring3:not(.dimmed) .codon-wheel-ring3-base-label {
+	opacity: 1;
 }
 
 .codon-wheel-hub {

@@ -661,6 +661,13 @@
     const appBtn = document.getElementById('app');
     if (appBtn) appBtn.click();
 
+    // A Roda de Códons abre o drawer de detalhes ao completar um códon (ver
+    // handleWheelSegmentActivate()); como acabamos de navegar para a página
+    // do simulador, o drawer — inclusive seu estado "fixado por clique" —
+    // precisa ser fechado aqui, senão ele fica visível por cima da página
+    // errada até o usuário passar o mouse por fora dele.
+    closeDrawer();
+
     // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
     // e dispara translate()/treatSequence() uma única vez ao final.
     for (const base of dnaBases) insertBase(base, { skipRender: true });
@@ -768,12 +775,22 @@
           const labelTransform  = wheelLabelTransform(cx, cy, (r3 + r4) / 2, mid);
           const categoryClass  = codonCellClass(aminoacid.abbrevName);
           const label = aminoacid.abbrevName === 'STOP' ? '■' : aminoacid.abbrevName;
+          // Letrinha da 3ª base (U/C/A/G), no centro da própria faixa do anel 3
+          // (r2–r3) — mesmo padrão de "letra no centro da faixa" dos anéis 1 e 2.
+          // Fica com opacity:0 por padrão (ver CSS) e só aparece quando o
+          // segmento está em foco (não .dimmed), pedido do usuário: ajuda a
+          // enxergar de cara qual 3ª base cada fatia representa assim que ela
+          // deixa de estar apagada, sem poluir a roda inteira com 64 letrinhas
+          // de uma vez.
+          const baseLabelPos = wheelPolarToCartesian(cx, cy, (r2 + r3) / 2, mid);
 
           svg += `<g class="codon-wheel-segment codon-wheel-ring3 ${categoryClass}" ` +
             `data-wheel-ring="3" data-codon="${codon}" data-abbrev="${aminoacid.abbrevName}" ` +
             `tabindex="0" role="button" ` +
             `aria-label="Códon ${codon}: ${aminoacid.name}. Clique para inserir no simulador.">` +
             `<path d="${d}"/>` +
+            `<text x="${baseLabelPos.x.toFixed(1)}" y="${baseLabelPos.y.toFixed(1)}" text-anchor="middle" ` +
+            `dominant-baseline="middle" class="codon-wheel-ring3-base-label">${third}</text>` +
             `<text transform="${labelTransform}" text-anchor="middle" dominant-baseline="middle" ` +
             `class="codon-wheel-ring3-label">${label}</text>` +
             `</g>`;
@@ -840,6 +857,9 @@
     }
     if (hubHint) hubHint.textContent = hintText;
     if (status)  status.textContent = hintText;
+
+    const sendBtn = document.getElementById('codon-wheel-send-btn');
+    if (sendBtn) sendBtn.disabled = !(first && second && third);
   }
 
   /** Aplica a seleção de um segmento clicado/ativado ao estado da roda; um anel 3 completo insere o códon no simulador. */
@@ -866,11 +886,22 @@
     renderCodonWheelState();
 
     if (ring === '3') {
-      const codon  = el.getAttribute('data-codon');
+      // Antes o clique no anel 3 já inseria o códon e navegava direto pro
+      // simulador. Agora ele só "estaciona" o códon completo (mostra o
+      // preview no drawer) — quem efetivamente insere é o botão #codon-
+      // wheel-send-btn (ver sendCodonWheelSelection()), pra dar chance da
+      // pessoa conferir o aminoácido antes de mandar pro simulador.
       const abbrev = el.getAttribute('data-abbrev');
       openAminoacidDrawer(abbrev, true);
-      insertCodonAndTranslate(codon);
     }
+  }
+
+  /** Insere no simulador o códon atualmente "estacionado" na roda (botão "Enviar para o simulador") e limpa a seleção. */
+  function sendCodonWheelSelection() {
+    const { first, second, third } = codonWheelState;
+    if (!first || !second || !third) return;
+    insertCodonAndTranslate(first + second + third);
+    resetCodonWheel();
   }
 
   /** Limpa a seleção da roda de volta para "_ _ _". */
@@ -907,6 +938,9 @@
 
     const resetBtn = document.getElementById('codon-wheel-reset-btn');
     if (resetBtn) resetBtn.addEventListener('click', resetCodonWheel);
+
+    const sendBtn = document.getElementById('codon-wheel-send-btn');
+    if (sendBtn) sendBtn.addEventListener('click', sendCodonWheelSelection);
 
     // Alternador "Roda" / "Tabela" dentro da mesma aba de referência
     const viewToggleButtons = document.querySelectorAll('.codon-view-toggle-btn');

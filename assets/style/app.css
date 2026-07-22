@@ -67,8 +67,15 @@
        34px antes por causa do badge 5'/3' (28px de largura + 6px de gap do
        .strand-row — ver .strand-end-badge/.strand-row acima). Precisa ficar
        em sincronia com esses dois valores; se um mudar, este também precisa
-       mudar (ver espelho no breakpoint de 480px mais adiante). */
+       mudar (ver espelho no breakpoint de 480px mais adiante).
+
+       O mesmo vale do lado esquerdo: a fileira de DNA começa com o badge
+       3' (mesmos 28px + 6px de gap), então sem padding-left o texto do
+       label (ex.: "DNA") fica alinhado com o BADGE, não com o início real
+       de .textbox-dna/.strand-row — daí o padding-left espelhando o
+       padding-right. */
     padding-right: 34px;
+    padding-left: 34px;
 }
 
 .process-box {
@@ -3011,10 +3018,12 @@ body.dark-theme .lab-export-btn {
         font-size: 0.62rem;
     }
 
-    /* Espelha o padding-right de .sequence .label (ver comentário lá) com o
-       track menor do mobile: badge 22px + gap 4px do .strand-row = 26px. */
+    /* Espelha o padding-right/padding-left de .sequence .label (ver
+       comentário lá) com o track menor do mobile: badge 22px + gap 4px do
+       .strand-row = 26px. */
     .sequence .label {
         padding-right: 26px;
+        padding-left: 26px;
     }
 
     .codon-label {
