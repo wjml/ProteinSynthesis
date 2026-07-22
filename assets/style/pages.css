@@ -691,6 +691,101 @@
 	color: var(--colorPurpleText);
 }
 
+/* ─── Taxonomia química de aminoácidos (paleta compartilhada) ──────────────
+   Fonte única das 4 cores de propriedade físico-química (+ parada) usada em
+   TODO o app: tabela/roda de códons acima, cartões de aminoácido (.aminoacid,
+   ver app.css), o selo do drawer de detalhes (.drawer-type-badge) e a coluna
+   "Propriedade" da tabela de referência estática (.prop-badge, abaixo).
+   Cada classe só define 3 custom properties (--chem-bg/border/text); quem
+   consome decide como aplicá-las ao próprio layout — assim uma correção de
+   cor feita aqui propaga pra todo lugar, sem duplicar valores hex. */
+.base-apolar {
+	--chem-bg: var(--colorWarningBgVivid);
+	--chem-border: var(--colorWarningBorder);
+	--chem-text: var(--colorWarningText);
+}
+
+.base-polar {
+	--chem-bg: var(--colorInfoBg);
+	--chem-border: var(--colorInfo);
+	--chem-text: var(--colorInfoText);
+}
+
+.base-basic {
+	--chem-bg: var(--colorEmeraldBg);
+	--chem-border: var(--colorEmerald);
+	--chem-text: var(--colorEmeraldText);
+}
+
+.base-acid {
+	--chem-bg: var(--colorErrorBgVivid);
+	--chem-border: var(--colorErrorStrong);
+	--chem-text: var(--colorErrorText);
+}
+
+.codon-stop {
+	--chem-bg: var(--colorPurpleBg);
+	--chem-border: var(--colorPurple);
+	--chem-text: var(--colorPurpleText);
+}
+
+/* Legenda de cores — usada acima da tabela/roda de códons e no simulador,
+   sempre que cartões ou células coloridas por propriedade química aparecem
+   na tela, pra explicar o que cada cor significa. */
+.chem-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	padding: 10px 16px;
+	margin-bottom: 14px;
+	background: var(--slate50);
+	border: 1px solid var(--slate200);
+	border-radius: 8px;
+	font-size: 0.8rem;
+}
+
+.chem-legend-item {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	color: var(--chem-text, var(--slate700));
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.chem-legend-swatch {
+	width: 12px;
+	height: 12px;
+	min-width: 12px;
+	border-radius: 3px;
+	background: var(--chem-border, var(--slate400));
+	display: inline-block;
+}
+
+/* Selo de propriedade química (coluna "Propriedade" da tabela de referência) */
+.prop-badge {
+	display: inline-block;
+	padding: 3px 11px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	background: var(--chem-bg, var(--slate100));
+	color: var(--chem-text, var(--slate700));
+	border: 1px solid var(--chem-border, var(--slate300));
+}
+
+/* Selo de propriedade química no drawer de detalhes do aminoácido */
+.drawer-type-badge {
+	display: inline-block;
+	padding: 4px 13px;
+	border-radius: 999px;
+	font-weight: 700;
+	font-size: 0.85rem;
+	background: var(--chem-bg, var(--slate100));
+	color: var(--chem-text, var(--slate700));
+	border: 1px solid var(--chem-border, var(--slate300));
+}
+
 .first-base-cell {
 	font-weight: bold;
 	font-size: 1.5rem;
@@ -1248,6 +1343,240 @@
 	color: var(--slate600);
 	font-size: 0.9rem;
 	margin: 0 0 1rem 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Visualizador Dinâmico da Roda de Códons (Codon Wheel)
+   ═══════════════════════════════════════════════════════════════════════
+   Substitui a tabela em grade como visão PADRÃO da aba de referência de
+   códons (a tabela continua disponível via o alternador Roda/Tabela — ver
+   .codon-view-toggle). O SVG em si é 100% gerado por buildCodonWheel() em
+   script.js a partir de CODON_TABLE/AMINOACIDS_DB, então nunca diverge da
+   tabela ou da lógica de tradução. */
+.codon-view-toggle {
+	display: inline-flex;
+	gap: 4px;
+	padding: 4px;
+	background: var(--slate100);
+	border-radius: 999px;
+	margin-bottom: 1.25rem;
+}
+
+.codon-view-toggle-btn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 16px;
+	border: none;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--slate600);
+	font-family: var(--font-sans);
+	font-weight: 600;
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.codon-view-toggle-btn:hover {
+	color: var(--colorDetailsText);
+}
+
+.codon-view-toggle-btn.active {
+	background: var(--white);
+	color: var(--colorDetailsText);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.codon-wheel-layout {
+	display: flex;
+	gap: 2rem;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.codon-wheel-svg-wrapper {
+	width: 100%;
+	max-width: 520px;
+	margin: 0 auto;
+}
+
+.codon-wheel-svg {
+	width: 100%;
+	height: auto;
+	display: block;
+	overflow: visible;
+}
+
+.codon-wheel-side {
+	flex: 1 1 220px;
+	max-width: 280px;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.codon-wheel-reset-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	align-self: flex-start;
+	padding: 8px 14px;
+	border-radius: 999px;
+	border: 1px solid var(--slate300);
+	background: var(--white);
+	color: var(--slate600);
+	font-family: var(--font-sans);
+	font-weight: 600;
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.codon-wheel-reset-btn:hover {
+	background: var(--slate50);
+	border-color: var(--slate400);
+}
+
+.codon-wheel-instructions {
+	margin: 0;
+	padding-left: 1.1rem;
+	color: var(--slate600);
+	font-size: 0.85rem;
+	line-height: 1.7;
+}
+
+.codon-wheel-instructions strong {
+	color: var(--slate800);
+}
+
+/* ── Segmentos do SVG (comuns aos 3 anéis) ── */
+.codon-wheel-segment {
+	cursor: pointer;
+	transition: opacity 0.2s ease;
+}
+
+.codon-wheel-segment path {
+	stroke: var(--white);
+	stroke-width: 1.5;
+	transition: all 0.2s ease;
+}
+
+.codon-wheel-segment text {
+	pointer-events: none;
+	font-family: var(--font-sans);
+}
+
+.codon-wheel-segment.dimmed {
+	opacity: 0.22;
+}
+
+.codon-wheel-segment:hover path,
+.codon-wheel-segment:focus-visible path {
+	stroke: var(--colorDetails);
+	stroke-width: 2.5;
+}
+
+.codon-wheel-segment:focus-visible {
+	outline: none;
+}
+
+.codon-wheel-segment.wheel-selected path {
+	stroke: var(--colorDetails);
+	stroke-width: 2.5;
+}
+
+.codon-wheel-segment.wheel-completed path {
+	stroke: var(--colorDetails);
+	stroke-width: 3;
+	filter: drop-shadow(0 0 5px rgba(var(--colorDetailsRgb), 0.7));
+}
+
+/* Anéis 1 e 2 — coloridos pela identidade da base nitrogenada, mesma
+   paleta usada nos caracteres de DNA/RNA no simulador (--baseU/A/C/G). */
+.codon-wheel-ring1 text {
+	font-size: 22px;
+	font-weight: 800;
+	fill: var(--slate800);
+}
+
+.codon-wheel-ring2 text {
+	font-size: 14px;
+	font-weight: 700;
+	fill: var(--slate700);
+}
+
+.codon-wheel-nt-U path {
+	fill: var(--baseU);
+	fill-opacity: 0.16;
+}
+
+.codon-wheel-nt-C path {
+	fill: var(--baseC);
+	fill-opacity: 0.16;
+}
+
+.codon-wheel-nt-A path {
+	fill: var(--baseA);
+	fill-opacity: 0.16;
+}
+
+.codon-wheel-nt-G path {
+	fill: var(--baseG);
+	fill-opacity: 0.16;
+}
+
+.codon-wheel-ring1 path {
+	fill-opacity: 0.3;
+}
+
+/* Anel 3 — colorido pela taxonomia química (.base-apolar/.base-polar/
+   .base-basic/.base-acid/.codon-stop, definidas mais acima), a MESMA
+   paleta usada nos cartões de aminoácido e na tabela em grade. */
+.codon-wheel-ring3 path {
+	fill: var(--chem-bg, var(--slate100));
+	stroke: var(--chem-border, var(--white));
+	stroke-width: 1;
+}
+
+.codon-wheel-ring3-label {
+	font-size: 8px;
+	font-weight: 700;
+	fill: var(--chem-text, var(--slate700));
+}
+
+.codon-wheel-hub {
+	fill: var(--white);
+	stroke: var(--slate300);
+	stroke-width: 2;
+}
+
+.codon-wheel-hub-codon {
+	font-family: var(--font-mono);
+	font-size: 22px;
+	font-weight: 800;
+	fill: var(--slate800);
+	pointer-events: none;
+}
+
+.codon-wheel-hub-hint {
+	font-family: var(--font-sans);
+	font-size: 9px;
+	fill: var(--slate500);
+	pointer-events: none;
+}
+
+@media (max-width: 640px) {
+	.codon-wheel-ring3-label {
+		font-size: 6.5px;
+	}
+
+	.codon-wheel-side {
+		max-width: none;
+		align-items: center;
+		text-align: left;
+	}
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

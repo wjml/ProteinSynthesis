@@ -425,6 +425,18 @@
                     </div>
                 </div>
 
+                <div class="chem-legend" aria-label="Legenda de cores por propriedade físico-química">
+                    <span class="chem-legend-item base-apolar"><span class="chem-legend-swatch"></span>Apolar
+                        (hidrofóbico)</span>
+                    <span class="chem-legend-item base-polar"><span class="chem-legend-swatch"></span>Polar (não
+                        carregado)</span>
+                    <span class="chem-legend-item base-basic"><span class="chem-legend-swatch"></span>Básico (carga
+                        +)</span>
+                    <span class="chem-legend-item base-acid"><span class="chem-legend-swatch"></span>Ácido (carga
+                        −)</span>
+                    <span class="chem-legend-item codon-stop"><span class="chem-legend-swatch"></span>Códon de
+                        parada</span>
+                </div>
                 <div class="content-tabs" id="protein-reference-tabs">
                     <div class="content-tabs-nav" role="tablist" aria-label="Referências de proteínas">
                         <button type="button" class="content-tab-btn active" id="protein-tab-btn-amino"
@@ -433,7 +445,7 @@
                         </button>
                         <button type="button" class="content-tab-btn" id="protein-tab-btn-codon"
                             data-tab-target="protein-tab-panel-codon" role="tab" aria-selected="false">
-                            <i class="fas fa-table"></i> Tabela de Códons (RNAm)
+                            <i class="fas fa-dharmachakra"></i> Roda de Códons (RNAm)
                         </button>
                     </div>
                     <div class="content-tab-panel active" id="protein-tab-panel-amino" role="tabpanel">
@@ -452,154 +464,209 @@
                                         <td>Alanina</td>
                                         <td>ALA</td>
                                         <td>A</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Arginina</td>
                                         <td>ARG</td>
                                         <td>R</td>
-                                        <td>Básico</td>
+                                        <td><span class="prop-badge base-basic">Básico</span></td>
                                     </tr>
                                     <tr>
                                         <td>Asparagina</td>
                                         <td>ASN</td>
                                         <td>N</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Ácido Aspártico</td>
                                         <td>ASP</td>
                                         <td>D</td>
-                                        <td>Ácido</td>
+                                        <td><span class="prop-badge base-acid">Ácido</span></td>
                                     </tr>
                                     <tr>
                                         <td>Cisteína</td>
                                         <td>CYS</td>
                                         <td>C</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Glutamina</td>
                                         <td>GLN</td>
                                         <td>Q</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Ácido Glutâmico</td>
                                         <td>GLU</td>
                                         <td>E</td>
-                                        <td>Ácido</td>
+                                        <td><span class="prop-badge base-acid">Ácido</span></td>
                                     </tr>
                                     <tr>
                                         <td>Glicina</td>
                                         <td>GLY</td>
                                         <td>G</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Histidina</td>
                                         <td>HIS</td>
                                         <td>H</td>
-                                        <td>Básico</td>
+                                        <td><span class="prop-badge base-basic">Básico</span></td>
                                     </tr>
                                     <tr>
                                         <td>Isoleucina</td>
                                         <td>ILE</td>
                                         <td>I</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Leucina</td>
                                         <td>LEU</td>
                                         <td>L</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Lisina</td>
                                         <td>LYS</td>
                                         <td>K</td>
-                                        <td>Básico</td>
+                                        <td><span class="prop-badge base-basic">Básico</span></td>
                                     </tr>
                                     <tr>
                                         <td>Metionina</td>
                                         <td>MET</td>
                                         <td>M</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Fenilalanina</td>
                                         <td>PHE</td>
                                         <td>F</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Prolina</td>
                                         <td>PRO</td>
                                         <td>P</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Serina</td>
                                         <td>SER</td>
                                         <td>S</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Treonina</td>
                                         <td>THR</td>
                                         <td>T</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Triptofano</td>
                                         <td>TRP</td>
                                         <td>W</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Tirosina</td>
                                         <td>TYR</td>
                                         <td>Y</td>
-                                        <td>Polar</td>
+                                        <td><span class="prop-badge base-polar">Polar</span></td>
                                     </tr>
                                     <tr>
                                         <td>Valina</td>
                                         <td>VAL</td>
                                         <td>V</td>
-                                        <td>Apolar</td>
+                                        <td><span class="prop-badge base-apolar">Apolar</span></td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div class="content-tab-panel" id="protein-tab-panel-codon" role="tabpanel" hidden>
-                        <p class="tab-panel-note">Clique em qualquer códon para preencher automaticamente o
-                            simulador de Genética Molecular. As cores agrupam os aminoácidos por propriedades
-                            químicas.</p>
-                        <div class="codon-table-responsive">
-                            <table class="codon-matrix">
-                                <thead>
-                                    <tr>
-                                        <th>1ª Base</th>
-                                        <th>2ª Base: U</th>
-                                        <th>2ª Base: C</th>
-                                        <th>2ª Base: A</th>
-                                        <th>2ª Base: G</th>
-                                        <th>3ª Base</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="codon-matrix-body">
-                                    <!-- Gerado dinamicamente por buildCodonTable() em script.js,
-                                         a partir de CODON_TABLE e AMINOACIDS_DB — fonte única de verdade,
-                                         evitando que a tabela visual e a lógica de tradução divirjam. -->
-                                </tbody>
-                            </table>
+                        <p class="tab-panel-note">Toque na 1ª, depois na 2ª e na 3ª base do RNAm para descobrir o
+                            aminoácido correspondente — ou toque direto num códon do anel externo. As cores agrupam
+                            os aminoácidos por propriedades químicas.</p>
+                        <div class="codon-view-toggle" role="group" aria-label="Alternar entre roda e tabela de códons">
+                            <button type="button" class="codon-view-toggle-btn active" data-view-target="wheel"
+                                aria-pressed="true">
+                                <i class="fas fa-dharmachakra"></i> Roda
+                            </button>
+                            <button type="button" class="codon-view-toggle-btn" data-view-target="table"
+                                aria-pressed="false">
+                                <i class="fas fa-table"></i> Tabela
+                            </button>
+                        </div>
+                        <div id="codon-wheel-view">
+                            <div class="codon-wheel-layout">
+                                <div class="codon-wheel-svg-wrapper" id="codon-wheel-svg-wrapper"
+                                    aria-describedby="codon-wheel-status">
+                                    <!-- Gerado dinamicamente por buildCodonWheel() em script.js, a partir de
+                                         CODON_TABLE e AMINOACIDS_DB — mesma fonte de verdade da tabela abaixo. -->
+                                </div>
+                                <div class="codon-wheel-side">
+                                    <button type="button" class="codon-wheel-reset-btn" id="codon-wheel-reset-btn">
+                                        <i class="fas fa-rotate-left"></i> Limpar seleção
+                                    </button>
+                                    <ol class="codon-wheel-instructions">
+                                        <li><strong>Anel interno:</strong> escolha a 1ª base</li>
+                                        <li><strong>Anel do meio:</strong> escolha a 2ª base</li>
+                                        <li><strong>Anel externo:</strong> escolha a 3ª base — completa o códon e
+                                            insere no simulador</li>
+                                    </ol>
+                                    <p class="visually-hidden" id="codon-wheel-status" aria-live="polite"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="codon-table-view" hidden>
+                            <div class="codon-table-responsive">
+                                <table class="codon-matrix">
+                                    <thead>
+                                        <tr>
+                                            <th>1ª Base</th>
+                                            <th>2ª Base: U</th>
+                                            <th>2ª Base: C</th>
+                                            <th>2ª Base: A</th>
+                                            <th>2ª Base: G</th>
+                                            <th>3ª Base</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="codon-matrix-body">
+                                        <!-- Gerado dinamicamente por buildCodonTable() em script.js,
+                                             a partir de CODON_TABLE e AMINOACIDS_DB — fonte única de verdade,
+                                             evitando que a tabela visual e a lógica de tradução divirjam. -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="content app">
                 <div class="simulator-controls">
+                    <div class="dogma-stepper" role="navigation" aria-label="Etapas do Dogma Central da Biologia Molecular">
+                        <button type="button" class="dogma-step" id="dogma-step-replication" data-dogma-step="replication">
+                            <span class="dogma-step-number">1</span>
+                            <i class="fas fa-clone dogma-step-icon" aria-hidden="true"></i>
+                            <span class="dogma-step-label">Replicação</span>
+                            <span class="dogma-step-sub">DNA → DNA</span>
+                        </button>
+                        <span class="dogma-arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                        <button type="button" class="dogma-step" id="dogma-step-transcription" data-dogma-step="transcription">
+                            <span class="dogma-step-number">2</span>
+                            <i class="fas fa-copy dogma-step-icon" aria-hidden="true"></i>
+                            <span class="dogma-step-label">Transcrição</span>
+                            <span class="dogma-step-sub">DNA → RNAm</span>
+                        </button>
+                        <span class="dogma-arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                        <button type="button" class="dogma-step" id="dogma-step-translation" data-dogma-step="translation">
+                            <span class="dogma-step-number">3</span>
+                            <i class="fas fa-language dogma-step-icon" aria-hidden="true"></i>
+                            <span class="dogma-step-label">Tradução</span>
+                            <span class="dogma-step-sub">RNAm → Proteína</span>
+                        </button>
+                    </div>
                     <div class="counters">
                         <span class="counter-item">Códons: <strong id="codon-counter">0</strong></span>
                         <span class="counter-item">Aminoácidos: <strong id="aminoacid-counter">0</strong></span>
@@ -653,6 +720,9 @@
                 </div>
                 <div class="sequence" id="main-sequence-panel">
                     <div class="label">DNA
+                        <div class="process-box process-box-replication" id="replication-process-box" title="Clique em Replicação, no topo, para ver a fita de DNA sendo duplicada">
+                            <span>① REPLICAÇÃO</span>
+                        </div>
                         <button type="button" class="strand-toggle-btn" id="toggle-complementary-strand"
                             aria-pressed="false" title="Mostrar a outra fita da dupla-hélice, complementar à fita molde">
                             <i class="fas fa-eye"></i> Fita complementar
@@ -672,8 +742,13 @@
                         <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita complementar">3'</span>
                     </div>
                     <div class="label">RNAm
-                        <div class="process-box">
-                            <span>↓ TRANSCRIÇÃO </span>
+                        <div class="process-box process-box-transcription" id="transcription-process-box">
+                            <span>② ↓ TRANSCRIÇÃO</span>
+                            <button type="button" class="process-box-play-btn" id="btn-play-pairing"
+                                title="Ver animação de pareamento de bases DNA → RNAm"
+                                aria-label="Ver animação de pareamento de bases DNA → RNAm">
+                                <i class="fas fa-play"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -683,8 +758,8 @@
                         <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' do RNAm">3'</span>
                     </div>
                     <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)
-                        <div class="process-box">
-                            <span>↓ TRADUÇÃO </span>
+                        <div class="process-box process-box-translation" id="translation-process-box">
+                            <span>③ ↓ TRADUÇÃO</span>
                         </div>
                     </div>
                     <div class="strand-row">

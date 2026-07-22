@@ -495,8 +495,13 @@
   /** Cria e retorna um elemento de aminoácido completo com rótulos e event listeners. */
   function newAminoacid(aminoacid = { name: '', abbrevName: '' }) {
     const div = document.createElement('div');
+    // Codificação por cor química: cada cartão real (não os placeholders vazios)
+    // recebe a classe de categoria físico-química do aminoácido (base-apolar/
+    // base-polar/base-basic/base-acid), que estiliza a faixa colorida no topo
+    // do cartão — ver .aminoacid::before em app.css.
+    const categoryClass = aminoacid.abbrevName ? aminoacidCategoryClass(aminoacid.abbrevName) : '';
     div.className = aminoacid.name
-      ? 'aminoacid ' + aminoacid.name
+      ? 'aminoacid ' + aminoacid.name + (categoryClass ? ' ' + categoryClass : '')
       : 'aminoacid not-availlable';
 
     const abbrevEl = document.createElement('div');
@@ -536,15 +541,27 @@
 
   // ─── Tabela de códons (gerada dinamicamente) ─────────────────────────────────
 
-  /** Mapeia o tipo químico do aminoácido (AMINOACIDS_DB) para a classe CSS de cor da célula. */
-  function codonCellClass(abbrevName) {
-    if (abbrevName === 'STOP') return 'codon-stop';
+  /**
+   * Mapeia o tipo químico de um aminoácido (AMINOACIDS_DB) para a classe CSS
+   * de cor compartilhada por TODO o app: tabela de códons, roda de códons,
+   * cartões de aminoácido (newAminoacid()) e o selo do drawer de detalhes —
+   * uma única taxonomia visual (ver os blocos .base-apolar/.base-polar/
+   * .base-basic/.base-acid em pages.css) em vez de cada componente decidir
+   * suas próprias cores.
+   */
+  function aminoacidCategoryClass(abbrevName) {
     const data = AMINOACIDS_DB[abbrevName];
     const type = (data && data.type) || '';
     if (type.includes('Ácido'))  return 'base-acid';
     if (type.includes('Básico')) return 'base-basic';
     if (type.includes('Apolar')) return 'base-apolar';
     return 'base-polar';
+  }
+
+  /** Mapeia o tipo químico do aminoácido (AMINOACIDS_DB) para a classe CSS de cor da célula, incluindo STOP. */
+  function codonCellClass(abbrevName) {
+    if (abbrevName === 'STOP') return 'codon-stop';
+    return aminoacidCategoryClass(abbrevName);
   }
 
   /** Formata o nome abreviado do aminoácido para exibição (ex: 'PHE' → 'Phe'; 'STOP' permanece 'STOP'). */
@@ -631,6 +648,286 @@
     }
   }
 
+  /**
+   * Insere as 3 bases de DNA correspondentes a um códon de RNAm no simulador
+   * e força uma nova tradução — lógica compartilhada entre o clique na
+   * tabela de códons (activateCodonItem(), abaixo) e o clique num códon
+   * completo na Roda de Códons (handleWheelSegmentActivate()).
+   */
+  function insertCodonAndTranslate(codon) {
+    // Converte bases do mRNA para DNA molde: A→T, U→A, C→G, G→C
+    const dnaBases = codon.split('').map(b => RNA_BASE_TO_DNA[b] || b).join('');
+
+    const appBtn = document.getElementById('app');
+    if (appBtn) appBtn.click();
+
+    // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
+    // e dispara translate()/treatSequence() uma única vez ao final.
+    for (const base of dnaBases) insertBase(base, { skipRender: true });
+    translate();
+    treatSequence();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Visualizador Dinâmico da Roda de Códons (Codon Wheel)
+  // ═══════════════════════════════════════════════════════════════════════
+  // Substitui a tabela estática como visão PADRÃO da aba "Roda de Códons"
+  // (a tabela em grade continua disponível via o alternador Roda/Tabela, ver
+  // HTML). Um SVG de 3 anéis + miolo, gerado 100% a partir de CODON_TABLE/
+  // AMINOACIDS_DB (mesma fonte de verdade da tabela) — nunca hardcoded, então
+  // as duas visões nunca podem divergir. Interação: cada anel representa uma
+  // posição do tripleto (1ª/2ª/3ª base); o aminoácido correspondente vai
+  // sendo destacado progressivamente à medida que cada base é escolhida, e o
+  // 3º clique (ou um clique direto no anel externo) completa o códon, insere
+  // no simulador e abre o drawer de detalhes — mesma ação da tabela.
+
+  const codonWheelState = { first: null, second: null, third: null };
+
+  /** Converte coordenadas polares (ângulo em graus, 0° = topo, sentido horário) em cartesianas. */
+  function wheelPolarToCartesian(cx, cy, r, angleDeg) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+
+  /** Gera o "d" de um path SVG para um setor anular (anel parcial) entre dois raios e dois ângulos. */
+  function wheelSectorPath(cx, cy, rInner, rOuter, startAngle, endAngle) {
+    const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+    const p1 = wheelPolarToCartesian(cx, cy, rOuter, startAngle);
+    const p2 = wheelPolarToCartesian(cx, cy, rOuter, endAngle);
+    const p3 = wheelPolarToCartesian(cx, cy, rInner, endAngle);
+    const p4 = wheelPolarToCartesian(cx, cy, rInner, startAngle);
+    return [
+      `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
+      `A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
+      `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
+      `A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`,
+      'Z',
+    ].join(' ');
+  }
+
+  /** transform="translate(...) rotate(...)" para um rótulo radial que permanece sempre legível (nunca de cabeça pra baixo). */
+  function wheelLabelTransform(cx, cy, r, midAngle) {
+    const pos = wheelPolarToCartesian(cx, cy, r, midAngle);
+    const normalized = ((midAngle % 360) + 360) % 360;
+    const rotation = (normalized > 90 && normalized < 270) ? midAngle + 180 : midAngle;
+    return `translate(${pos.x.toFixed(2)} ${pos.y.toFixed(2)}) rotate(${rotation.toFixed(2)})`;
+  }
+
+  /** Constrói o SVG da roda de códons inteiro a partir de CODON_TABLE, uma única vez. */
+  function buildCodonWheel() {
+    const wrapper = document.getElementById('codon-wheel-svg-wrapper');
+    if (!wrapper) return;
+
+    const BASES = ['U', 'C', 'A', 'G'];
+    const cx = 300, cy = 300;
+    const r0 = 34, r1 = 108, r2 = 175, r3 = 235, r4 = 288;
+
+    let svg = '<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" ' +
+      'aria-label="Roda de códons interativa: escolha a 1ª, depois a 2ª e a 3ª base do RNAm ' +
+      'para descobrir o aminoácido correspondente" class="codon-wheel-svg">';
+
+    // Anel 1 — 1ª base (4 setores de 90°)
+    BASES.forEach((first, i) => {
+      const start = i * 90, end = start + 90, mid = start + 45;
+      const d  = wheelSectorPath(cx, cy, r0, r1, start, end);
+      const lp = wheelPolarToCartesian(cx, cy, (r0 + r1) / 2, mid);
+      svg += `<g class="codon-wheel-segment codon-wheel-ring1 codon-wheel-nt-${first}" ` +
+        `data-wheel-ring="1" data-first="${first}" tabindex="0" role="button" ` +
+        `aria-label="1ª base do códon: ${first}">` +
+        `<path d="${d}"/>` +
+        `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${first}</text>` +
+        `</g>`;
+    });
+
+    // Anel 2 — 2ª base (16 setores de 22.5°)
+    BASES.forEach((first, i) => {
+      BASES.forEach((second, j) => {
+        const start = i * 90 + j * 22.5, end = start + 22.5, mid = start + 11.25;
+        const d  = wheelSectorPath(cx, cy, r1, r2, start, end);
+        const lp = wheelPolarToCartesian(cx, cy, (r1 + r2) / 2, mid);
+        svg += `<g class="codon-wheel-segment codon-wheel-ring2 codon-wheel-nt-${second}" ` +
+          `data-wheel-ring="2" data-first="${first}" data-second="${second}" tabindex="0" role="button" ` +
+          `aria-label="2ª base do códon: ${second}, com 1ª base ${first}">` +
+          `<path d="${d}"/>` +
+          `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${second}</text>` +
+          `</g>`;
+      });
+    });
+
+    // Anel 3 — 3ª base + aminoácido (até 64 setores de 5.625°), colorido pela
+    // mesma taxonomia química da tabela/cartões (ver codonCellClass()).
+    BASES.forEach((first, i) => {
+      BASES.forEach((second, j) => {
+        BASES.forEach((third, k) => {
+          const codon     = first + second + third;
+          const aminoacid = CODON_TABLE[codon];
+          if (!aminoacid) return;
+
+          const start = i * 90 + j * 22.5 + k * 5.625, end = start + 5.625, mid = start + 2.8125;
+          const d = wheelSectorPath(cx, cy, r2, r3, start, end);
+          const labelTransform  = wheelLabelTransform(cx, cy, (r3 + r4) / 2, mid);
+          const categoryClass  = codonCellClass(aminoacid.abbrevName);
+          const label = aminoacid.abbrevName === 'STOP' ? '■' : aminoacid.abbrevName;
+
+          svg += `<g class="codon-wheel-segment codon-wheel-ring3 ${categoryClass}" ` +
+            `data-wheel-ring="3" data-codon="${codon}" data-abbrev="${aminoacid.abbrevName}" ` +
+            `tabindex="0" role="button" ` +
+            `aria-label="Códon ${codon}: ${aminoacid.name}. Clique para inserir no simulador.">` +
+            `<path d="${d}"/>` +
+            `<text transform="${labelTransform}" text-anchor="middle" dominant-baseline="middle" ` +
+            `class="codon-wheel-ring3-label">${label}</text>` +
+            `</g>`;
+        });
+      });
+    });
+
+    // Miolo central — mostra o tripleto sendo montado ("_ _ _" → "A U G") e o resultado
+    svg += `<circle cx="${cx}" cy="${cy}" r="${r0}" class="codon-wheel-hub"/>` +
+      `<text x="${cx}" y="${cy - 6}" text-anchor="middle" dominant-baseline="middle" ` +
+      `class="codon-wheel-hub-codon" id="codon-wheel-hub-codon">_ _ _</text>` +
+      `<text x="${cx}" y="${cy + 15}" text-anchor="middle" dominant-baseline="middle" ` +
+      `class="codon-wheel-hub-hint" id="codon-wheel-hub-hint">Toque numa base</text>`;
+
+    svg += '</svg>';
+    wrapper.innerHTML = svg;
+    renderCodonWheelState();
+  }
+
+  /** Aplica o estado atual (codonWheelState) como classes visuais (dimmed/wheel-selected/wheel-completed) e atualiza o miolo. */
+  function renderCodonWheelState() {
+    const wrapper = document.getElementById('codon-wheel-svg-wrapper');
+    if (!wrapper) return;
+    const { first, second, third } = codonWheelState;
+
+    wrapper.querySelectorAll('.codon-wheel-ring1').forEach((el) => {
+      const f = el.getAttribute('data-first');
+      el.classList.toggle('dimmed', !!first && f !== first);
+      el.classList.toggle('wheel-selected', !!first && f === first);
+    });
+
+    wrapper.querySelectorAll('.codon-wheel-ring2').forEach((el) => {
+      const f = el.getAttribute('data-first');
+      const s = el.getAttribute('data-second');
+      const matchesFirst = !first || f === first;
+      const isSelected = !!(first && second) && f === first && s === second;
+      el.classList.toggle('dimmed', !matchesFirst || (!!second && !isSelected));
+      el.classList.toggle('wheel-selected', isSelected);
+    });
+
+    wrapper.querySelectorAll('.codon-wheel-ring3').forEach((el) => {
+      const codon = el.getAttribute('data-codon');
+      const f = codon.charAt(0), s = codon.charAt(1), t = codon.charAt(2);
+      const matchesFirst  = !first  || f === first;
+      const matchesSecond = !second || s === second;
+      const isComplete = !!(first && second && third) && f === first && s === second && t === third;
+      el.classList.toggle('dimmed', !matchesFirst || !matchesSecond);
+      el.classList.toggle('wheel-completed', isComplete);
+    });
+
+    const hubCodon = document.getElementById('codon-wheel-hub-codon');
+    const hubHint  = document.getElementById('codon-wheel-hub-hint');
+    const status   = document.getElementById('codon-wheel-status');
+    if (hubCodon) hubCodon.textContent = `${first || '_'} ${second || '_'} ${third || '_'}`;
+
+    let hintText = 'Toque numa base';
+    if (first && second && third) {
+      const aminoacid = CODON_TABLE[first + second + third];
+      hintText = aminoacid ? aminoacid.name : '';
+    } else if (first && second) {
+      hintText = 'Escolha a 3ª base';
+    } else if (first) {
+      hintText = 'Escolha a 2ª base';
+    }
+    if (hubHint) hubHint.textContent = hintText;
+    if (status)  status.textContent = hintText;
+  }
+
+  /** Aplica a seleção de um segmento clicado/ativado ao estado da roda; um anel 3 completo insere o códon no simulador. */
+  function handleWheelSegmentActivate(el) {
+    const ring = el.getAttribute('data-wheel-ring');
+
+    if (ring === '1') {
+      codonWheelState.first  = el.getAttribute('data-first');
+      codonWheelState.second = null;
+      codonWheelState.third  = null;
+    } else if (ring === '2') {
+      codonWheelState.first  = el.getAttribute('data-first');
+      codonWheelState.second = el.getAttribute('data-second');
+      codonWheelState.third  = null;
+    } else if (ring === '3') {
+      const codon = el.getAttribute('data-codon');
+      codonWheelState.first  = codon.charAt(0);
+      codonWheelState.second = codon.charAt(1);
+      codonWheelState.third  = codon.charAt(2);
+    } else {
+      return;
+    }
+
+    renderCodonWheelState();
+
+    if (ring === '3') {
+      const codon  = el.getAttribute('data-codon');
+      const abbrev = el.getAttribute('data-abbrev');
+      openAminoacidDrawer(abbrev, true);
+      insertCodonAndTranslate(codon);
+    }
+  }
+
+  /** Limpa a seleção da roda de volta para "_ _ _". */
+  function resetCodonWheel() {
+    codonWheelState.first  = null;
+    codonWheelState.second = null;
+    codonWheelState.third  = null;
+    renderCodonWheelState();
+  }
+
+  /** Vincula os listeners delegados da roda (1 clique + 1 mouseover, em vez de um por segmento) e o alternador Roda/Tabela. */
+  function initCodonWheelInteractions() {
+    const wrapper = document.getElementById('codon-wheel-svg-wrapper');
+    if (wrapper) {
+      wrapper.addEventListener('click', (event) => {
+        const el = event.target.closest('[data-wheel-ring]');
+        if (el) handleWheelSegmentActivate(el);
+      });
+
+      wrapper.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const el = event.target.closest('[data-wheel-ring]');
+        if (!el) return;
+        event.preventDefault();
+        handleWheelSegmentActivate(el);
+      });
+
+      // Preview no drawer ao passar o mouse por um códon completo (anel 3), igual ao hover nos cartões de saída
+      wrapper.addEventListener('mouseover', (event) => {
+        const el = event.target.closest('.codon-wheel-ring3[data-abbrev]');
+        if (el) openAminoacidDrawer(el.getAttribute('data-abbrev'), false);
+      });
+    }
+
+    const resetBtn = document.getElementById('codon-wheel-reset-btn');
+    if (resetBtn) resetBtn.addEventListener('click', resetCodonWheel);
+
+    // Alternador "Roda" / "Tabela" dentro da mesma aba de referência
+    const viewToggleButtons = document.querySelectorAll('.codon-view-toggle-btn');
+    viewToggleButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        viewToggleButtons.forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+
+        const target     = btn.getAttribute('data-view-target');
+        const wheelView   = document.getElementById('codon-wheel-view');
+        const tableView   = document.getElementById('codon-table-view');
+        if (wheelView) wheelView.hidden = target !== 'wheel';
+        if (tableView) tableView.hidden = target !== 'table';
+      });
+    });
+  }
+
   // ─── Drawer de detalhes do aminoácido ────────────────────────────────────────
 
   /** Preenche e abre o drawer lateral com os dados do aminoácido. */
@@ -641,7 +938,14 @@
     drawer.title.textContent   = data.name;
     drawer.abbrevs.textContent = data.abbrevs;
     drawer.codons.textContent  = data.codons;
-    if (drawer.type) drawer.type.textContent = data.type || 'N/A';
+    if (drawer.type) {
+      drawer.type.textContent = data.type || 'N/A';
+      // Selo colorido pela mesma taxonomia química da tabela/roda de códons
+      // e dos cartões (ver aminoacidCategoryClass()) — codon de parada (STOP)
+      // usa a cor "codon-stop" em vez de uma categoria físico-química real.
+      const categoryClass = abbrev === 'STOP' ? 'codon-stop' : aminoacidCategoryClass(abbrev);
+      drawer.type.className = 'info-value drawer-type-badge ' + categoryClass;
+    }
     if (drawer.func) drawer.func.textContent = data.func;
     if (drawer.img)  drawer.img.style.backgroundImage = `url('assets/images/aminoacids/${abbrev}.png')`;
 
@@ -1017,6 +1321,48 @@
       i = j;
     }
   }
+  /**
+   * Animações de Síntese Proteica — pareamento de bases (leve, sem modal).
+   * Percorre a fita molde de DNA e o RNAm em sincronia, base a base, e pisca
+   * cada par correspondente (mesmo índice) em sequência — uma onda visual da
+   * esquerda pra direita que ilustra a transcrição acontecendo. Só adiciona/
+   * remove a classe .pairing-flash (CSS puro, ver @keyframes pairingFlash em
+   * app.css); não recalcula nem altera nenhum estado real de tradução, então
+   * pode ser chamada a qualquer momento sem risco de desincronizar a UI.
+   * Disparada pelo passo "Transcrição" do .dogma-stepper e pelo botão ▶
+   * dentro do rótulo RNAm (#btn-play-pairing).
+   */
+  let pairingAnimationTimers = [];
+  function animateBasePairing() {
+    pairingAnimationTimers.forEach(clearTimeout);
+    pairingAnimationTimers = [];
+
+    const total = Math.min(dnaSequenceChars.length, rnaSequenceChars.length);
+    if (total === 0) return;
+
+    const STEP_MS  = 65;
+    const FLASH_MS = 550;
+
+    for (let i = 0; i < total; i++) {
+      const dnaChar = dnaSequenceChars[i];
+      const rnaChar = rnaSequenceChars[i];
+      pairingAnimationTimers.push(setTimeout(() => {
+        [dnaChar, rnaChar].forEach((el) => {
+          if (!el) return;
+          // Reinicia a animação mesmo se .pairing-flash já estiver presente
+          // (ex.: cliques repetidos no botão ▶ antes da onda terminar).
+          el.classList.remove('pairing-flash');
+          void el.offsetWidth; // força reflow pra reiniciar a keyframe animation
+          el.classList.add('pairing-flash');
+        });
+        pairingAnimationTimers.push(setTimeout(() => {
+          if (dnaChar) dnaChar.classList.remove('pairing-flash');
+          if (rnaChar) rnaChar.classList.remove('pairing-flash');
+        }, FLASH_MS));
+      }, i * STEP_MS));
+    }
+  }
+
   /**
    * Traduz a sequência de RNA de uma fita específica em aminoácidos e renderiza no container dado.
    * Generaliza a lógica usada tanto pela fita ativa (live) quanto pela fita de comparação (baseline),
@@ -6222,6 +6568,10 @@
     // Gera a tabela de 64 códons a partir de CODON_TABLE antes de vincular os cliques nela
     buildCodonTable();
 
+    // Roda de Códons interativa (mesma fonte de dados da tabela acima)
+    buildCodonWheel();
+    initCodonWheelInteractions();
+
     // Inicializa o Modo Desafio (Quiz)
     initQuizUI();
 
@@ -6282,6 +6632,34 @@
     if (btnOpenMendel) btnOpenMendel.addEventListener('click', openMendelModal);
     if (btnOpenEpistasis) btnOpenEpistasis.addEventListener('click', openEpistasisModal);
     if (btnOpenAbo)       btnOpenAbo.addEventListener('click', openAboModal);
+
+    // Hierarquia Visual do Dogma Central — .dogma-stepper (topo da barra de
+    // ferramentas) navega direto pra ação de cada módulo: Replicação abre o
+    // modal de replicação, Transcrição toca a animação leve de pareamento de
+    // bases e rola até o RNAm, Tradução abre o modal do ribossomo. O botão ▶
+    // dentro do próprio rótulo RNAm dispara a mesma animação de pareamento.
+    const dogmaStepReplication   = document.getElementById('dogma-step-replication');
+    const dogmaStepTranscription = document.getElementById('dogma-step-transcription');
+    const dogmaStepTranslation   = document.getElementById('dogma-step-translation');
+    const btnPlayPairing         = document.getElementById('btn-play-pairing');
+    const transcriptionProcessBox = document.getElementById('transcription-process-box');
+
+    if (dogmaStepReplication) dogmaStepReplication.addEventListener('click', openReplicationModal);
+    if (dogmaStepTranslation) dogmaStepTranslation.addEventListener('click', openRibosomeModal);
+    if (dogmaStepTranscription) {
+      dogmaStepTranscription.addEventListener('click', () => {
+        if (transcriptionProcessBox && transcriptionProcessBox.scrollIntoView) {
+          transcriptionProcessBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        animateBasePairing();
+      });
+    }
+    if (btnPlayPairing) {
+      btnPlayPairing.addEventListener('click', (event) => {
+        event.stopPropagation();
+        animateBasePairing();
+      });
+    }
 
     const btnExerciseGenerator = document.getElementById('btn-exercise-generator');
     if (btnExerciseGenerator) btnExerciseGenerator.addEventListener('click', openExerciseGeneratorModal);
@@ -6584,22 +6962,11 @@
     }
 
     // Tabela de códons — clique (ou Enter/Espaço, via teclado) insere as bases de DNA correspondentes no simulador
+    // (insertCodonAndTranslate() é compartilhada com a Roda de Códons — ver definição perto de buildCodonTable()).
     function activateCodonItem() {
       const codon = this.getAttribute('data-codon');
       if (!codon) return;
-
-      // Converte bases do mRNA para DNA molde: A→T, U→A, C→G, G→C
-      const dnaBases = codon.split('').map(b => RNA_BASE_TO_DNA[b] || b).join('');
-
-      const appBtn = document.getElementById('app');
-      if (appBtn) appBtn.click();
-
-      // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
-      // e dispara translate()/treatSequence() uma única vez ao final — antes eram
-      // 3 ciclos completos de tradução + análise de mutação por clique em um códon.
-      for (const base of dnaBases) insertBase(base, { skipRender: true });
-      translate();
-      treatSequence();
+      insertCodonAndTranslate(codon);
     }
 
     document.querySelectorAll('.codon-item').forEach(function (item) {

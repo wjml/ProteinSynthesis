@@ -93,6 +93,54 @@
     color: var(--colorWarningText);
 }
 
+/* Hierarquia visual do Dogma Central — cada rótulo inline (DNA/RNAm/Proteína)
+   ganha a cor do módulo correspondente do .dogma-stepper logo abaixo, então
+   a mesma linguagem de cor aparece nos dois lugares (nav rápida no topo +
+   rótulo junto ao dado de verdade). */
+.process-box-replication {
+    background-color: var(--colorSkyBg);
+    color: var(--colorSkyText);
+}
+
+.process-box-transcription {
+    flex-direction: row;
+    gap: 6px;
+    background-color: var(--colorPurpleBg);
+    color: var(--colorPurpleText);
+}
+
+.process-box-translation {
+    background-color: var(--colorWarningBgVivid);
+    color: var(--colorWarningText);
+}
+
+/* Botãozinho ▶ dentro do rótulo RNAm — dispara a animação leve de
+   pareamento de bases (ver animateBasePairing() em script.js) sem precisar
+   abrir um modal; mesma ação do passo "Transcrição" no .dogma-stepper. */
+.process-box-play-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    border: none;
+    background: var(--colorPurple);
+    color: var(--white);
+    font-size: 0.6rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s ease;
+}
+
+.process-box-play-btn:hover,
+.process-box-play-btn:focus-visible {
+    transform: scale(1.2);
+    outline: none;
+}
+
 /* Sequence Nucleotide Character Inputs
    ─────────────────────────────────────────────────────────────────────
    AUDITORIA !important (removidos daqui até .mutated abaixo, e replicados
@@ -172,6 +220,38 @@
     border-color: var(--colorError);
     background-color: var(--colorErrorBg);
     color: var(--colorError);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Animações de Síntese Proteica — pareamento de bases (leve, só CSS)
+   ═══════════════════════════════════════════════════════════════════════
+   .pairing-flash é adicionada e removida por animateBasePairing() em
+   script.js, base a base, formando uma onda da esquerda pra direita sobre a
+   fita de DNA e o RNAm em sincronia — ilustra a transcrição sem precisar de
+   um modal dedicado. Puramente uma classe temporária + keyframes; não altera
+   nenhum estado real de tradução. */
+@keyframes pairingFlash {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--colorDetailsRgb), 0.6);
+        transform: scale(1);
+    }
+
+    40% {
+        box-shadow: 0 0 0 4px rgba(var(--colorDetailsRgb), 0.35);
+        transform: scale(1.15);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--colorDetailsRgb), 0);
+        transform: scale(1);
+    }
+}
+
+.sequence .sequenceChar.pairing-flash {
+    position: relative;
+    z-index: 2;
+    border-color: var(--colorDetails);
+    animation: pairingFlash 0.55s ease;
 }
 
 .sequence.to-mutate,
@@ -503,6 +583,7 @@ body.show-complementary-strand .complementary-strand-row {
 
 /* Aminoacid Molecule Cards */
 .aminoacid {
+    position: relative;
     width: 120px;
     min-width: 120px;
     max-width: 120px;
@@ -510,14 +591,37 @@ body.show-complementary-strand .complementary-strand-row {
     background: var(--white);
     border: 1px solid var(--slate200);
     border-radius: 8px;
+    overflow: hidden;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 6px;
+    padding: 10px 6px 6px;
     box-sizing: border-box;
+}
+
+/* Codificação por cor química/biotecnológica: faixa no topo do cartão que
+   identifica a categoria físico-química do aminoácido (apolar/hidrofóbico,
+   polar não carregado, básico/carga+, ácido/carga-) — mesma paleta usada na
+   tabela e na roda de códons (ver .base-apolar/.base-polar/.base-basic/
+   .base-acid em pages.css). Fica em uma pseudo-camada própria (::before), por
+   cima da borda normal do cartão, então não compete com o estado ".mutated"
+   (borda vermelha sólida) nem com ".not-availlable" (borda tracejada) — os
+   dois sinais continuam legíveis ao mesmo tempo. */
+.aminoacid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--chem-border, var(--slate300));
+}
+
+.aminoacid.not-availlable::before {
+    display: none;
 }
 
 .aminoacid:hover {
@@ -686,6 +790,133 @@ body.show-complementary-strand .complementary-strand-row {
     color: var(--slate600);
     font-size: 0.9rem;
     line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Hierarquia Visual do Dogma Central — Replicação → Transcrição → Tradução
+   ═══════════════════════════════════════════════════════════════════════
+   Nav rápida com os 3 módulos sequenciais do fluxo gênico, sempre visível no
+   topo da barra de ferramentas do simulador. Cada botão dispara a ação que já
+   existe pra aquele módulo (abrir o modal de replicação, tocar a animação de
+   pareamento de bases, abrir o modal do ribossomo) — ver wiring em script.js.
+   As cores de cada passo espelham as usadas nos rótulos inline DNA/RNAm/
+   Proteína (.process-box-replication/-transcription/-translation acima),
+   reforçando visualmente que é o MESMO módulo em dois lugares da tela. */
+.dogma-stepper {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: 100%;
+    flex: 1 1 100%;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px dashed var(--slate200);
+}
+
+.dogma-step {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 6px;
+    border: 1px solid var(--slate200);
+    border-radius: 10px;
+    background: var(--slate50);
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.dogma-step:hover,
+.dogma-step:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    outline: none;
+}
+
+.dogma-step-number {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    background: var(--slate400);
+    color: var(--white);
+    font-size: 0.65rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dogma-step-icon {
+    font-size: 0.95rem;
+    color: var(--slate500);
+    margin-top: 1px;
+}
+
+.dogma-step-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--slate700);
+}
+
+.dogma-step-sub {
+    font-size: 0.62rem;
+    color: var(--slate500);
+    font-family: var(--font-mono);
+}
+
+.dogma-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--slate300);
+    font-size: 0.8rem;
+}
+
+.dogma-step[data-dogma-step="replication"]:hover,
+.dogma-step[data-dogma-step="replication"]:focus-visible {
+    border-color: var(--colorSky);
+    background: var(--colorSkyBg);
+}
+
+.dogma-step[data-dogma-step="replication"] .dogma-step-number {
+    background: var(--colorSky);
+}
+
+.dogma-step[data-dogma-step="replication"] .dogma-step-icon {
+    color: var(--colorSkyText);
+}
+
+.dogma-step[data-dogma-step="transcription"]:hover,
+.dogma-step[data-dogma-step="transcription"]:focus-visible {
+    border-color: var(--colorPurple);
+    background: var(--colorPurpleBg);
+}
+
+.dogma-step[data-dogma-step="transcription"] .dogma-step-number {
+    background: var(--colorPurple);
+}
+
+.dogma-step[data-dogma-step="transcription"] .dogma-step-icon {
+    color: var(--colorPurpleText);
+}
+
+.dogma-step[data-dogma-step="translation"]:hover,
+.dogma-step[data-dogma-step="translation"]:focus-visible {
+    border-color: var(--colorWarningBorder);
+    background: var(--colorWarningBgVivid);
+}
+
+.dogma-step[data-dogma-step="translation"] .dogma-step-number {
+    background: var(--colorWarningBorder);
+}
+
+.dogma-step[data-dogma-step="translation"] .dogma-step-icon {
+    color: var(--colorWarningText);
 }
 
 /* Simulator Controls Styling */
@@ -1509,8 +1740,12 @@ button.quiz-option.quiz-option-text {
     height: 80px;
     background: var(--colorCodeBgLight);
     border-color: rgba(255, 255, 255, 0.1);
-    padding: 4px;
+    padding: 7px 4px 4px;
     animation: riboChainPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ribo-chain .aminoacid::before {
+    height: 3px;
 }
 
 .ribo-chain .aminoacid:hover {
@@ -2820,6 +3055,18 @@ body.dark-theme .lab-export-btn {
         align-items: stretch;
         gap: 0.75rem;
         padding: 0.75rem 1rem;
+    }
+
+    .dogma-step-sub {
+        display: none;
+    }
+
+    .dogma-step {
+        padding: 6px 2px;
+    }
+
+    .dogma-step-label {
+        font-size: 0.68rem;
     }
 
     .counters {
