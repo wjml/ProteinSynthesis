@@ -139,6 +139,7 @@
 
 /* Info Cards */
 .info-card {
+	text-align: justify;
 	background: var(--white);
 	border-radius: 12px;
 	padding: 1.5rem;
@@ -1765,6 +1766,7 @@ details.version-card ul {
 	}
 
 	.info-card {
+		text-align: justify;
 		break-inside: avoid;
 		box-shadow: none;
 		border: 1px solid #ccc;

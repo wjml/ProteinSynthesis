@@ -155,7 +155,7 @@
             ════════════════════════════════════════════════════════════════════════ -->
             <div class="content splash active">
                 <div class="splash-hero">
-                    <img src="assets/images/Logo.svg" alt="" class="splash-logo">
+                    <!--<img src="assets/images/Logo.svg" alt="" class="splash-logo">-->
                     <h2>Protein Synthesis</h2>
                     <p class="splash-tagline">Um simulador interativo para aprender genética explorando, não só
                         lendo — do DNA à proteína, de Mendel às famílias, das populações aos cromossomos.</p>
@@ -305,22 +305,22 @@
                             específico na fabricação de proteínas — o simulador de ribossomo, mais adiante, mostra os
                             três atuando juntos:</p>
                         <ul class="base-list">
-                            <li><strong>RNAm (mensageiro):</strong> copia a informação do DNA e a leva até o
-                                ribossomo.</li>
-                            <li><strong>RNAt (transportador):</strong> reconhece um trecho do RNAm pelo seu
-                                <strong>anticódon</strong> e entrega o aminoácido correspondente.
+                            <li><span><strong>RNAm (mensageiro):</strong> copia a informação do DNA e a leva até o
+                                ribossomo.</span></li>
+                            <li><span><strong>RNAt (transportador):</strong> reconhece um trecho do RNAm pelo seu
+                                <strong>anticódon</strong> e entrega o aminoácido correspondente.</span>
                             </li>
-                            <li><strong>RNAr (ribossômico):</strong> compõe, junto com proteínas, a estrutura do
-                                próprio ribossomo — a "máquina" onde a tradução acontece.</li>
+                            <li><span><strong>RNAr (ribossômico):</strong> compõe, junto com proteínas, a estrutura do
+                                próprio ribossomo — a "máquina" onde a tradução acontece.</span></li>
                         </ul>
                     </div>
                     <div class="info-card">
                         <h3><i class="fas fa-exchange-alt"></i> Diferenças Chave</h3>
                         <p>Diferente do DNA, o RNA:</p>
                         <ul class="base-list">
-                            <li>É composto por uma <strong>fita simples</strong>.</li>
-                            <li>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</li>
-                            <li>Substitui a Timina (T) pela <span class="base-badge base-u">U</span>
+                            <li><span>É composto por uma <strong>fita simples</strong>.</span></li>
+                            <li><span>Possui o açúcar <strong>ribose</strong> em vez de desoxirribose.</span></li>
+                            <li><span>Substitui a <span class="base-badge base-t">T</span> Timina pela <span class="base-badge base-u">U</span>
                                 <strong>Uracila</strong>.
                             </li>
                         </ul>
@@ -400,10 +400,10 @@
                             cada vez mais complexas até virar uma proteína funcional:
                         </p>
                         <ul class="base-list">
-                            <li><strong>Primária:</strong> a ordem dos aminoácidos, definida pelo RNAm.</li>
-                            <li><strong>Secundária:</strong> dobras locais (α-hélices e folhas-β).</li>
-                            <li><strong>Terciária:</strong> o dobramento 3D completo de uma cadeia.</li>
-                            <li><strong>Quaternária:</strong> a união de duas ou mais cadeias, como na hemoglobina.</li>
+                            <li><span><strong>Primária:</strong> a ordem dos aminoácidos, definida pelo RNAm.</span></li>
+                            <li><span><strong>Secundária:</strong> dobras locais (α-hélices e folhas-β).</span></li>
+                            <li><span><strong>Terciária:</strong> o dobramento 3D completo de uma cadeia.</span></li>
+                            <li><span><strong>Quaternária:</strong> a união de duas ou mais cadeias, como na hemoglobina.</span></li>
                         </ul>
                     </div>
                     <div class="info-card">
@@ -652,21 +652,21 @@
                     <div class="dogma-stepper" role="navigation" aria-label="Etapas do Dogma Central da Biologia Molecular">
                         <button type="button" class="dogma-step" id="dogma-step-replication" data-dogma-step="replication">
                             <span class="dogma-step-number">1</span>
-                            <i class="fas fa-clone dogma-step-icon" aria-hidden="true"></i>
+                            <!--<i class="fas fa-clone dogma-step-icon" aria-hidden="true"></i>-->
                             <span class="dogma-step-label">Replicação</span>
                             <span class="dogma-step-sub">DNA → DNA</span>
                         </button>
                         <span class="dogma-arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
                         <button type="button" class="dogma-step" id="dogma-step-transcription" data-dogma-step="transcription">
                             <span class="dogma-step-number">2</span>
-                            <i class="fas fa-copy dogma-step-icon" aria-hidden="true"></i>
+                            <!--<i class="fas fa-copy dogma-step-icon" aria-hidden="true"></i>-->
                             <span class="dogma-step-label">Transcrição</span>
                             <span class="dogma-step-sub">DNA → RNAm</span>
                         </button>
                         <span class="dogma-arrow" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
                         <button type="button" class="dogma-step" id="dogma-step-translation" data-dogma-step="translation">
                             <span class="dogma-step-number">3</span>
-                            <i class="fas fa-language dogma-step-icon" aria-hidden="true"></i>
+                            <!-- <i class="fas fa-language dogma-step-icon" aria-hidden="true"></i> -->
                             <span class="dogma-step-label">Tradução</span>
                             <span class="dogma-step-sub">RNAm → Proteína</span>
                         </button>
@@ -1912,9 +1912,9 @@
                 </button>
                 <label class="ribo-speed-label" for="ribo-speed">Velocidade</label>
                 <select id="ribo-speed" class="ribo-speed-select">
-                    <option value="1700">Lenta</option>
-                    <option value="950" selected>Normal</option>
-                    <option value="500">Rápida</option>
+                    <option value="1900">Lenta</option>
+                    <option value="1050" selected>Normal</option>
+                    <option value="700">Rápida</option>
                 </select>
             </div>
         </div>
@@ -2261,9 +2261,9 @@
                 </button>
                 <label class="ribo-speed-label" for="repl-speed">Velocidade</label>
                 <select id="repl-speed" class="ribo-speed-select">
-                    <option value="500">Lenta</option>
-                    <option value="250" selected>Normal</option>
-                    <option value="120">Rápida</option>
+                    <option value="700">Lenta</option>
+                    <option value="450" selected>Normal</option>
+                    <option value="320">Rápida</option>
                 </select>
             </div>
         </div>
