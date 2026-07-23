@@ -28,7 +28,7 @@
     padding: 0;
     opacity: 0;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.1);
     border: none;
 }
 
@@ -285,6 +285,7 @@
     flex-wrap: nowrap;
     align-items: center;
     border: 1px solid var(--slate200);
+    background: var(--slate50);
     border-radius: 8px;
     overflow-x: auto;
     padding: 6px;
@@ -383,7 +384,6 @@
 
 /* ── Botão "Fita complementar" (label do DNA) ────────────────────────────── */
 .strand-toggle-btn {
-    margin-left: auto;
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -930,8 +930,8 @@ body.show-complementary-strand .complementary-strand-row {
 .simulator-controls {
     zoom:0.8;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     width: 100%;
     margin: 0.5rem auto 1.5rem auto;
     background: var(--white);
@@ -939,8 +939,6 @@ body.show-complementary-strand .complementary-strand-row {
     border-radius: 12px;
     border: 1px solid var(--slate200);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    flex-wrap: wrap;
-    gap: 1rem;
     box-sizing: border-box;
 }
 
@@ -948,9 +946,32 @@ body.show-complementary-strand .complementary-strand-row {
     width: 100%;
 }
 
+/* Cada "linha" agrupa controles logicamente relacionados (estatísticas +
+   ações gerais numa linha, ferramentas de edição de base + mutação na
+   outra), sempre alinhados verticalmente ao centro e distribuídos nas
+   pontas — o mesmo padrão em ambas as linhas, para consistência visual. */
+.simulator-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+}
+
+/* Separador sutil entre o bloco de estatísticas/ações e o bloco de edição —
+   substitui o espaçamento ambíguo que antes deixava os dois blocos
+   parecendo uma lista solta de controles sem hierarquia. */
+.simulator-controls-divider {
+    height: 1px;
+    margin: 0.9rem 0;
+    background: var(--slate200);
+    border: none;
+}
+
 .counters {
     display: flex;
     gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .counter-item {
@@ -1064,11 +1085,17 @@ body.show-complementary-strand .complementary-strand-row {
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-top: 10px;
 }
 
 .control-row .lab-toggle-group {
     max-width: 460px;
+}
+
+.lab-toggle-group-single .lab-toggle-btn {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px 16px;
 }
 
 .button-label {
@@ -3061,7 +3088,7 @@ body.dark-theme .lab-export-btn {
     }
 
     .simulator-controls {
-        flex-direction: row;
+        flex-direction: column;
         align-items: stretch;
         gap: 0.6rem;
     }
@@ -3078,12 +3105,18 @@ body.dark-theme .lab-export-btn {
         font-size: 0.68rem;
     }
 
+    .simulator-controls-row {
+        justify-content: center;
+    }
+
     .counters {
         justify-content: space-around;
+        width: 100%;
     }
 
     .action-buttons {
         justify-content: center;
+        width: 100%;
     }
 
     .quiz-options {

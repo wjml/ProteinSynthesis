@@ -23,6 +23,23 @@
   const DNA_AUTOSAVE_KEY = 'proteinSynthesis.dnaAutosave';
 
   /**
+   * Chave de localStorage onde guardamos o timestamp (Date.now()) do último
+   * autosave — usada por restoreSequenceAutosave() pra saber se o autosave
+   * ainda está "fresco" o suficiente pra valer a pena restaurar. Ver
+   * DNA_AUTOSAVE_MAX_AGE_MS logo abaixo.
+   */
+  const DNA_AUTOSAVE_TIMESTAMP_KEY = 'proteinSynthesis.dnaAutosaveTimestamp';
+
+  /**
+   * Tempo máximo (30 minutos) que um autosave é considerado válido pra
+   * restauração automática. Depois disso o simulador simplesmente inicia em
+   * branco, sem restaurar e sem avisar — o autosave existe só pra evitar
+   * perda acidental de trabalho recente, não pra virar um "salvar sessão"
+   * permanente.
+   */
+  const DNA_AUTOSAVE_MAX_AGE_MS = 30 * 60 * 1000;
+
+  /**
    * Chave de localStorage pra lembrar se a pessoa deixou a fita complementar
    * ligada — mesmo padrão do tema escuro (THEME_STORAGE_KEY em dom.js):
    * preferência de exibição, persiste entre sessões. Ver o listener de
@@ -122,11 +139,8 @@
     UGA: { name: 'stop',            abbrevName: 'STOP' },
   };
 
-  /** Mensagens de alerta por modo de mutação. */
+  /** Mensagem de alerta para teclas não permitidas na edição da sequência. */
   const MUTATION_ALERTS = {
-    add:     'A mutação de adição somente permite inserção das letras que representam bases nitrogenadas do DNA: A, T, C e G.',
-    delete:  'A mutação de deleção somente permite deletar bases nitrogenadas.\nUtilize a tecla Backspace ou a tecla Del!',
-    replace: 'A mutação de substituição somente permite inserção das letras que representam bases nitrogenadas do DNA: A, T, C e G.',
     default: 'O sistema somente permite inserção das letras que representam bases nitrogenadas do DNA: A, T, C e G.',
   };
 
@@ -171,9 +185,7 @@
     document.getElementById('textbox-dna-complement-0'),
     document.getElementById('textbox-dna-complement-1'),
   ];
-  const addButton        = document.getElementById('add');
-  const deleteButton     = document.getElementById('delete');
-  const replaceButton    = document.getElementById('replace');
+  const mutationButton   = document.getElementById('mutation-toggle');
   // BUGFIX: era global implícita no original (ponto-e-vírgula separava do bloco var anterior)
   const mutationWindow   = document.getElementsByClassName('sequence to-mutate');
 
@@ -1095,32 +1107,18 @@
       textboxRna[0].insertBefore(newRna, rnaEl);
       newDna.focus();
 
-      // Remove o input atual se vazio ou em modo substituição
-      if (this.value === '' || replaceButton.classList.contains('active')) {
+      // Remove o input atual se estava vazio (placeholder do início da sequência)
+      if (this.value === '') {
         textboxDna[0].removeChild(this);
         textboxRna[0].removeChild(rnaEl);
       }
     } else {
       // Inserir após a posição atual
-      if (replaceButton.classList.contains('active')) {
-        const nextDna = this.nextElementSibling;
-        const nextRna = rnaEl ? rnaEl.nextElementSibling : null;
-        if (nextDna && nextDna.value !== '') {
-          textboxDna[0].removeChild(nextDna);
-          if (nextRna) textboxRna[0].removeChild(nextRna);
-          const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
-          const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
-          textboxDna[0].insertBefore(newDna, this.nextElementSibling);
-          textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-          newDna.focus();
-        }
-      } else {
-        const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
-        const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
-        textboxDna[0].insertBefore(newDna, this.nextElementSibling);
-        textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-        newDna.focus();
-      }
+      const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
+      const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
+      textboxDna[0].insertBefore(newDna, this.nextElementSibling);
+      textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
+      newDna.focus();
     }
 
     translate();
@@ -1131,26 +1129,18 @@
   function actsLikeUniqueInput(event) {
     const rnaEl = getRnaEquivalent(this);
 
-    // Determina teclas permitidas e mensagem de alerta conforme o modo ativo
-    let allowedKeys;
-    let alertMsg;
-
-    if (addButton.classList.contains('active')) {
-      allowedKeys = new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'ARROWLEFT', 'ARROWRIGHT']);
-      alertMsg = MUTATION_ALERTS.add;
-    } else if (deleteButton.classList.contains('active')) {
-      allowedKeys = new Set(['CAPSLOCK', 'BACKSPACE', 'DELETE', 'ARROWLEFT', 'ARROWRIGHT']);
-      alertMsg = MUTATION_ALERTS.delete;
-    } else if (replaceButton.classList.contains('active')) {
-      allowedKeys = new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'ARROWLEFT', 'ARROWRIGHT']);
-      alertMsg = MUTATION_ALERTS.replace;
-    } else {
-      allowedKeys = new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'BACKSPACE', 'DELETE']);
-      alertMsg = MUTATION_ALERTS.default;
-    }
+    // Modo "Mutação" ativo: edição totalmente livre da fita mutada — inserir
+    // e remover bases em qualquer combinação, com navegação por seta (união
+    // do que os antigos modos Adição/Deleção/Substituição permitiam). Fora
+    // do modo mutação (construindo a sequência original): mesmo
+    // comportamento de sempre, sem navegação por seta.
+    const isMutating = mutationButton.classList.contains('active');
+    const allowedKeys = isMutating
+      ? new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'BACKSPACE', 'DELETE', 'ARROWLEFT', 'ARROWRIGHT'])
+      : new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'BACKSPACE', 'DELETE']);
 
     if (!allowedKeys.has(event.key.toUpperCase())) {
-      showAlert('Inserção não permitida!', alertMsg);
+      showAlert('Inserção não permitida!', MUTATION_ALERTS.default);
       event.preventDefault();
       return;
     }
@@ -1769,6 +1759,100 @@
   // ─── Análise de mutação ───────────────────────────────────────────────────────
 
   /**
+   * Alinha duas sequências (arrays de itens comparáveis) usando alinhamento
+   * com penalidade de gap afim (algoritmo de Gotoh) — a mesma técnica usada
+   * em bioinformática pra alinhar sequências com inserções/deleções.
+   *
+   * Comparar posição-a-posição (`origSeq[i] === mutSeq[i]`) quebra assim que
+   * uma base é inserida ou removida: tudo que vem depois passa a ocupar um
+   * índice diferente, então bases idênticas acabam marcadas como "diferentes"
+   * só por terem se deslocado. Este alinhamento resolve isso identificando
+   * corretamente:
+   *   - itens que continuam idênticos, mesmo deslocados de posição;
+   *   - itens realmente alterados (substituição, no mesmo "lugar" da fita);
+   *   - itens inseridos, sem correspondente na sequência original.
+   *
+   * A penalidade de abrir um gap (GAP_OPEN) é maior que a de estendê-lo
+   * (GAP_EXTEND), então o algoritmo prefere UM bloco contíguo de
+   * inserção/deleção a vários blocos espalhados — importante pra
+   * representar o evento biológico real (ex: a inserção de 4 bases na
+   * Doença de Tay-Sachs) como um único evento, e não uma sequência de
+   * trocas soltas de base.
+   *
+   * @param {Array} origItems - itens da sequência original.
+   * @param {Array} mutItems  - itens da sequência mutada.
+   * @param {function} [equalsFn] - compara dois itens (padrão: ===).
+   * @returns {Array<'match'|'sub'|'ins'>} um resultado por item de mutItems —
+   *   itens de origItems que foram deletados não geram saída (não há
+   *   posição correspondente do lado mutado pra destacar).
+   */
+  function alignSequences(origItems, mutItems, equalsFn) {
+    const eq = equalsFn || function (a, b) { return a === b; };
+    const n = origItems.length;
+    const m = mutItems.length;
+
+    if (n === 0) return mutItems.map(function () { return 'ins'; });
+    if (m === 0) return [];
+
+    const MISMATCH  = 1;
+    const GAP_OPEN   = 1;
+    const GAP_EXTEND = 0.3;
+    const INF = Infinity;
+
+    // M[i][j]  = custo mínimo alinhando origItems[0..i) com mutItems[0..j),
+    //            terminando em correspondência (match ou substituição).
+    // Ix[i][j] = ...terminando em um item original sem correspondente
+    //            (deleção — consome origItems, não gera saída em mutItems).
+    // Iy[i][j] = ...terminando em um item mutado sem correspondente
+    //            (inserção — gera saída 'ins').
+    const M = [], Ix = [], Iy = [];
+    for (let i = 0; i <= n; i++) {
+      M.push(new Array(m + 1).fill(INF));
+      Ix.push(new Array(m + 1).fill(INF));
+      Iy.push(new Array(m + 1).fill(INF));
+    }
+
+    M[0][0] = 0;
+    for (let i = 1; i <= n; i++) Ix[i][0] = GAP_OPEN + (i - 1) * GAP_EXTEND;
+    for (let j = 1; j <= m; j++) Iy[0][j] = GAP_OPEN + (j - 1) * GAP_EXTEND;
+
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        const cost = eq(origItems[i - 1], mutItems[j - 1]) ? 0 : MISMATCH;
+        M[i][j]  = Math.min(M[i - 1][j - 1], Ix[i - 1][j - 1], Iy[i - 1][j - 1]) + cost;
+        Ix[i][j] = Math.min(M[i - 1][j] + GAP_OPEN, Ix[i - 1][j] + GAP_EXTEND);
+        Iy[i][j] = Math.min(M[i][j - 1] + GAP_OPEN, Iy[i][j - 1] + GAP_EXTEND);
+      }
+    }
+
+    const EPS = 1e-9;
+    const result = new Array(m);
+    let i = n, j = m;
+    let state = (M[i][j] <= Ix[i][j] && M[i][j] <= Iy[i][j]) ? 'M' : (Ix[i][j] <= Iy[i][j] ? 'Ix' : 'Iy');
+
+    while (i > 0 || j > 0) {
+      if (state === 'M') {
+        const isMatch = eq(origItems[i - 1], mutItems[j - 1]);
+        result[j - 1] = isMatch ? 'match' : 'sub';
+        const cost = isMatch ? 0 : MISMATCH;
+        if (Math.abs(M[i][j] - (M[i - 1][j - 1] + cost)) < EPS) state = 'M';
+        else if (Math.abs(M[i][j] - (Ix[i - 1][j - 1] + cost)) < EPS) state = 'Ix';
+        else state = 'Iy';
+        i--; j--;
+      } else if (state === 'Ix') {
+        state = Math.abs(Ix[i][j] - (M[i - 1][j] + GAP_OPEN)) < EPS ? 'M' : 'Ix';
+        i--;
+      } else {
+        result[j - 1] = 'ins';
+        state = Math.abs(Iy[i][j] - (M[i][j - 1] + GAP_OPEN)) < EPS ? 'M' : 'Iy';
+        j--;
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Compara a sequência mutada com a original, destaca as diferenças
    * e classifica o tipo de mutação.
    */
@@ -1798,46 +1882,47 @@
     const rnaSeq        = readSequence(rna);
     const mutatedRnaSeq = readSequence(mutatedRna);
 
-    // Destaca bases mutadas no DNA e no RNA
-    highlightMutated(dna, mutatedDna, dnaSeq, mutatedDnaSeq);
-    highlightMutated(rna, mutatedRna, rnaSeq, mutatedRnaSeq);
+    // Destaca bases mutadas no DNA e no RNA (alinhamento — ver alignSequences()
+    // — em vez de comparação posição-a-posição, que erra em inserções/deleções)
+    highlightMutated(mutatedDna, dnaSeq, mutatedDnaSeq);
+    highlightMutated(mutatedRna, rnaSeq, mutatedRnaSeq);
 
-    // Destaca aminoácidos mutados
-    const maxAALen = Math.max(aminoacids.length, mutatedAminoacids.length);
-    for (let i = 0; i < maxAALen; i++) {
-      const original = aminoacids[i];
-      const mutated  = mutatedAminoacids[i];
-      if (!mutated) continue;
-
-      if (!original) {
-        mutated.classList.add('mutated');
-      } else {
-        const origAbbrev = original.querySelector('.abbreviated-name');
-        const mutAbbrev  = mutated.querySelector('.abbreviated-name');
-        const changed = origAbbrev && mutAbbrev && origAbbrev.innerHTML !== mutAbbrev.innerHTML;
-        // classList.toggle substitui o par add/remove em if-else
-        mutated.classList.toggle('mutated', changed);
-      }
+    // Destaca aminoácidos mutados, com o mesmo alinhamento — assim um
+    // aminoácido que só "andou de posição" por causa de uma inserção/deleção
+    // anterior não é marcado como se tivesse mudado.
+    const origAaTokens = Array.prototype.map.call(aminoacids, function (el) {
+      const abbrev = el.querySelector('.abbreviated-name');
+      return abbrev ? abbrev.innerHTML : '';
+    });
+    const mutAaTokens = Array.prototype.map.call(mutatedAminoacids, function (el) {
+      const abbrev = el.querySelector('.abbreviated-name');
+      return abbrev ? abbrev.innerHTML : '';
+    });
+    const aaAlignment = alignSequences(origAaTokens, mutAaTokens);
+    for (let i = 0; i < mutatedAminoacids.length; i++) {
+      const tag = aaAlignment[i];
+      mutatedAminoacids[i].classList.toggle('mutated', tag === 'ins' || tag === 'sub');
     }
 
     classifyMutation(dnaSeq, mutatedDnaSeq);
   }
 
   /**
-   * Adiciona ou remove a classe "mutated" comparando dois conjuntos de sequências.
-   * Extraído de mutationDifference() para eliminar o código duplicado de DNA e RNA.
+   * Adiciona ou remove a classe "mutated" nos elementos da sequência mutada,
+   * usando o alinhamento de alignSequences() em vez de comparação
+   * posição-a-posição — assim inserções e deleções não desalinham (e
+   * portanto não "contaminam" com destaque falso) as bases que vêm depois
+   * delas na fita.
    *
-   * @param {HTMLCollection} original - Inputs originais (sequenceChar).
    * @param {HTMLCollection} mutated  - Inputs mutados (sequenceChar).
    * @param {string} origSeq  - Sequência original como string.
    * @param {string} mutSeq   - Sequência mutada como string.
    */
-  function highlightMutated(original, mutated, origSeq, mutSeq) {
-    const maxLen = Math.max(original.length, mutated.length);
-    for (let i = 0; i < maxLen; i++) {
-      if (!mutated[i]) continue;
-      const isDifferent = !original[i] || mutSeq[i] !== origSeq[i];
-      mutated[i].classList.toggle('mutated', isDifferent);
+  function highlightMutated(mutated, origSeq, mutSeq) {
+    const alignment = alignSequences(origSeq.split(''), mutSeq.split(''));
+    for (let j = 0; j < mutated.length; j++) {
+      const tag = alignment[j];
+      mutated[j].classList.toggle('mutated', tag === 'ins' || tag === 'sub');
     }
   }
 
@@ -1962,18 +2047,11 @@
 
     if (isDnaInput) {
       const rnaEl = getRnaEquivalent(activeEl);
-      if (replaceButton.classList.contains('active')) {
-        activeEl.value = base;
-        if (rnaEl) rnaEl.value = transcribe(base);
-        const next = activeEl.nextElementSibling;
-        if (next && next.classList.contains('sequenceChar')) focusWithoutKeyboard(next);
-      } else {
-        const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
-        const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
-        textboxDna[0].insertBefore(newDna, activeEl.nextElementSibling);
-        textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-        focusWithoutKeyboard(newDna);
-      }
+      const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
+      const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
+      textboxDna[0].insertBefore(newDna, activeEl.nextElementSibling);
+      textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
+      focusWithoutKeyboard(newDna);
     } else {
       // Nenhum input focado: anexa ao final
       const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
@@ -2017,28 +2095,31 @@
   }
 
   /**
-   * Ativa um modo de mutação (Adição/Deleção/Substituição) na Genética Molecular.
-   * Antes esta lógica vivia dentro do manipulador de clique genérico do menu
-   * (dom.js), porque os 3 botões eram itens da barra lateral. Agora que viraram
-   * controles dentro da própria página do simulador — igual aos seletores de
-   * modo do Heredograma, da Genética Populacional e dos Cruzamentos — a lógica
-   * mora aqui, junto com o resto do comportamento específico desta página.
+   * Ativa ou desativa o modo de mutação na Genética Molecular. Antes eram 3
+   * botões mutuamente exclusivos (Adição/Deleção/Substituição) que forçavam
+   * o usuário a pré-classificar o tipo de edição antes de fazê-la; como o
+   * mutation-panel já detecta sozinho tipo, impacto e classificação (ver
+   * mutationDifference()/classifyMutation()), um único botão "Mutação"
+   * liga/desliga a edição livre da fita mutada e a exibição do painel de
+   * análise — sem restringir quais operações (inserir/remover base) o
+   * usuário pode fazer.
    */
-  function setMutationMode(mode) {
-    const modeButtons = { add: addButton, delete: deleteButton, replace: replaceButton };
-    Object.keys(modeButtons).forEach(function (key) {
-      const isActive = key === mode;
-      modeButtons[key].classList.toggle('active', isActive);
-      modeButtons[key].setAttribute('aria-pressed', String(isActive));
-    });
+  function setMutationMode(active) {
+    mutationButton.classList.toggle('active', active);
+    mutationButton.setAttribute('aria-pressed', String(active));
 
     const sequencePrimary  = document.getElementsByClassName('sequence')[0];
     const sequenceToMutate = document.getElementsByClassName('sequence')[1];
+
+    if (!active) {
+      sequenceToMutate.classList.remove('active');
+      return;
+    }
+
     // BUGFIX (preservado do dom.js original): o snapshot do baseline só é
-    // refeito ao ENTRAR no modo mutação pela primeira vez (quando a fita de
-    // comparação ainda não estava ativa). Trocar entre Adição/Deleção/
-    // Substituição com o modo já ativo preserva a comparação "antes x depois"
-    // em vez de recomeçar do estado já mutado.
+    // refeito ao ENTRAR no modo mutação (quando a fita de comparação ainda
+    // não estava ativa) — desligar e religar o modo não deve recomeçar de
+    // um snapshot antigo, e sim capturar a fita como ela está agora.
     const enteringMutationMode = !sequenceToMutate.classList.contains('active');
     sequencePrimary.classList.add('active');
     sequenceToMutate.classList.add('active');
@@ -2049,12 +2130,8 @@
 
   /** Reinicia o simulador: limpa todas as sequências e desativa o modo de mutação. */
   function clearSequence() {
-    addButton.classList.remove('active');
-    deleteButton.classList.remove('active');
-    replaceButton.classList.remove('active');
-    addButton.setAttribute('aria-pressed', 'false');
-    deleteButton.setAttribute('aria-pressed', 'false');
-    replaceButton.setAttribute('aria-pressed', 'false');
+    mutationButton.classList.remove('active');
+    mutationButton.setAttribute('aria-pressed', 'false');
     if (mutationWindow[0]) mutationWindow[0].classList.remove('active');
 
     // clearSequenceChars elimina o padrão repetido 4 vezes no original
@@ -2148,26 +2225,48 @@
   function saveSequenceAutosave() {
     try {
       const dnaSeq = readSequence(dnaSequenceChars);
-      if (dnaSeq) window.localStorage.setItem(DNA_AUTOSAVE_KEY, dnaSeq);
+      if (dnaSeq) {
+        window.localStorage.setItem(DNA_AUTOSAVE_KEY, dnaSeq);
+        window.localStorage.setItem(DNA_AUTOSAVE_TIMESTAMP_KEY, String(Date.now()));
+      }
     } catch (e) { /* localStorage indisponível — segue sem persistir */ }
   }
 
   /** Apaga o autosave — chamada por clearSequence(), pra "Limpar tudo" não voltar sozinho no próximo F5. */
   function clearSequenceAutosave() {
-    try { window.localStorage.removeItem(DNA_AUTOSAVE_KEY); } catch (e) { /* indisponível, nada a fazer */ }
+    try {
+      window.localStorage.removeItem(DNA_AUTOSAVE_KEY);
+      window.localStorage.removeItem(DNA_AUTOSAVE_TIMESTAMP_KEY);
+    } catch (e) { /* indisponível, nada a fazer */ }
   }
 
   /**
-   * Restaura a última sequência autosalva, se existir — chamada uma única vez
-   * na inicialização, e só quando não há sequência compartilhada via URL (a
-   * URL tem prioridade: ver loadSequenceFromUrl()). Mesma sanitização usada
-   * pra sequência compartilhada, por segurança (localStorage pode ter sido
+   * Restaura a última sequência autosalva, se existir e ainda estiver dentro
+   * da janela de DNA_AUTOSAVE_MAX_AGE_MS (30 min) — chamada uma única vez na
+   * inicialização, e só quando não há sequência compartilhada via URL (a URL
+   * tem prioridade: ver loadSequenceFromUrl()). Mesma sanitização usada pra
+   * sequência compartilhada, por segurança (localStorage pode ter sido
    * editado manualmente via devtools).
+   *
+   * Passado esse prazo o autosave é descartado silenciosamente: o simulador
+   * inicia normalmente, sem restaurar e sem exibir "Sequência restaurada" —
+   * a recuperação é só pra evitar perda acidental de trabalho recente, não
+   * pra reaparecer indefinidamente a cada F5.
    */
   function restoreSequenceAutosave() {
-    let raw;
-    try { raw = window.localStorage.getItem(DNA_AUTOSAVE_KEY); } catch (e) { return false; }
+    let raw, rawTimestamp;
+    try {
+      raw = window.localStorage.getItem(DNA_AUTOSAVE_KEY);
+      rawTimestamp = window.localStorage.getItem(DNA_AUTOSAVE_TIMESTAMP_KEY);
+    } catch (e) { return false; }
     if (!raw) return false;
+
+    const savedAt = Number(rawTimestamp);
+    const isFresh = Number.isFinite(savedAt) && (Date.now() - savedAt) <= DNA_AUTOSAVE_MAX_AGE_MS;
+    if (!isFresh) {
+      clearSequenceAutosave();
+      return false;
+    }
 
     const { clean } = sanitizeDnaInput(raw);
     if (!clean) return false;
@@ -2410,10 +2509,11 @@
 
     clearAllStrandsKeepingMode();
 
-    // As ferramentas de Adicionar/Deletar/Substituir não se aplicam aqui — a mutação já vem pronta
-    addButton.classList.remove('active');
-    deleteButton.classList.remove('active');
-    replaceButton.classList.remove('active');
+    // A mutação já vem pronta, mas deixamos o botão "Mutação" marcado como
+    // ativo — reflete o estado real na tela e permite que o usuário continue
+    // editando livremente a fita mutada a partir daqui, se quiser.
+    mutationButton.classList.add('active');
+    mutationButton.setAttribute('aria-pressed', 'true');
 
     // Fita 1 (.to-mutate) = baseline "antes" | Fita 0 (ativa) = versão "depois", com a mutação real
     fillStrand(disease.wildDna, textboxDna[1], textboxRna[1], null);
@@ -4178,9 +4278,11 @@
     if (appBtn) appBtn.click();
 
     clearAllStrandsKeepingMode();
-    addButton.classList.remove('active');
-    deleteButton.classList.remove('active');
-    replaceButton.classList.remove('active');
+    // A edição já vem pronta, mas deixamos o botão "Mutação" marcado como
+    // ativo — reflete o estado real na tela e permite continuar editando
+    // livremente a fita resultante a partir daqui, se quiser.
+    mutationButton.classList.add('active');
+    mutationButton.setAttribute('aria-pressed', 'true');
 
     fillStrand(original, textboxDna[1], textboxRna[1], null);
     fillStrand(edited,   textboxDna[0], textboxRna[0], blankSpace);
@@ -6847,10 +6949,13 @@
     }
     if (replResetBtn) replResetBtn.addEventListener('click', resetReplicationAnimation);
 
-    // Controles de Mutação (Genética Molecular) — Adição / Deleção / Substituição
-    if (addButton)     addButton.addEventListener('click', () => setMutationMode('add'));
-    if (deleteButton)  deleteButton.addEventListener('click', () => setMutationMode('delete'));
-    if (replaceButton) replaceButton.addEventListener('click', () => setMutationMode('replace'));
+    // Controle de Mutação (Genética Molecular) — botão único, liga/desliga
+    // a edição livre da fita mutada (ver setMutationMode()).
+    if (mutationButton) {
+      mutationButton.addEventListener('click', () => {
+        setMutationMode(!mutationButton.classList.contains('active'));
+      });
+    }
 
     // Controles do construtor de cruzamentos (Genética Mendeliana)
     const mendelModeMonoBtn = document.getElementById('mendel-mode-mono');

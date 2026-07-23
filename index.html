@@ -671,66 +671,60 @@
                             <span class="dogma-step-sub">RNAm → Proteína</span>
                         </button>
                     </div>
-                    <div class="counters">
-                        <span class="counter-item">Códons: <strong id="codon-counter">0</strong></span>
-                        <span class="counter-item">Aminoácidos: <strong id="aminoacid-counter">0</strong></span>
-                        <span class="counter-item" title="Percentual de Guanina + Citosina na fita molde de DNA">GC:
-                            <strong id="gc-counter">0%</strong></span>
-                    </div>
-                    <div class="action-buttons">
-                        <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
-                        <button id="btn-random" class="btn-control"><i class="fas fa-random"></i> Sequência
-                            aleatória</button>
-                        <button id="btn-animate" class="btn-control"><i class="fas fa-play-circle"></i> Animar
-                            Tradução</button>
-                        <div class="more-actions" id="more-actions">
-                            <button type="button" class="btn-control" id="more-actions-toggle" aria-haspopup="true"
-                                aria-expanded="false" aria-controls="more-actions-menu">
-                                <i class="fas fa-ellipsis-h"></i> Mais ações
-                            </button>
-                            <div class="more-actions-menu" id="more-actions-menu" role="menu" hidden>
-                                <button id="btn-crispr" class="more-actions-item" role="menuitem"><i
-                                        class="fas fa-cut"></i> Editar com CRISPR</button>
-                                <button id="btn-replicate" class="more-actions-item" role="menuitem"><i
-                                        class="fas fa-clone"></i> Replicar DNA</button>
-                                <button id="btn-export" class="more-actions-item" role="menuitem"><i
-                                        class="fas fa-file-export"></i> Exportar</button>
-                                <button id="btn-import" class="more-actions-item" role="menuitem"><i
-                                        class="fas fa-file-import"></i> Importar</button>
-                                <button id="btn-exercise-generator" class="more-actions-item" role="menuitem"><i
-                                        class="fas fa-list-check"></i> Gerar Exercícios</button>
+                    <div class="simulator-controls-row simulator-controls-overview">
+                         <div class="base-input-buttons">
+                            <span class="button-label">Inserir Base:</span>
+                            <button class="btn-base base-A" data-base="A">A</button>
+                            <button class="btn-base base-T" data-base="T">T</button>
+                            <button class="btn-base base-C" data-base="C">C</button>
+                            <button class="btn-base base-G" data-base="G">G</button>
+                        </div>
+                        <div class="counters">
+                            <span class="counter-item">Códons: <strong id="codon-counter">0</strong></span>
+                            <span class="counter-item">Aminoácidos: <strong id="aminoacid-counter">0</strong></span>
+                            <span class="counter-item" title="Percentual de Guanina + Citosina na fita molde de DNA">GC:
+                                <strong id="gc-counter">0%</strong></span>
+                        </div>
+                       
+                        <div class="action-buttons">
+                            <button type="button" class="btn-control" id="mutation-toggle" data-mode="mutation"
+                                    aria-pressed="false"><i class="fas fa-sync-alt"></i>Realizar mutação</button>
+                            <button id="btn-random" class="btn-control"><i class="fas fa-random"></i> Sequência
+                                aleatória</button>
+                            <button id="btn-clear" class="btn-control"><i class="fas fa-trash-alt"></i> Limpar tudo</button>
+                            <div class="more-actions" id="more-actions">
+                                <button type="button" class="btn-control" id="more-actions-toggle" aria-haspopup="true"
+                                    aria-expanded="false" aria-controls="more-actions-menu">
+                                    <i class="fas fa-ellipsis-h"></i> Mais ações
+                                </button>
+                                <div class="more-actions-menu" id="more-actions-menu" role="menu" hidden>
+                                    <button id="btn-replicate" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-clone"></i> Replicar DNA</button>
+                                    <button id="btn-animate" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-play-circle"></i> Animar Tradução</button>
+                                    <button id="btn-crispr" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-cut"></i> Editar com CRISPR</button>
+                                    <button id="btn-export" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-file-export"></i> Exportar</button>
+                                    <button id="btn-import" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-file-import"></i> Importar</button>
+                                    <button id="btn-exercise-generator" class="more-actions-item" role="menuitem"><i
+                                            class="fas fa-list-check"></i> Gerar Exercícios</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="base-input-buttons">
-                        <span class="button-label">Inserir Base:</span>
-                        <button class="btn-base base-A" data-base="A">A</button>
-                        <button class="btn-base base-T" data-base="T">T</button>
-                        <button class="btn-base base-C" data-base="C">C</button>
-                        <button class="btn-base base-G" data-base="G">G</button>
-                    </div>
-                    <div class="control-row">
-                        <span class="button-label">Mutação:</span>
-                        <div class="lab-toggle-group">
-                            <button type="button" class="lab-toggle-btn" id="add" data-mode="add"
-                                aria-pressed="false">Adição <span class="lab-toggle-sub">inserir base</span></button>
-                            <button type="button" class="lab-toggle-btn" id="delete" data-mode="delete"
-                                aria-pressed="false">Deleção <span class="lab-toggle-sub">remover base</span></button>
-                            <button type="button" class="lab-toggle-btn" id="replace" data-mode="replace"
-                                aria-pressed="false">Substituição <span class="lab-toggle-sub">trocar
-                                    base</span></button>
-                        </div>
-                    </div>
+                    
                 </div>
                 <div class="sequence" id="main-sequence-panel">
                     <div class="label">DNA
-                        <div class="process-box process-box-replication" id="replication-process-box" title="Clique em Replicação, no topo, para ver a fita de DNA sendo duplicada">
-                            <span>① REPLICAÇÃO</span>
-                        </div>
                         <button type="button" class="strand-toggle-btn" id="toggle-complementary-strand"
                             aria-pressed="false" title="Mostrar a outra fita da dupla-hélice, complementar à fita molde">
                             <i class="fas fa-eye"></i> Fita complementar
                         </button>
+                        <div class="process-box process-box-replication" id="replication-process-box" title="Clique em Replicação, no topo, para ver a fita de DNA sendo duplicada">
+                            <span>① REPLICAÇÃO</span>
+                        </div>
                     </div>
                     <div class="strand-row">
                         <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' da fita molde">3'</span>
@@ -761,7 +755,7 @@
                         <div class="textbox-rna"></div>
                         <span class="strand-end-badge strand-end-badge-3" title="Extremidade 3' do RNAm">3'</span>
                     </div>
-                    <div class="label">Estrutura Primária da Proteína (Sequência de Aminoácidos)
+                    <div class="label">Aminoácidos Sintetizados
                         <div class="process-box process-box-translation" id="translation-process-box">
                             <span>③ ↓ TRADUÇÃO</span>
                         </div>
@@ -802,7 +796,7 @@
                 <div class="mutation-panel" style="display: none;">
                     <h3><i class="fas fa-microscope"></i> Análise de Mutação</h3>
                     <div class="mutation-analysis-result">
-                        <span class="no-mutation-msg">Nenhuma mutação ativa. Selecione uma ferramenta de mutação acima
+                        <span class="no-mutation-msg">Nenhuma mutação ativa. Clique em "Mutação" acima
                             para começar.</span>
                         <div class="mutation-details" style="display: none;">
                             <span class="mutation-type-badge">Silenciosa</span>
@@ -954,10 +948,10 @@
                         <div class="step-body">
                             <h3>Simulando Mutações</h3>
                             <p>Abra <strong>Laboratório Virtual → Genética Molecular</strong> na barra lateral. Logo
-                                acima da fita de DNA, o controle <strong>Mutação</strong> oferece três modos:
-                                <strong>Adição</strong>, <strong>Deleção</strong> e <strong>Substituição</strong>. A
-                                fita inferior mutada se abre para comparar os resultados e apontar a mutação em
-                                vermelho.
+                                acima da fita de DNA, o botão <strong>Mutação</strong> libera a edição da fita ativa
+                                para você inserir, remover ou trocar bases livremente. A fita inferior mutada se abre
+                                para comparar os resultados e apontar a mutação em vermelho — o tipo (Silenciosa,
+                                Missense, Nonsense ou Frameshift) é identificado automaticamente.
                             </p>
                         </div>
                     </div>
@@ -966,31 +960,54 @@
                 <h3 class="app-info-subheading"><i class="fas fa-history"></i> Histórico de Versões</h3>
                 <div class="version-timeline">
                     <details class="version-card" open>
-                        <summary>v1.2 <span class="version-date">Julho, 2026</span> <span
+                        <summary>v1.3 <span class="version-date">Julho, 2026</span> <span
                                 class="badge-active">Atual</span></summary>
                         <ul>
+                            <li><strong>Mutação Simplificada:</strong> os três botões de Adição, Deleção e
+                                Substituição viraram um único botão "Mutação" — edite a fita livremente e o tipo de
+                                mutação (Silenciosa, Missense, Nonsense, Frameshift) é identificado automaticamente.</li>
+                            <li><strong>Detecção de Mutação Mais Precisa:</strong> inserções e deleções (como no
+                                exemplo da Doença de Tay-Sachs) agora destacam corretamente todas as bases afetadas,
+                                mesmo quando elas se deslocam de posição.</li>
+                            <li><strong>Recuperação Automática Ajustada:</strong> a sequência só volta sozinha se você
+                                retornar em até 30 minutos. Depois disso, o simulador inicia limpo, sem avisos
+                                desnecessários.</li>
+                            <li><strong>Barra de Controles Reorganizada:</strong> estatísticas, ações e ferramentas de
+                                edição da Genética Molecular agora aparecem em grupos mais claros e melhor
+                                espaçados.</li>
+                            <li><strong>Alinhamento Corrigido:</strong> os rótulos "Fita complementar" e "Replicação"
+                                voltaram a ficar no lugar certo, ao lado da fita de DNA.</li>
+                            <li><strong>Modo Escuro Refinado:</strong> melhor contraste nos cards da Genética
+                                Mendeliana, nos textos explicativos dos laboratórios e no card de CRISPR do Quiz de
+                                Heredogramas.</li>
+                            <li><strong>Carregamento Mais Confiável:</strong> o app passa a buscar sempre a versão
+                                mais recente das telas, evitando conteúdo desatualizado no navegador.</li>
+                        </ul>
+                    </details>
+                    <details class="version-card">
+                        <summary>v1.2 <span class="version-date">Julho, 2026</span></summary>
+                        <ul>
                             <li><strong>Menu Reestruturado:</strong> conteúdo teórico e simuladores agora vivem em
-                                páginas separadas — cada simulador tem sua página de teoria correspondente, e a
-                                Tabela de Códons passou a ser uma aba dentro de Proteínas.</li>
-                            <li><strong>Menu Retrátil no Mobile:</strong> a barra lateral virou uma gaveta deslizante
-                                acionada por um botão de menu, no lugar da fileira de chips que quebrava linha.</li>
+                                páginas separadas, e a Tabela de Códons passou a ser uma aba dentro de Proteínas —
+                                navegação mais direta.</li>
+                            <li><strong>Menu Retrátil no Celular:</strong> a barra lateral virou uma gaveta
+                                deslizante, no lugar da fileira de atalhos que quebrava linha.</li>
                             <li><strong>Sobre o Aplicativo Mais Enxuto:</strong> Versões e Tutorial unificados numa
                                 única página, com o histórico de versões em formato retrátil.</li>
-                            <li><strong>Feedback sem E-mail Manual:</strong> o formulário de feedback agora envia
-                                diretamente, sem abrir o app de e-mail do usuário.</li>
-                            <li><strong>Modo Claro/Escuro:</strong> alternador no rodapé da barra lateral, com
-                                preferência salva no navegador. Todas as superfícies do app agora respondem ao
-                                tema — inclusive os modais, que até esta versão eram parcialmente escuros.</li>
-                            <li><strong>Modo Professor Removido:</strong> a funcionalidade acumulava sobreposição
-                                com o novo Modo Escuro sem cobrir um uso real distinto; removida para simplificar
-                                o menu lateral.</li>
+                            <li><strong>Feedback Mais Rápido:</strong> o formulário de feedback agora envia
+                                diretamente pelo app, sem abrir seu programa de e-mail.</li>
+                            <li><strong>Modo Claro/Escuro:</strong> alternador no rodapé da barra lateral, com sua
+                                preferência salva automaticamente. Todas as telas do app agora respondem ao tema,
+                                incluindo os pop-ups.</li>
+                            <li><strong>Menu Simplificado:</strong> removido o Modo Professor, que se sobrepunha ao
+                                novo Modo Escuro sem cobrir um uso realmente distinto.</li>
                             <li><strong>Barra do Simulador Reorganizada:</strong> Editar com CRISPR, Replicar DNA,
-                                Exportar e Importar saíram da fileira de 7 botões e viraram um menu "Mais ações".</li>
+                                Exportar e Importar saíram da fileira de botões e viraram um menu "Mais ações".</li>
                             <li><strong>Acessibilidade:</strong> os painéis de resultado do Mendel, CRISPR,
-                                Heredograma e Genética Populacional passaram a anunciar mudanças a leitores de
-                                tela (<code>aria-live</code>), no mesmo padrão já usado pelo Quiz e pelo Ribossomo.</li>
-                            <li><strong>dom.js Encapsulado:</strong> alinhado ao padrão de script.js — nada mais
-                                é exposto no escopo global.</li>
+                                Heredograma e Genética Populacional agora avisam leitores de tela sobre mudanças,
+                                facilitando o uso por pessoas com deficiência visual.</li>
+                            <li><strong>Estabilidade:</strong> diversos ajustes internos de código para tornar o app
+                                mais fácil de manter e menos propenso a bugs.</li>
                         </ul>
                     </details>
                     <details class="version-card">
@@ -998,27 +1015,19 @@
                         <ul>
                             <li><strong>Laboratório Virtual Unificado:</strong> Genética Molecular, Genética
                                 Mendeliana, Heredogramas, Genética Populacional e Cariótipo agora vivem em uma única
-                                aba do menu, com submenu colapsável — em vez de cinco itens soltos na barra lateral.
-                            </li>
-                            <li><strong>Sistema de Cores Completo:</strong> as ~80 cores que apareciam soltas e
-                                repetidas nas três folhas de estilo foram substituídas por um único conjunto de
-                                variáveis CSS (100 tokens) — bases nitrogenadas, tipos de mutação, propriedades de
-                                aminoácidos, estados de acerto/erro/aviso/informação e a paleta neutra da interface.
-                                Mesma aparência visual, uma só fonte da verdade no código.</li>
+                                aba do menu, em vez de cinco itens soltos na barra lateral.</li>
+                            <li><strong>Visual Mais Consistente:</strong> as cores usadas em todo o app (bases
+                                nitrogenadas, tipos de mutação, propriedades de aminoácidos, avisos e acertos/erros)
+                                foram unificadas, deixando a aparência mais coerente entre as páginas.</li>
                             <li><strong>Mutação Dentro do Simulador:</strong> Adição, Deleção e Substituição
-                                deixaram de ser itens de menu e agora são um seletor de modo dentro da própria
-                                página de Genética Molecular — igual ao padrão já usado por Heredogramas e Genética
-                                Populacional.</li>
-                            <li><strong>Menu Responsivo de Verdade:</strong> o submenu de simuladores (antes oculto
-                                no celular) agora também funciona em telas pequenas.</li>
-                            <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação —
-                                já existia no código, mas faltava na barra lateral — voltou a aparecer.</li>
+                                deixaram de ser itens de menu separados e passaram a ser um controle dentro da
+                                própria página de Genética Molecular.</li>
+                            <li><strong>Menu Responsivo:</strong> o submenu de simuladores, antes oculto no celular,
+                                passou a funcionar também em telas pequenas.</li>
+                            <li><strong>Modo Professor Reativado:</strong> o botão que liga o modo de apresentação
+                                voltou a aparecer na barra lateral.</li>
                             <li><strong>Conteúdo Novo:</strong> cartão sobre os três tipos de RNA (RNAm/RNAt/RNAr) e
                                 sobre os níveis de estrutura de uma proteína (primária → quaternária).</li>
-                            <li><strong>Nomenclatura Compartilhada:</strong> classes CSS reaproveitadas por vários
-                                simuladores (antes emprestadas do módulo de Mendel, ex. <code>.mendel-input</code>)
-                                renomeadas para um prefixo neutro (<code>.lab-input</code>), refletindo que já eram
-                                compartilhadas.</li>
                         </ul>
                     </details>
                     <details class="version-card">
@@ -1030,8 +1039,8 @@
                                 base nitrogenada, responsividade melhorada e micro-transições.</li>
                             <li><strong>Didática Completa:</strong> Conclusão das páginas educativas de DNA, RNA e
                                 Proteínas.</li>
-                            <li><strong>Refatorações Técnicas:</strong> Correção de bug no controle global de eventos e
-                                comparação de arrays.</li>
+                            <li><strong>Correções Importantes:</strong> Ajustes no controle de eventos e na
+                                comparação de sequências.</li>
                         </ul>
                     </details>
                     <details class="version-card">

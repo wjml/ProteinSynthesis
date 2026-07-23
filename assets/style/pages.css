@@ -34,6 +34,8 @@
 	height: 0;
 	overflow: hidden;
 	box-sizing: border-box;
+	scrollbar-width: thin;
+	scrollbar-color: var(--slate300) var(--slate100);
 	/* A transição de opacidade foi movida para a classe .page-out (saída
 	   gerenciada por JS) e o @keyframes pageEnter abaixo (entrada). */
 }

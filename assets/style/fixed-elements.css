@@ -417,6 +417,21 @@ body.dark-theme {
 	--baseU: #bd50da;
 }
 
+/* --colorDetailsBg/--colorDetailsBorderLight nunca tinham uma variante para
+   o modo escuro — ficavam com o mesmo tom claro (teal 50/100) de sempre,
+   mesmo com o resto da página invertida. Isso criava um "vazamento" de fundo
+   claro em qualquer componente que os usasse sobre fundo escuro: o gradiente
+   do cartão de chamada (".content-cta-card", usado também na Genética
+   Mendeliana), o fundo de ".lab-explanation" (texto claro sobre fundo claro
+   — ilegível) e o hover/seleção de ".crispr-pathway-card" (fundo e texto
+   claros demais, quase brancos). Testado: as combinações de texto que caem
+   sobre esse fundo no escuro (--slate500/600/800 já invertidos) mantêm pelo
+   menos ~5,6:1 de contraste contra o novo valor. */
+body.dark-theme {
+	--colorDetailsBg: #0f414a;
+	--colorDetailsBorderLight: #0d9488;
+}
+
 body.dark-theme .quiz-score-item strong {
 	color: #60a5fa;
 }
