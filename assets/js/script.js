@@ -2863,10 +2863,9 @@
     colorByPhenotype: new Map(),
   };
 
-  /** Localiza e armazena os elementos do modal do construtor de cruzamentos (uma única vez). */
+  /** Localiza e armazena os elementos do construtor de cruzamentos (uma única vez). */
   function cacheMendelElements() {
     mendel.els = {
-      modal:              document.getElementById('mendel-modal'),
       modeMonoBtn:        document.getElementById('mendel-mode-mono'),
       modeDiBtn:          document.getElementById('mendel-mode-di'),
       gene2Config:        document.getElementById('mendel-gene-2'),
@@ -3024,7 +3023,7 @@
 
   /** Alterna entre cruzamento mono-híbrido e di-híbrido, mostrando/escondendo a configuração do 2º gene. */
   function setMendelMode(mode) {
-    if (!mendel.els.modal) cacheMendelElements();
+    if (!mendel.els.modeMonoBtn) cacheMendelElements();
     mendel.mode = mode;
     const isDi = mode === 'di';
     mendel.els.gene2Config.style.display = isDi ? 'block' : 'none';
@@ -3347,6 +3346,7 @@
 
   /** Lê o formulário completo, calcula o quadro de Punnett e renderiza a grade + as proporções. */
   function generateMendelCross() {
+    if (!mendel.els.modeMonoBtn) cacheMendelElements();
     const els = mendel.els;
     const configs = [readMendelGeneConfig(0)];
     if (mendel.mode === 'di') configs.push(readMendelGeneConfig(1));
@@ -6929,22 +6929,17 @@
       exerciseGenDownloadBtn.addEventListener('click', () => downloadExercisesAsText(exerciseSet));
     }
 
-    // Modais de exportar/importar/animar sequência/construir cruzamento/CRISPR/replicação
+    // Modais de exportar/importar/animar sequência/CRISPR/replicação
+    // (Mendel/Epistasia/ABO migraram para painel com abas — não são mais modais)
     const exportModal = document.getElementById('export-modal');
     const importModal = document.getElementById('import-modal');
     const ribosomeModal = document.getElementById('ribosome-modal');
-    const mendelModal = document.getElementById('mendel-modal');
-    const epistasisModal = document.getElementById('epistasis-modal');
-    const aboModal = document.getElementById('abo-modal');
     const crisprModal = document.getElementById('crispr-modal');
     const replicationModal = document.getElementById('replication-modal');
     const exerciseGeneratorModal = document.getElementById('exercise-generator-modal');
     const exportCloseBtn = document.getElementById('export-modal-close');
     const importCloseBtn = document.getElementById('import-modal-close');
     const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
-    const mendelCloseBtn = document.getElementById('mendel-modal-close');
-    const epistasisCloseBtn = document.getElementById('epistasis-modal-close');
-    const aboCloseBtn = document.getElementById('abo-modal-close');
     const crisprCloseBtn = document.getElementById('crispr-modal-close');
     const replicationCloseBtn = document.getElementById('replication-modal-close');
     const exerciseGeneratorCloseBtn = document.getElementById('exercise-generator-modal-close');
@@ -6977,15 +6972,12 @@
     if (exportCloseBtn)      exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
     if (importCloseBtn)      importCloseBtn.addEventListener('click', () => closeModal(importModal));
     if (ribosomeCloseBtn)    ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
-    if (mendelCloseBtn)      mendelCloseBtn.addEventListener('click', () => closeModal(mendelModal));
-    if (epistasisCloseBtn)   epistasisCloseBtn.addEventListener('click', () => closeModal(epistasisModal));
-    if (aboCloseBtn)         aboCloseBtn.addEventListener('click', () => closeModal(aboModal));
     if (crisprCloseBtn)      crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
     if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
     if (exerciseGeneratorCloseBtn) exerciseGeneratorCloseBtn.addEventListener('click', () => closeModal(exerciseGeneratorModal));
 
     // Fecha ao clicar fora da caixa (no overlay escurecido)
-    const allSeqModals = [exportModal, importModal, ribosomeModal, mendelModal, epistasisModal, aboModal, crisprModal, replicationModal, exerciseGeneratorModal];
+    const allSeqModals = [exportModal, importModal, ribosomeModal, crisprModal, replicationModal, exerciseGeneratorModal];
     allSeqModals.forEach((modal) => {
       if (!modal) return;
       modal.addEventListener('click', (event) => {
