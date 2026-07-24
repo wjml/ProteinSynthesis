@@ -816,3 +816,149 @@ nav #logo img {
 .sidebar-toggle[aria-pressed="true"] i {
 	color: white;
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   SELO DE PAR DE BASES — componente compartilhado (proposta de redesign,
+   prompt 2 "Selo de Par de Bases"). Substitui 4 badges antes divergentes
+   (.base-badge, .strand-end-badge, .mutation-type-badge, .prop-badge /
+   .drawer-type-badge) por uma única linguagem visual: um marcador circular
+   sólido pequeno ligado por uma haste curta de 2px a um corpo em pílula de
+   fundo claro. Migração real de cada classe fica no arquivo onde ela já
+   vivia (app.css/pages.css); este bloco só define a peça reutilizável.
+
+   IMPLEMENTAÇÃO: marcador (::before) e haste (::after) são pseudo-elementos
+   posicionados ANTES do texto real do badge — escolha deliberada pra não
+   exigir NENHUMA mudança de HTML nos pontos de uso já existentes (o
+   elemento que já carregava o texto continua carregando o texto, só ganha
+   padding-left extra pra abrir espaço pros dois adereços). Cor: os dois
+   pseudo-elementos usam currentColor, então herdam automaticamente
+   qualquer `color`/`--chem-text`/`--selo-color` já definido pelo
+   badge/categoria — nenhuma variável de cor nova precisa ser passada aqui.
+
+   Aplicado hoje a: .mutation-type-badge (exceto dentro do Modo Desafio,
+   ver app.css) e .prop-badge/.drawer-type-badge (ver pages.css).
+   .base-badge migrou pra um marcador circular sozinho (sem haste/pílula,
+   representa um valor único). .strand-end-badge é a exceção documentada
+   que NÃO recebe o marcador (contrato de alinhamento de 28px, ver app.css).
+   ════════════════════════════════════════════════════════════════════════ */
+.mutation-type-badge:not(.quiz-option)::before,
+.prop-badge::before,
+.drawer-type-badge::before {
+	content: "";
+	position: absolute;
+	left: 6px;
+	top: 50%;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: currentColor;
+	transform: translateY(-50%);
+}
+
+.mutation-type-badge:not(.quiz-option)::after,
+.prop-badge::after,
+.drawer-type-badge::after {
+	content: "";
+	position: absolute;
+	left: 14px;
+	top: 50%;
+	width: 6px;
+	height: 2px;
+	background: currentColor;
+	transform: translateY(-50%);
+}
+
+/* ── Primitivo genérico .selo-par-bases ──────────────────────────────────
+   Vocabulário reutilizável pra QUALQUER ponto novo do app que precise da
+   mesma linguagem visual sem reaproveitar uma classe legada — pensado como
+   marcação HTML própria (marcador + haste + pílula como elementos reais),
+   ao contrário dos badges legados acima (que usam pseudo-elementos pra não
+   mexer no HTML existente). Ainda não consumido em nenhuma tela nesta
+   etapa — os 4 pontos de uso de hoje são todos badges legados migrados
+   acima. Preparado para o próximo prompt do redesign (ex.: badges de
+   resultado em Heredograma/Cariótipo). Uso esperado:
+   <span class="selo-par-bases" style="--selo-color: var(--baseA)">
+     <span class="selo-par-bases-marker" aria-hidden="true"></span>
+     <span class="selo-par-bases-stalk" aria-hidden="true"></span>
+     <span class="selo-par-bases-label">Texto</span>
+   </span> */
+.selo-par-bases {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+}
+
+.selo-par-bases-marker {
+	width: 8px;
+	height: 8px;
+	min-width: 8px;
+	border-radius: 50%;
+	background: var(--selo-color, var(--slate400));
+	flex-shrink: 0;
+}
+
+.selo-par-bases-stalk {
+	width: 6px;
+	height: 2px;
+	background: var(--selo-color, var(--slate400));
+	flex-shrink: 0;
+}
+
+.selo-par-bases-label {
+	display: inline-flex;
+	align-items: center;
+	margin-left: 6px;
+	padding: 3px 11px;
+	border-radius: 999px;
+	font-family: var(--font-mono);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1;
+	white-space: nowrap;
+	background: color-mix(in srgb, var(--selo-color, var(--slate400)) 14%, white);
+	color: var(--selo-color, var(--slate700));
+	border: 1px solid var(--selo-color, var(--slate300));
+}
+
+/* Variante compacta: só os dois círculos conectados (marcador + "base
+   pareada"), sem pílula de texto — pensada pra tabelas densas como a
+   futura matriz de códons. Qualquer conteúdo de texto real dentro do
+   rótulo fica visualmente oculto, mas continua acessível a leitor de
+   tela. Ainda não consumida nesta etapa (nenhum dos 4 badges migrados
+   hoje precisa dela) — criada já pronta pro próximo uso previsto na
+   proposta de redesign. */
+.selo-par-bases--compact .selo-par-bases-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.selo-par-bases--compact::after {
+	content: "";
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	margin-left: 6px;
+	border-radius: 50%;
+	background: var(--selo-color-pair, var(--selo-color, var(--slate400)));
+}
+
+/* Variante contornada: sem preenchimento sólido, só borda — pra estados
+   secundários/inativos. Ainda não consumida nesta etapa. */
+.selo-par-bases--outline .selo-par-bases-marker {
+	background: transparent;
+	border: 1.5px solid var(--selo-color, var(--slate400));
+	width: 6px;
+	height: 6px;
+}
+
+.selo-par-bases--outline .selo-par-bases-label {
+	background: transparent;
+	border: 1px solid var(--selo-color, var(--slate300));
+}

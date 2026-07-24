@@ -349,6 +349,21 @@
     margin-bottom: 0;
 }
 
+/* AUDITORIA (consolidação de badges, prompt 2): .strand-end-badge é a
+   única exceção que NÃO ganha o marcador circular + haste do Selo de Par
+   de Bases (ver fixed-elements.css). A largura de 28px aqui não é
+   estética — é um contrato de alinhamento: .strand-end-badge-spacer (logo
+   abaixo) e outros rótulos de posição (.ribo-utr-label, .repl-end-label-5/
+   -3) dependem dessa mesma largura fixa pra manter DNA/RNAm/Proteína
+   alinhados na mesma coluna X nas 3 linhas do simulador. Adicionar um
+   marcador+haste internos exigiria alargar o badge e quebraria esse
+   alinhamento. Já é uma pílula com fundo claro + borda + texto colorido —
+   a mesma receita visual do resto da família, só sem o adereço do
+   marcador. Cores (sky/purple) também mantidas: não fazem parte da lista
+   de cores ad hoc a aposentar, e são reaproveitadas de propósito em
+   .ribo-utr-label/.repl-end-label-5/-3 pra manter a mesma convenção
+   (azul=5', roxo=3') em todo o app — mudar só aqui quebraria essa
+   consistência mais ampla. */
 .strand-end-badge {
     display: inline-flex;
     align-items: center;
@@ -761,43 +776,95 @@ body.show-complementary-strand .complementary-strand-row {
     width: 100%;
 }
 
+/* ═══ Selo de Par de Bases aplicado ao badge de tipo de mutação ═══
+   AUDITORIA (consolidação de badges, prompt 2): antes um chip sólido com
+   texto branco; agora segue a mesma receita visual do resto da família
+   (fundo claro + borda/texto coloridos + marcador circular via ::before/
+   ::after, ver bloco compartilhado em fixed-elements.css). --selo-bg e
+   --selo-color são variáveis locais (mesmo padrão de --chem-bg/border/text
+   já usado em pages.css) — não são tokens de cor novos, só apontam pra
+   tokens que já existem.
+   EXCEÇÃO: dentro do Modo Desafio (button.quiz-option.mutation-type-badge,
+   mais abaixo) o visual sólido/negrito original é mantido de propósito —
+   isso é fora do escopo desta migração de badge. */
 .mutation-type-badge {
     align-self: flex-start;
+    position: relative;
     font-size: 0.75rem;
     font-weight: 700;
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.75rem 0.25rem 1.35rem;
     border-radius: 20px;
-    color: white;
+    background: var(--selo-bg, var(--slate100));
+    color: var(--selo-color, var(--slate600));
+    border: 1px solid var(--selo-color, var(--slate300));
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
 /* Mutation Badge Colors */
+/* AUDITORIA: --colorSilent (ad hoc) aposentado — mesma família de azul de
+   --baseA, já calibrada WCAG AA em claro/escuro. */
 .mutation-type-badge.silent {
-    background-color: var(--colorSilent);
+    --selo-color: var(--baseA);
+    --selo-bg: color-mix(in srgb, var(--baseA) 14%, white);
 }
 
-/* Blue */
+/* Semântico (aviso) — não é cor ad hoc, mantido como está. */
 .mutation-type-badge.missense {
-    background-color: var(--colorWarning);
+    --selo-color: var(--colorWarningText);
+    --selo-bg: var(--colorWarningBgVivid);
 }
 
-/* Orange */
+/* Semântico (erro) — não é cor ad hoc, mantido como está. */
 .mutation-type-badge.nonsense {
-    background-color: var(--colorError);
+    --selo-color: var(--colorErrorText);
+    --selo-bg: var(--colorErrorBgVivid);
 }
 
-/* Red */
+/* AUDITORIA: --colorEmerald (ad hoc) aposentado — mesma família de verde
+   de --baseC, já calibrada WCAG AA em claro/escuro. */
 .mutation-type-badge.stoploss {
-    background-color: var(--colorEmerald);
+    --selo-color: var(--baseC);
+    --selo-bg: color-mix(in srgb, var(--baseC) 14%, white);
 }
 
-/* Green */
+/* AUDITORIA: --colorFrameshift (ad hoc) aposentado — mesma família de roxo
+   de --baseU, já calibrada WCAG AA em claro/escuro. */
 .mutation-type-badge.frameshift {
-    background-color: var(--colorFrameshift);
+    --selo-color: var(--baseU);
+    --selo-bg: color-mix(in srgb, var(--baseU) 14%, white);
 }
 
-/* Purple */
+/* Modo Desafio: as opções do quiz reaproveitam .mutation-type-badge só pra
+   herdar a cor por categoria — o formato (botão retangular, não pílula) já
+   vem de button.quiz-option com especificidade maior. Fora do escopo desta
+   migração de badge, então o visual sólido/negrito original é mantido de
+   propósito, sobrescrevendo --selo-bg/--selo-color com especificidade
+   ainda maior. */
+button.quiz-option.mutation-type-badge.silent {
+    --selo-bg: var(--baseA);
+    --selo-color: white;
+}
+
+button.quiz-option.mutation-type-badge.missense {
+    --selo-bg: var(--colorWarning);
+    --selo-color: white;
+}
+
+button.quiz-option.mutation-type-badge.nonsense {
+    --selo-bg: var(--colorError);
+    --selo-color: white;
+}
+
+button.quiz-option.mutation-type-badge.stoploss {
+    --selo-bg: var(--baseC);
+    --selo-color: white;
+}
+
+button.quiz-option.mutation-type-badge.frameshift {
+    --selo-bg: var(--baseU);
+    --selo-color: white;
+}
 
 .mutation-description {
     margin: 0;

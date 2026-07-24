@@ -232,13 +232,19 @@
 	color: var(--slate700);
 }
 
+/* ═══ Selo de Par de Bases aplicado às bases nitrogenadas ═══
+   AUDITORIA: vira o "marcador" circular sozinho, sem haste nem pílula —
+   representa um valor único (uma base), não um par, então não faz sentido
+   ligá-lo a um corpo de texto separado; a própria letra já cabe dentro do
+   círculo. Cores inalteradas (já usava --baseA/T/C/G/U corretamente antes,
+   não fazia parte da paleta ad hoc a aposentar). */
 .base-badge {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
 	width: 28px;
 	height: 28px;
-	border-radius: 6px;
+	border-radius: 50%;
 	font-weight: bold;
 	color: white;
 	font-family: var(--font-mono);
@@ -736,6 +742,30 @@
 	--chem-text: var(--colorPurpleText);
 }
 
+/* AUDITORIA (consolidação de badges, prompt 2): --colorEmerald e
+   --colorPurple são cores ad hoc que o badge de propriedade química deve
+   parar de usar — mas a taxonomia acima (.base-basic/.codon-stop) também
+   alimenta a tabela/roda de códons e os cartões de aminoácido no simulador
+   molecular (ver app.css), fora do escopo desta etapa ("não mexa no
+   simulador molecular"). Por isso o override abaixo é ESCOPADO: só entra
+   em vigor quando .base-basic/.codon-stop aparece combinado com
+   .prop-badge ou .drawer-type-badge no mesmo elemento (maior
+   especificidade), sem alterar a definição compartilhada acima nem seu
+   uso em nenhum outro lugar. */
+.prop-badge.base-basic,
+.drawer-type-badge.base-basic {
+	--chem-bg: color-mix(in srgb, var(--baseC) 14%, white);
+	--chem-border: var(--baseC);
+	--chem-text: var(--baseC);
+}
+
+.prop-badge.codon-stop,
+.drawer-type-badge.codon-stop {
+	--chem-bg: color-mix(in srgb, var(--baseU) 14%, white);
+	--chem-border: var(--baseU);
+	--chem-text: var(--baseU);
+}
+
 /* Legenda de cores — usada acima da tabela/roda de códons e no simulador,
    sempre que cartões ou células coloridas por propriedade química aparecem
    na tela, pra explicar o que cada cor significa. */
@@ -769,10 +799,18 @@
 	display: inline-block;
 }
 
-/* Selo de propriedade química (coluna "Propriedade" da tabela de referência) */
+/* ═══ Selo de Par de Bases aplicado ao badge de propriedade química ═══
+   AUDITORIA: ganha marcador circular + haste via pseudo-elementos
+   compartilhados (ver fixed-elements.css) — só precisa abrir espaço à
+   esquerda (padding-left) e virar position:relative; a cor continua vindo
+   de --chem-bg/border/text, herdado de .base-apolar/.base-polar/etc já
+   combinada no mesmo elemento (ver HTML/JS: <span class="prop-badge
+   base-apolar">). Selo de propriedade química (coluna "Propriedade" da
+   tabela de referência) */
 .prop-badge {
+	position: relative;
 	display: inline-block;
-	padding: 3px 11px;
+	padding: 3px 11px 3px 20px;
 	border-radius: 999px;
 	font-size: 0.75rem;
 	font-weight: 700;
@@ -783,8 +821,9 @@
 
 /* Selo de propriedade química no drawer de detalhes do aminoácido */
 .drawer-type-badge {
+	position: relative;
 	display: inline-block;
-	padding: 4px 13px;
+	padding: 4px 13px 4px 21px;
 	border-radius: 999px;
 	font-weight: 700;
 	font-size: 0.85rem;
@@ -792,6 +831,7 @@
 	color: var(--chem-text, var(--slate700));
 	border: 1px solid var(--chem-border, var(--slate300));
 }
+
 
 .first-base-cell {
 	font-weight: bold;
