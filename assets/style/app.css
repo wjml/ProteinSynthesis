@@ -146,7 +146,14 @@
 .process-box-play-btn:hover,
 .process-box-play-btn:focus-visible {
     transform: scale(1.2);
-    outline: none;
+}
+
+/* AUDITORIA: outline:none aqui não tinha substituto com contraste real
+   (só o scale(1.2), zero cor/anel). Anel sólido replicando o padrão já
+   usado em .codon-item (pages.css) — complementa o scale, não o substitui. */
+.process-box-play-btn:focus-visible {
+    outline: 2px solid var(--colorDetailsText);
+    outline-offset: 2px;
 }
 
 /* Sequence Nucleotide Character Inputs
@@ -842,7 +849,15 @@ body.show-complementary-strand .complementary-strand-row {
 .dogma-step:focus-visible {
     transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-    outline: none;
+}
+
+/* AUDITORIA: outline:none aqui não tinha substituto com contraste real
+   (só o translateY/sombra acima, quase imperceptível pra quem navega por
+   teclado). Anel sólido replicando o padrão já usado em .codon-item
+   (pages.css) — complementa o efeito de hover, não o substitui. */
+.dogma-step:focus-visible {
+    outline: 2px solid var(--colorDetailsText);
+    outline-offset: 2px;
 }
 
 .dogma-step-number {
@@ -1045,7 +1060,15 @@ body.show-complementary-strand .complementary-strand-row {
 .more-actions-item:hover,
 .more-actions-item:focus-visible {
     background: var(--slate100);
-    outline: none;
+}
+
+/* AUDITORIA: outline:none aqui não tinha substituto com contraste real
+   (só a troca de fundo pra --slate100, baixíssimo contraste no tema claro).
+   Anel sólido replicando o padrão já usado em .codon-item (pages.css) —
+   complementa a troca de fundo, não a substitui. */
+.more-actions-item:focus-visible {
+    outline: 2px solid var(--colorDetailsText);
+    outline-offset: 2px;
 }
 
 .btn-control {

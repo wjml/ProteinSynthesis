@@ -140,8 +140,12 @@
 }
 
 /* Info Cards */
+/* AUDITORIA: text-align:justify trocado por left — em cards de largura
+   estreita (minmax(280px, 1fr)) o justificado gerava espaçamento
+   irregular entre palavras ("rios" de texto) em parágrafos de ~80-90
+   palavras, além de contrariar a WCAG 1.4.8. */
 .info-card {
-	text-align: justify;
+	text-align: left;
 	background: var(--white);
 	border-radius: 12px;
 	padding: 1.5rem;
@@ -178,7 +182,7 @@
 
 .info-card p {
 	color: var(--slate600);
-	line-height: 1.6;
+	line-height: 1.65;
 	font-size: 0.95rem;
 	margin: 0 0 1rem 0;
 }
@@ -187,7 +191,7 @@
 	margin: 0;
 	padding-left: 1.2rem;
 	color: var(--slate600);
-	line-height: 1.6;
+	line-height: 1.65;
 	font-size: 0.95rem;
 }
 
@@ -1107,13 +1111,17 @@
 	max-width: 46ch;
 }
 
+/* AUDITORIA: unificado com .lab-action-btn (app.css) — os dois tinham o
+   mesmo papel conceitual (CTA principal) mas tratamentos visuais diferentes
+   (aqui era preenchimento sólido, lá gradiente). Padronizado no gradiente,
+   mantendo padding/border-radius/demais propriedades como estavam. */
 .content-cta-btn {
 	flex: 0 0 auto;
 	width: auto;
 	margin-top: 0;
 	padding: 0.85rem 1.4rem;
 	font-size: 0.95rem;
-	background: var(--colorDetailsText);
+	background: linear-gradient(135deg, var(--colorDetailsText), var(--colorDetails));
 	color: white;
 	border-color: transparent;
 	cursor: pointer;

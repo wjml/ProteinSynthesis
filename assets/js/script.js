@@ -1849,7 +1849,72 @@
       }
     }
 
+    // BUGFIX: quando a sequência ao redor de uma inserção/deleção é
+    // repetitiva (comum em DNA, alfabeto de só 4 letras — ex.:
+    // "...CGACGACGA..."), mais de um alinhamento tem exatamente o MESMO
+    // custo mínimo: o bloco inserido pode "deslizar" uma ou mais posições
+    // sem gerar nenhuma diferença extra. O traceback do Gotoh acima
+    // resolve esse empate de forma arbitrária (só depende da ordem em que
+    // os estados são preenchidos), então a mesma inserção digitada em
+    // pontos diferentes da fita pode aparecer destacada uma base "pra
+    // trás" do ponto real, ou o destaque parecer não seguir nenhum
+    // padrão — exatamente o sintoma relatado (funciona na maioria dos
+    // casos, mas "buga" e destaca bases que não foram digitadas).
+    // rightAlignInsertions() elimina essa ambiguidade adotando a mesma
+    // convenção usada em nomenclatura genética (regra 3' do HGVS): entre
+    // alinhamentos de custo igual, sempre normaliza para a posição mais
+    // à direita — a mesma razão pela qual a inserção da Doença de
+    // Tay-Sachs é descrita como "1278insTATC" e não uma posição antes.
+    rightAlignInsertions(mutItems, result, eq);
     return result;
+  }
+
+  /**
+   * Normaliza blocos de inserção ('ins') que podem ser deslocados para a
+   * direita sem alterar o custo do alinhamento — ou seja, a base que
+   * "sai" do início do bloco é idêntica à base que "entra" logo depois
+   * dele. Isso só é possível em trechos de sequência repetitivos, que são
+   * exatamente onde o traceback de alignSequences() é ambíguo (mais de um
+   * alinhamento igualmente ótimo). Sem essa normalização, o resultado do
+   * traceback depende de detalhes de implementação e não de onde a base
+   * foi realmente inserida.
+   *
+   * Ex.: original "TACCGACGACGAATT", mutada "TACTATCCGACGACGAATT"
+   * (inserção real de "TATC" logo após "TAC", como na Doença de
+   * Tay-Sachs). Sem a normalização, o traceback encontra um bloco de
+   * mesmo custo uma posição adiantado ("CTAT" em vez de "TATC"), porque
+   * "C" se repete logo depois. Deslocando o bloco pra direita enquanto a
+   * base que sai da frente for igual à que entra atrás, chegamos no
+   * bloco correto.
+   *
+   * @param {Array} mutItems - itens da sequência mutada (mesmos passados a alignSequences).
+   * @param {Array<'match'|'sub'|'ins'>} tags - resultado de alignSequences, alterado in-place.
+   * @param {function} eq - mesma função de comparação usada no alinhamento.
+   */
+  function rightAlignInsertions(mutItems, tags, eq) {
+    const m = tags.length;
+    let changed = true;
+    while (changed) {
+      changed = false;
+      let idx = 0;
+      while (idx < m) {
+        if (tags[idx] !== 'ins') { idx++; continue; }
+        let end = idx;
+        while (end < m && tags[end] === 'ins') end++;
+        // Desliza o bloco [idx, end) pra direita enquanto o item que sai
+        // da frente do bloco (mutItems[idx]) for idêntico ao item logo
+        // depois do bloco (mutItems[end]) — só então a troca não muda o
+        // resultado final da fita mutada nem o custo do alinhamento.
+        while (end < m && tags[end] === 'match' && eq(mutItems[idx], mutItems[end])) {
+          tags[idx] = 'match';
+          tags[end] = 'ins';
+          idx++; end++;
+          changed = true;
+        }
+        idx = end;
+      }
+    }
+    return tags;
   }
 
   /**
