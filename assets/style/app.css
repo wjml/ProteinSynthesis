@@ -5,6 +5,13 @@
     gap: 1rem;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Enquadramento "fita dupla" do simulador molecular
+   ═══════════════════════════════════════════════════════════════════════
+   Substitui a moldura genérica anterior (retângulo com sombra suave) por
+   dois trilhos finos, um acima e um abaixo do módulo — referência visual
+   às duas fitas da dupla-hélice de DNA. Usa pseudo-elementos para não
+   alterar o HTML. A cor --colorDetails dá continuidade com o resto da UI. */
 .sequence {
     overflow: hidden;
     display: flex;
@@ -15,10 +22,29 @@
     background: var(--white);
     padding: 1.3%;
     margin: auto;
-    border: 2px solid var(--colorDetails);
+    border: none;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    position: relative;
+}
+
+.sequence::before,
+.sequence::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--colorDetails);
+}
+
+.sequence::before {
+    top: 0;
+}
+
+.sequence::after {
+    bottom: 0;
 }
 
 .sequence.to-mutate {
@@ -30,6 +56,12 @@
     overflow: hidden;
     background: rgba(255, 255, 255, 0.1);
     border: none;
+    box-shadow: none;
+}
+
+.sequence.to-mutate::before,
+.sequence.to-mutate::after {
+    display: none;
 }
 
 .sequence.active {
@@ -735,11 +767,14 @@ body.show-complementary-strand .complementary-strand-row {
     box-sizing: border-box;
 }
 
-.sequence.active~.mutation-panel {
+/* Quando o modo de mutação está ativo, o painel ocupa largura total */
+.sequence.active~.mutation-panel,
+.sequence.active~.panel--constrained {
     width: 100%;
 }
 
-.mutation-panel h3 {
+.mutation-panel h3,
+.panel--constrained h3 {
     margin: 0 0 1rem 0;
     color: var(--slate800);
     font-size: 1.15rem;
@@ -748,7 +783,8 @@ body.show-complementary-strand .complementary-strand-row {
     gap: 0.5rem;
 }
 
-.mutation-panel h3 i {
+.mutation-panel h3 i,
+.panel--constrained h3 i {
     color: var(--colorDetails);
 }
 
@@ -1228,7 +1264,8 @@ button.quiz-option.mutation-type-badge.frameshift {
     background-color: var(--baseG);
 }
 
-.quiz-panel {
+.quiz-panel,
+.panel--quiz {
     zoom: 1.3;
     max-width: 720px;
     margin: 0 auto;
@@ -1453,13 +1490,15 @@ button.quiz-option:disabled {
     cursor: default;
 }
 
-.quiz-panel .codon-item.quiz-option {
+.quiz-panel .codon-item.quiz-option,
+.panel--quiz .codon-item.quiz-option {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.quiz-panel .codon-item.quiz-option .codon-name {
+.quiz-panel .codon-item.quiz-option .codon-name,
+.panel--quiz .codon-item.quiz-option .codon-name {
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 1.1rem;
@@ -2820,11 +2859,13 @@ body.dark-theme .lab-export-btn {
     font-size: 0.82rem;
 }
 
-.popgen-mode-panel {
+.popgen-mode-panel,
+.panel--mode-sub {
     margin-bottom: 4px;
 }
 
-.popgen-mode-panel .lab-action-btn {
+.popgen-mode-panel .lab-action-btn,
+.panel--mode-sub .lab-action-btn {
     width: auto;
     padding: 0.65rem 1.2rem;
 }

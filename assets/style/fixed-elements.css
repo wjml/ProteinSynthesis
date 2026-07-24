@@ -588,7 +588,7 @@ nav #logo img {
 	align-items: center;
 	cursor: pointer;
 	transition: all 0.2s ease-in-out;
-	border-left: 4px solid transparent;
+	position: relative;
 }
 
 .sidebar .button.collapsible-toggle .menu-label-group {
@@ -645,12 +645,44 @@ nav #logo img {
 	padding-left: 6px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   Indicador de item ativo — gramática do Selo de Par de Bases em miniatura
+   ═══════════════════════════════════════════════════════════════════════
+   Substitui a barra sólida à esquerda por "haste curta + ponto colorido"
+   — o ícone do item funciona como o "marcador" do Selo, e a haste
+   conecta a um ponto colorido, reusando a mesma linguagem visual criada
+   no Prompt 2. A haste (::before) + o ponto (inset de box-shadow do ::before)
+   evitam conflito com o ::after dos collapsible-toggle (que já é a seta). */
 .button.active,
 .button.active:hover {
 	background: var(--colorDetailsText);
 	color: white;
-	border-left: 4px solid var(--colorDetailsHover);
 	transition: all 0.2s ease-in;
+}
+
+.sidebar .button.active::before {
+	content: "";
+	position: absolute;
+	left: 2px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 14px;
+	height: 2px;
+	background: var(--colorDetailsHover);
+	box-shadow: -6px 0 0 0 var(--colorDetailsHover);
+	border-radius: 1px;
+}
+
+.sidebar .button.active::after {
+	content: "";
+	position: absolute;
+	left: 18px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--colorDetailsHover);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

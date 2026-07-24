@@ -1207,12 +1207,54 @@
    Heredogramas
    ═══════════════════════════════════════════════════════════════════════ */
 
+/* Primitivo unificado de painel — consolida lab-tool-panel, mutation-panel
+   e variantes. Modificadores: .panel--quiz (container sem card chrome),
+   .panel--mode-sub (espaçador vertical para sub-painéis), .panel--tab
+   (animação de entrada). */
+.panel,
 .lab-tool-panel {
 	background: var(--white);
 	border-radius: 12px;
 	padding: 1.5rem;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	border: 1px solid var(--slate100);
+}
+
+/* Modificador: painel com layout constrito/centralizado (ex.: mutation-panel) */
+.panel--constrained {
+	width: 90%;
+	margin: 1.5rem auto 0 auto;
+	border-color: var(--slate200);
+	box-sizing: border-box;
+}
+
+/* Modificador: container de zoom/largura sem card chrome (ex.: quiz-panel) */
+.panel--quiz {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	zoom: 1.3;
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 1.5rem 0;
+}
+
+/* Modificador: espaçador vertical entre sub-painéis (ex.: popgen-mode-panel) */
+.panel--mode-sub {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: 0;
+	margin-bottom: 4px;
+}
+
+/* Modificador: animação de entrada para painéis de aba (ex.: content-tab-panel) */
+.panel--tab {
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	padding: 0;
+	animation: contentTabFadeIn 0.2s ease-in-out;
 }
 
 .lab-mode-switcher {
@@ -1381,7 +1423,8 @@
 	border-bottom-color: var(--colorDetailsText);
 }
 
-.content-tab-panel {
+.content-tab-panel,
+.panel--tab {
 	animation: contentTabFadeIn 0.2s ease-in-out;
 }
 

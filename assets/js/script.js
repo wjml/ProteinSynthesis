@@ -2879,18 +2879,14 @@
     };
   }
 
-  /** Abre o modal do construtor de cruzamentos. */
+  /** Troca para a aba "Construtor de Cruzamentos" no painel de Genética Mendeliana. */
   function openMendelModal() {
-    if (!mendel.els.modal) cacheMendelElements();
-    if (!mendel.els.modal) return;
-    openModalDialog(mendel.els.modal);
+    setMendelLabTab('cross');
   }
 
-  /** Abre o modal de Epistasia e já gera o exemplo selecionado no dropdown, para a tela nunca abrir vazia. */
+  /** Troca para a aba "Epistasia" do painel e já gera o exemplo selecionado, para a tela nunca abrir vazia. */
   function openEpistasisModal() {
-    const modal = document.getElementById('epistasis-modal');
-    if (!modal) return;
-    openModalDialog(modal);
+    setMendelLabTab('epistasis');
     renderEpistasisResult();
   }
 
@@ -2919,12 +2915,46 @@
     resultsEl.style.display = 'block';
   }
 
-  /** Abre o modal do Sistema ABO e já calcula o cruzamento com os genótipos padrão selecionados. */
+  /** Troca para a aba "Sistema ABO" do painel e já calcula o cruzamento com os genótipos padrão. */
   function openAboModal() {
-    const modal = document.getElementById('abo-modal');
-    if (!modal) return;
-    openModalDialog(modal);
+    setMendelLabTab('abo');
     renderAboResult();
+  }
+
+  /** Alterna entre as 3 abas do painel de Genética Mendeliana (Construtor/Epistasia/ABO),
+      modelada na mesma lógica de setPopgenMode — toggle nos botões e display nos painéis. */
+  const mendelLab = { els: {}, tab: 'cross' };
+
+  function cacheMendelLabElements() {
+    mendelLab.els = {
+      tabCrossBtn:    document.getElementById('mendel-lab-tab-cross'),
+      tabEpistasisBtn: document.getElementById('mendel-lab-tab-epistasis'),
+      tabAboBtn:      document.getElementById('mendel-lab-tab-abo'),
+      panelCross:     document.getElementById('mendel-lab-panel-cross'),
+      panelEpistasis: document.getElementById('mendel-lab-panel-epistasis'),
+      panelAbo:       document.getElementById('mendel-lab-panel-abo'),
+    };
+  }
+
+  function setMendelLabTab(tab) {
+    if (!mendelLab.els.tabCrossBtn) cacheMendelLabElements();
+    mendelLab.tab = tab;
+    const els = mendelLab.els;
+
+    const buttons = [els.tabCrossBtn, els.tabEpistasisBtn, els.tabAboBtn];
+    const panels  = [els.panelCross, els.panelEpistasis, els.panelAbo];
+    const idx = tab === 'epistasis' ? 1 : tab === 'abo' ? 2 : 0;
+
+    buttons.forEach((btn, i) => {
+      if (!btn) return;
+      const isActive = i === idx;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+    panels.forEach((panel, i) => {
+      if (!panel) return;
+      panel.style.display = i === idx ? '' : 'none';
+    });
   }
 
   /** Recalcula (via computeAboCross) e renderiza o cruzamento ABO para os 2 genótipos escolhidos nos selects. */
@@ -6820,9 +6850,9 @@
     const btnAnimate = document.getElementById('btn-animate');
     const btnCrispr = document.getElementById('btn-crispr');
     const btnReplicate = document.getElementById('btn-replicate');
-    const btnOpenMendel = document.getElementById('btn-open-mendel');
-    const btnOpenEpistasis = document.getElementById('btn-open-epistasis');
-    const btnOpenAbo = document.getElementById('btn-open-abo');
+    const mLabTabCross    = document.getElementById('mendel-lab-tab-cross');
+    const mLabTabEpistasis = document.getElementById('mendel-lab-tab-epistasis');
+    const mLabTabAbo      = document.getElementById('mendel-lab-tab-abo');
     if (btnClear)      btnClear.addEventListener('click', clearSequence);
     if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
     if (btnExport)     btnExport.addEventListener('click', openExportModal);
@@ -6830,9 +6860,9 @@
     if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
     if (btnCrispr)     btnCrispr.addEventListener('click', openCrisprModal);
     if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
-    if (btnOpenMendel) btnOpenMendel.addEventListener('click', openMendelModal);
-    if (btnOpenEpistasis) btnOpenEpistasis.addEventListener('click', openEpistasisModal);
-    if (btnOpenAbo)       btnOpenAbo.addEventListener('click', openAboModal);
+    if (mLabTabCross)     mLabTabCross.addEventListener('click', () => setMendelLabTab('cross'));
+    if (mLabTabEpistasis) mLabTabEpistasis.addEventListener('click', openEpistasisModal);
+    if (mLabTabAbo)       mLabTabAbo.addEventListener('click', openAboModal);
 
     // Hierarquia Visual do Dogma Central — .dogma-stepper (topo da barra de
     // ferramentas) navega direto pra ação de cada módulo: Replicação abre o
