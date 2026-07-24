@@ -1,0 +1,1 @@
+(function(){'use strict';var PS=window.PS=window.PS||{};PS.karyotypeFacade={view:function(){if(PS.viewSelectedKaryotype)PS.viewSelectedKaryotype()},setNondisMode:function(m){if(PS.setNondisMode)PS.setNondisMode(m)},simulate:function(){if(PS.runNondisjunctionSimulation)PS.runNondisjunctionSimulation()}}})();

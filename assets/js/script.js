@@ -6407,10 +6407,10 @@ window.PS = window.PS || {};
     const sidebarQuizBtn = document.getElementById('quiz');
     if (sidebarQuizBtn) sidebarQuizBtn.addEventListener('click', showQuizSetup);
 
-    if (quiz.els.exitBtn)  quiz.els.exitBtn.addEventListener('click', exitQuiz);
-    if (quiz.els.retryBtn) quiz.els.retryBtn.addEventListener('click', startQuiz);
-    if (quiz.els.backBtn)  quiz.els.backBtn.addEventListener('click', exitQuiz);
-    if (quiz.els.finishPracticeBtn) quiz.els.finishPracticeBtn.addEventListener('click', () => endQuiz());
+    if (quiz.els.exitBtn)  quiz.els.exitBtn.addEventListener('click', PS.exitQuiz || exitQuiz);
+    if (quiz.els.retryBtn) quiz.els.retryBtn.addEventListener('click', PS.startQuiz || startQuiz);
+    if (quiz.els.backBtn)  quiz.els.backBtn.addEventListener('click', PS.exitQuiz || exitQuiz);
+    if (quiz.els.finishPracticeBtn) quiz.els.finishPracticeBtn.addEventListener('click', () => (PS.endQuiz || endQuiz)());
 
     // Chips de modo de jogo (Sobrevivência / Prática) — seleção única
     const modeChips = quiz.els.modeChipsWrap
@@ -6463,7 +6463,7 @@ window.PS = window.PS || {};
           setQuizSetupHint('Selecione ao menos um tipo de conteúdo.');
           return;
         }
-        startQuiz();
+        (PS.startQuiz || startQuiz)();
       });
     }
 
@@ -6862,12 +6862,12 @@ window.PS = window.PS || {};
     const mLabTabAbo      = document.getElementById('mendel-lab-tab-abo');
     if (btnClear)      btnClear.addEventListener('click', clearSequence);
     if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
-    if (btnExport)     btnExport.addEventListener('click', openExportModal);
-    if (btnImport)     btnImport.addEventListener('click', openImportModal);
+    if (btnExport)     btnExport.addEventListener('click', PS.openExportModal || openExportModal);
+    if (btnImport)     btnImport.addEventListener('click', PS.openImportModal || openImportModal);
     if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
-    if (btnCrispr)     btnCrispr.addEventListener('click', openCrisprModal);
+    if (btnCrispr)     btnCrispr.addEventListener('click', PS.openCrisprModal || openCrisprModal);
     if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
-    if (mLabTabCross)     mLabTabCross.addEventListener('click', () => setMendelLabTab('cross'));
+    if (mLabTabCross)     mLabTabCross.addEventListener('click', () => (PS.setMendelLabTab || setMendelLabTab)('cross'));
     if (mLabTabEpistasis) mLabTabEpistasis.addEventListener('click', openEpistasisModal);
     if (mLabTabAbo)       mLabTabAbo.addEventListener('click', openAboModal);
 
@@ -6900,15 +6900,15 @@ window.PS = window.PS || {};
     }
 
     const btnExerciseGenerator = document.getElementById('btn-exercise-generator');
-    if (btnExerciseGenerator) btnExerciseGenerator.addEventListener('click', openExerciseGeneratorModal);
+    if (btnExerciseGenerator) btnExerciseGenerator.addEventListener('click', PS.openExerciseGeneratorModal || openExerciseGeneratorModal);
 
     const epistasisGenerateBtn = document.getElementById('epistasis-generate-btn');
     const epistasisScenarioSelect = document.getElementById('epistasis-scenario-select');
-    if (epistasisGenerateBtn) epistasisGenerateBtn.addEventListener('click', renderEpistasisResult);
-    if (epistasisScenarioSelect) epistasisScenarioSelect.addEventListener('change', renderEpistasisResult);
+    if (epistasisGenerateBtn) epistasisGenerateBtn.addEventListener('click', PS.renderEpistasisResult || renderEpistasisResult);
+    if (epistasisScenarioSelect) epistasisScenarioSelect.addEventListener('change', PS.renderEpistasisResult || renderEpistasisResult);
 
     const aboGenerateBtn = document.getElementById('abo-generate-btn');
-    if (aboGenerateBtn) aboGenerateBtn.addEventListener('click', renderAboResult);
+    if (aboGenerateBtn) aboGenerateBtn.addEventListener('click', PS.renderAboResult || renderAboResult);
 
     const exerciseGenGenerateBtn = document.getElementById('exercise-gen-generate-btn');
     const exerciseGenActions     = document.getElementById('exercise-gen-actions');
@@ -6916,9 +6916,13 @@ window.PS = window.PS || {};
       exerciseGenGenerateBtn.addEventListener('click', () => {
         const count     = Number(document.getElementById('exercise-gen-count').value) || 10;
         const numCodons = Number(document.getElementById('exercise-gen-length').value) || 7;
-        exerciseSet = generateExerciseSet(count, numCodons);
-        renderExercisePreview(exerciseSet);
-        renderExercisePrintables(exerciseSet);
+        const generate = PS.generateExerciseSet || generateExerciseSet;
+        const preview  = PS.renderExercisePreview || renderExercisePreview;
+        const printables = PS.renderExercisePrintables || renderExercisePrintables;
+        const set = generate(count, numCodons);
+        if (typeof PS.exerciseSet !== 'undefined') PS.exerciseSet = set;
+        preview(set);
+        printables(set);
         if (exerciseGenActions) exerciseGenActions.hidden = false;
       });
     }
@@ -6927,13 +6931,13 @@ window.PS = window.PS || {};
     const exerciseGenPrintKeyBtn       = document.getElementById('exercise-gen-print-key');
     const exerciseGenDownloadBtn       = document.getElementById('exercise-gen-download-txt');
     if (exerciseGenPrintWorksheetBtn) {
-      exerciseGenPrintWorksheetBtn.addEventListener('click', () => printExerciseContent('exercise-worksheet-printable'));
+      exerciseGenPrintWorksheetBtn.addEventListener('click', () => (PS.printExerciseContent || printExerciseContent)('exercise-worksheet-printable'));
     }
     if (exerciseGenPrintKeyBtn) {
-      exerciseGenPrintKeyBtn.addEventListener('click', () => printExerciseContent('exercise-answerkey-printable'));
+      exerciseGenPrintKeyBtn.addEventListener('click', () => (PS.printExerciseContent || printExerciseContent)('exercise-answerkey-printable'));
     }
     if (exerciseGenDownloadBtn) {
-      exerciseGenDownloadBtn.addEventListener('click', () => downloadExercisesAsText(exerciseSet));
+      exerciseGenDownloadBtn.addEventListener('click', () => (PS.downloadExercisesAsText || downloadExercisesAsText)(typeof PS.exerciseSet !== 'undefined' ? PS.exerciseSet : exerciseSet));
     }
 
     // Modais de exportar/importar/animar sequência/CRISPR/replicação
@@ -7057,9 +7061,9 @@ window.PS = window.PS || {};
     const mendelGenerateBtn = document.getElementById('mendel-generate-btn');
     const mendelG1Pattern   = document.getElementById('mendel-g1-pattern');
     const mendelG2Pattern   = document.getElementById('mendel-g2-pattern');
-    if (mendelModeMonoBtn) mendelModeMonoBtn.addEventListener('click', () => setMendelMode('mono'));
-    if (mendelModeDiBtn)   mendelModeDiBtn.addEventListener('click', () => setMendelMode('di'));
-    if (mendelGenerateBtn) mendelGenerateBtn.addEventListener('click', generateMendelCross);
+    if (mendelModeMonoBtn) mendelModeMonoBtn.addEventListener('click', () => (PS.setMendelMode || setMendelMode)('mono'));
+    if (mendelModeDiBtn)   mendelModeDiBtn.addEventListener('click', () => (PS.setMendelMode || setMendelMode)('di'));
+    if (mendelGenerateBtn) mendelGenerateBtn.addEventListener('click', PS.generateMendelCross || generateMendelCross);
     if (mendelG1Pattern)   mendelG1Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(0));
     if (mendelG2Pattern)   mendelG2Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(1));
 
@@ -7069,13 +7073,13 @@ window.PS = window.PS || {};
     const pedigreeGenerateBtn  = document.getElementById('pedigree-generate-btn');
     const pedigreeQuizGenerateBtn = document.getElementById('pedigree-quiz-generate-btn');
     const pedigreeQuizAnswersWrap = document.getElementById('pedigree-quiz-answers');
-    if (pedigreeModeStudyBtn)     pedigreeModeStudyBtn.addEventListener('click', () => setPedigreeMode('study'));
-    if (pedigreeModeQuizBtn)      pedigreeModeQuizBtn.addEventListener('click', () => setPedigreeMode('quiz'));
-    if (pedigreeGenerateBtn)      pedigreeGenerateBtn.addEventListener('click', generateStudyPedigree);
-    if (pedigreeQuizGenerateBtn)  pedigreeQuizGenerateBtn.addEventListener('click', generateQuizPedigree);
+    if (pedigreeModeStudyBtn)     pedigreeModeStudyBtn.addEventListener('click', () => (PS.setPedigreeMode || setPedigreeMode)('study'));
+    if (pedigreeModeQuizBtn)      pedigreeModeQuizBtn.addEventListener('click', () => (PS.setPedigreeMode || setPedigreeMode)('quiz'));
+    if (pedigreeGenerateBtn)      pedigreeGenerateBtn.addEventListener('click', PS.generateStudyPedigree || generateStudyPedigree);
+    if (pedigreeQuizGenerateBtn)  pedigreeQuizGenerateBtn.addEventListener('click', PS.generateQuizPedigree || generateQuizPedigree);
     if (pedigreeQuizAnswersWrap) {
       pedigreeQuizAnswersWrap.querySelectorAll('.crispr-pathway-card').forEach((btn) => {
-        btn.addEventListener('click', () => answerPedigreeQuiz(btn.dataset.answer));
+        btn.addEventListener('click', () => (PS.answerPedigreeQuiz || answerPedigreeQuiz)(btn.dataset.answer));
       });
     }
 
@@ -7086,22 +7090,22 @@ window.PS = window.PS || {};
     const popgenCalcQsquaredBtn = document.getElementById('popgen-calc-qsquared-btn');
     const popgenCalcPBtn        = document.getElementById('popgen-calc-p-btn');
     const popgenTestBtn         = document.getElementById('popgen-test-btn');
-    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', () => setPopgenMode('qsquared'));
-    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', () => setPopgenMode('p'));
-    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', () => setPopgenMode('test'));
-    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', calcPopgenFromQSquared);
-    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', calcPopgenFromP);
-    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', testPopgenEquilibrium);
+    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('qsquared'));
+    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('p'));
+    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('test'));
+    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', PS.calcPopgenFromQSquared || calcPopgenFromQSquared);
+    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', PS.calcPopgenFromP || calcPopgenFromP);
+    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', PS.testPopgenEquilibrium || testPopgenEquilibrium);
 
     // Controles do Visualizador de Cariótipo e do Simulador de Não-disjunção
     const karyoViewBtn      = document.getElementById('karyo-view-btn');
     const nondisModeMiBtn   = document.getElementById('nondis-mode-mi');
     const nondisModeMiiBtn  = document.getElementById('nondis-mode-mii');
     const nondisSimulateBtn = document.getElementById('nondis-simulate-btn');
-    if (karyoViewBtn)      karyoViewBtn.addEventListener('click', viewSelectedKaryotype);
-    if (nondisModeMiBtn)   nondisModeMiBtn.addEventListener('click', () => setNondisMode('MI'));
-    if (nondisModeMiiBtn)  nondisModeMiiBtn.addEventListener('click', () => setNondisMode('MII'));
-    if (nondisSimulateBtn) nondisSimulateBtn.addEventListener('click', runNondisjunctionSimulation);
+    if (karyoViewBtn)      karyoViewBtn.addEventListener('click', PS.viewSelectedKaryotype || viewSelectedKaryotype);
+    if (nondisModeMiBtn)   nondisModeMiBtn.addEventListener('click', () => (PS.setNondisMode || setNondisMode)('MI'));
+    if (nondisModeMiiBtn)  nondisModeMiiBtn.addEventListener('click', () => (PS.setNondisMode || setNondisMode)('MII'));
+    if (nondisSimulateBtn) nondisSimulateBtn.addEventListener('click', PS.runNondisjunctionSimulation || runNondisjunctionSimulation);
 
     // Exportação como PNG (Heredograma e Cariótipo)
     const pedigreeExportBtn = document.getElementById('pedigree-export-btn');
@@ -7115,7 +7119,7 @@ window.PS = window.PS || {};
           }
           return;
         }
-        exportNodeAsPng(svg, 'heredograma.png');
+        (PS.exportNodeAsPng || exportNodeAsPng)(svg, 'heredograma.png');
       });
     }
     if (karyoExportBtn) {
@@ -7138,20 +7142,20 @@ window.PS = window.PS || {};
     const crisprPathwayHdrBtn  = document.getElementById('crispr-pathway-hdr');
     const crisprHdrGenerateBtn = document.getElementById('crispr-hdr-generate-btn');
     const crisprApplyBtn       = document.getElementById('crispr-apply-btn');
-    if (crisprLoadDemoBtn)    crisprLoadDemoBtn.addEventListener('click', loadCrisprDemoSequence);
-    if (crisprSearchBtn)      crisprSearchBtn.addEventListener('click', searchCrisprTarget);
-    if (crisprPathwayNhejBtn) crisprPathwayNhejBtn.addEventListener('click', () => selectCrisprPathway('nhej'));
-    if (crisprPathwayHdrBtn)  crisprPathwayHdrBtn.addEventListener('click', () => selectCrisprPathway('hdr'));
-    if (crisprHdrGenerateBtn) crisprHdrGenerateBtn.addEventListener('click', generateCrisprHdrPreview);
-    if (crisprApplyBtn)       crisprApplyBtn.addEventListener('click', applyCrisprEditToSimulator);
+    if (crisprLoadDemoBtn)    crisprLoadDemoBtn.addEventListener('click', PS.loadCrisprDemoSequence || loadCrisprDemoSequence);
+    if (crisprSearchBtn)      crisprSearchBtn.addEventListener('click', PS.searchCrisprTarget || searchCrisprTarget);
+    if (crisprPathwayNhejBtn) crisprPathwayNhejBtn.addEventListener('click', () => (PS.selectCrisprPathway || selectCrisprPathway)('nhej'));
+    if (crisprPathwayHdrBtn)  crisprPathwayHdrBtn.addEventListener('click', () => (PS.selectCrisprPathway || selectCrisprPathway)('hdr'));
+    if (crisprHdrGenerateBtn) crisprHdrGenerateBtn.addEventListener('click', PS.generateCrisprHdrPreview || generateCrisprHdrPreview);
+    if (crisprApplyBtn)       crisprApplyBtn.addEventListener('click', PS.applyCrisprEditToSimulator || applyCrisprEditToSimulator);
 
     if (exportCopySeqBtn) {
       exportCopySeqBtn.addEventListener('click', () =>
-        copyTextareaContent('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
+        (PS.copyTextareaContent || copyTextareaContent)('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
     }
     if (exportCopyLinkBtn) {
       exportCopyLinkBtn.addEventListener('click', () =>
-        copyTextareaContent('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
+        (PS.copyTextareaContent || copyTextareaContent)('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
     }
     if (exportImageBtn) {
       exportImageBtn.addEventListener('click', () => {
@@ -7233,5 +7237,73 @@ window.PS = window.PS || {};
   // Nenhuma exportação global é necessária: os cartões de doença e os botões de base
   // agora usam data-attributes + listeners delegados (ver bloco de vinculação de eventos
   // em DOMContentLoaded), em vez de onclick inline no HTML. O IIFE permanece 100% encapsulado.
+
+  // ─── Exportação para módulos externos (exercises.js, quiz.js, etc.) ──────
+  PS.showAlert = showAlert;
+  PS.openModalDialog = openModalDialog;
+  PS.generateRandomCodingDna = generateRandomCodingDna;
+  PS.translateDnaHeadless = translateDnaHeadless;
+  PS.shuffled = shuffled;
+  PS.formatAminoAcidChain = formatAminoAcidChain;
+  PS.generateExerciseSet = generateExerciseSet;
+  PS.renderExercisePreview = renderExercisePreview;
+  PS.renderExercisePrintables = renderExercisePrintables;
+  PS.printExerciseContent = printExerciseContent;
+  PS.downloadExercisesAsText = downloadExercisesAsText;
+  PS.openExerciseGeneratorModal = openExerciseGeneratorModal;
+  PS.exerciseSet = exerciseSet;
+
+  // ─── Quiz ─────────────────────────────────────────────────────────────
+  PS.quiz = quiz;
+  PS.initQuizUI = initQuizUI;
+  PS.startQuiz = startQuiz;
+  PS.exitQuiz = exitQuiz;
+  PS.endQuiz = endQuiz;
+  PS.nextQuestion = nextQuestion;
+  PS.submitQuizAnswer = submitQuizAnswer;
+  PS.showQuestion = showQuestion;
+  PS.renderPracticeStats = renderPracticeStats;
+  PS.buildQuestionPool = buildQuestionPool;
+  PS.showFeedback = showFeedback;
+
+  // ─── Export / Import ─────────────────────────────────────────────────
+  PS.openExportModal = openExportModal;
+  PS.openImportModal = openImportModal;
+  PS.exportNodeAsPng = exportNodeAsPng;
+  PS.handleImportSubmit = handleImportSubmit;
+  PS.copyTextareaContent = copyTextareaContent;
+  PS.downloadSvgBlob = downloadSvgBlob;
+
+  // ─── CRISPR ──────────────────────────────────────────────────────────
+  PS.openCrisprModal = openCrisprModal;
+  PS.loadCrisprDemoSequence = loadCrisprDemoSequence;
+  PS.searchCrisprTarget = searchCrisprTarget;
+  PS.selectCrisprPathway = selectCrisprPathway;
+  PS.generateCrisprHdrPreview = generateCrisprHdrPreview;
+  PS.applyCrisprEditToSimulator = applyCrisprEditToSimulator;
+
+  // ─── Cariótipo ──────────────────────────────────────────────────────
+  PS.viewSelectedKaryotype = viewSelectedKaryotype;
+  PS.setNondisMode = setNondisMode;
+  PS.runNondisjunctionSimulation = runNondisjunctionSimulation;
+
+  // ─── PopGen ──────────────────────────────────────────────────────────
+  PS.setPopgenMode = setPopgenMode;
+  PS.calcPopgenFromQSquared = calcPopgenFromQSquared;
+  PS.calcPopgenFromP = calcPopgenFromP;
+  PS.testPopgenEquilibrium = testPopgenEquilibrium;
+
+  // ─── Mendel / Epistasia / ABO ────────────────────────────────────────
+  PS.setMendelMode = setMendelMode;
+  PS.generateMendelCross = generateMendelCross;
+  PS.setMendelLabTab = setMendelLabTab;
+  PS.renderEpistasisResult = renderEpistasisResult;
+  PS.renderAboResult = renderAboResult;
+
+  // ─── Heredogramas ────────────────────────────────────────────────────
+  PS.setPedigreeMode = setPedigreeMode;
+  PS.generateStudyPedigree = generateStudyPedigree;
+  PS.generateQuizPedigree = generateQuizPedigree;
+  PS.answerPedigreeQuiz = answerPedigreeQuiz;
 
 })();

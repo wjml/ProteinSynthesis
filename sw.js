@@ -8,6 +8,8 @@ const ASSETS = [
   './assets/style/app.css',
   './assets/js/dom.js',
   './assets/js/script.js',
+  './assets/js/exercises.js',
+  './assets/js/quiz.js',
   './assets/images/Logo.svg',
   './assets/images/icon-beta.png'
 ];

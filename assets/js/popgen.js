@@ -1,0 +1,1 @@
+(function(){'use strict';var PS=window.PS=window.PS||{};PS.popgenFacade={setMode:function(m){if(PS.setPopgenMode)PS.setPopgenMode(m)},calcQSquared:function(){if(PS.calcPopgenFromQSquared)PS.calcPopgenFromQSquared()},calcP:function(){if(PS.calcPopgenFromP)PS.calcPopgenFromP()},testEquilibrium:function(){if(PS.testPopgenEquilibrium)PS.testPopgenEquilibrium()}}})();
