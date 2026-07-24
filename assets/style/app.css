@@ -1293,7 +1293,7 @@ button.quiz-option.mutation-type-badge.frameshift {
 }
 
 .quiz-score-item strong {
-    color: var(--colorInfo);
+    color: var(--colorDetailsText);
 }
 
 .quiz-exit-btn {
@@ -1364,12 +1364,12 @@ button.quiz-chip {
 }
 
 button.quiz-chip:hover {
-    border-color: var(--colorInfo);
+    border-color: var(--colorDetailsText);
 }
 
 button.quiz-chip.active {
-    background: var(--colorInfo);
-    border-color: var(--colorInfo);
+    background: var(--colorDetailsText);
+    border-color: var(--colorDetailsText);
     color: white;
 }
 

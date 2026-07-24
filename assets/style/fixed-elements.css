@@ -505,6 +505,7 @@ nav #logo img {
 	text-align: initial;
 	align-items: stretch;
 	display: flex;
+
 	flex-direction: column;
 	flex: 1;
 	/* Antes, a altura de cada linha vinha de proporções flex-grow ajustadas à
@@ -513,7 +514,7 @@ nav #logo img {
 	   proporções. Agora cada linha tem altura natural (flex: 0 0 auto) e,
 	   se o conteúdo não couber num monitor baixo, a barra rola — o layout
 	   nunca mais "quebra" por causa de um item a mais. */
-	overflow-y: auto;
+	overflow-y: hidden;
 	overflow-x: hidden;
 }
 

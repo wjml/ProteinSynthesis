@@ -6470,7 +6470,7 @@
     if (quiz.els.modeSubtitle) {
       quiz.els.modeSubtitle.textContent = isPractice
         ? 'Responda no seu ritmo: errar não encerra a sessão. Cada pergunta mostra uma explicação, e seu desempenho é acompanhado por assunto.'
-        : 'Responda o máximo de perguntas seguidas que conseguir. Um erro encerra a rodada — escolha abaixo a dificuldade e os assuntos que vão cair no desafio.';
+        : 'Escolha abaixo o modo, a dificuldade e os assuntos que vão cair no desafio.';
     }
     if (quiz.els.scoreboardSurvival) quiz.els.scoreboardSurvival.style.display = isPractice ? 'none' : 'flex';
     if (quiz.els.scoreboardPractice) quiz.els.scoreboardPractice.style.display = isPractice ? 'flex' : 'none';
