@@ -621,8 +621,18 @@ nav #logo img {
 }
 
 .sidebar .button.collapsible-toggle.active:after {
-	content: "\23F7";
-	color: white;
+  content: "\23F7";
+  display: block;
+  color: white;
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  left: auto;
+  width: auto;
+  height: auto;
+  margin: 0;
+  background: transparent;
+  transform: translateY(-50%);
 }
 
 .sidebar .button.collapsible-toggle span {
@@ -651,38 +661,68 @@ nav #logo img {
    Substitui a barra sólida à esquerda por "haste curta + ponto colorido"
    — o ícone do item funciona como o "marcador" do Selo, e a haste
    conecta a um ponto colorido, reusando a mesma linguagem visual criada
-   no Prompt 2. A haste (::before) + o ponto (inset de box-shadow do ::before)
-   evitam conflito com o ::after dos collapsible-toggle (que já é a seta). */
+   no Prompt 2. O indicador SÓ APARECE em botões normais (não em collapsibles),
+   evitando conflito com a seta de toggle e sobreposição de texto. */
 .button.active,
 .button.active:hover {
-	background: var(--colorDetailsText);
-	color: white;
-	transition: all 0.2s ease-in;
+  background: var(--colorDetailsText);
+  color: white;
+  transition: all 0.2s ease-in;
 }
 
-.sidebar .button.active::before {
-	content: "";
-	position: absolute;
-	left: 2px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 14px;
-	height: 2px;
-	background: var(--colorDetailsHover);
-	box-shadow: -6px 0 0 0 var(--colorDetailsHover);
-	border-radius: 1px;
-}
-
+/* O indicador não deve aparecer em collapsible-toggle (que já têm ::after para a seta) */
+.sidebar .button.active::before,
 .sidebar .button.active::after {
-	content: "";
-	position: absolute;
-	left: 18px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: var(--colorDetailsHover);
+  content: none;
+  display: none;
+}
+
+/* Só aplicar indicador em botões normais (não collapsible-toggle) */
+.sidebar .button:not(.collapsible-toggle).active::before {
+  content: "";
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 2px;
+  background: var(--colorDetailsHover);
+  box-shadow: -6px 0 0 0 var(--colorDetailsHover);
+  border-radius: 1px;
+}
+
+.sidebar .button:not(.collapsible-toggle).active::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--colorDetailsHover);
+}
+
+/* Estilização separada para collapsible-toggle para manter a seta visível */
+.sidebar .button.collapsible-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding-right: 30px; /* Espaço para a seta */
+}
+
+/* Quando um collapsible-toggle está ativo, mantenha a seta à direita */
+.sidebar .button.collapsible-toggle.active:after {
+  content: "\23F7";
+  display: block;
+  color: white;
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
