@@ -201,6 +201,13 @@ h4 {
 	--slate900: #0f172a;
 	--white: #ffffff;
 
+	/* ===== Tokens de layout — valores repetidos centralizados ===== */
+	--radius-card: 12px;
+	--radius-btn: 8px;
+	--radius-pill: 999px;
+	--shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+	--transition-default: 0.2s ease;
+
 	/* ===== Neutros de conteúdo e "flat" — REMOVIDOS. Eram duas famílias
 	   quase idênticas a --slate* (diferença de cor imperceptível: distância
 	   euclidiana RGB entre 2 e 36 em cada par). Todo uso em app.css/pages.css

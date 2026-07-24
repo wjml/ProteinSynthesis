@@ -5,7 +5,13 @@
  * Todo o código está encapsulado em uma IIFE e nada é exposto no escopo global:
  * o HTML se comunica com este script via data-attributes (data-base, data-disease,
  * data-codon, data-abbrev) lidos por listeners delegados, não por onclick inline.
+ *
+ * Módulos externos (exercises.js, quiz.js, etc.) registram-se em window.PS
+ * e compartilham funções/estado através deste namespace.
  */
+
+// Namespace compartilhado entre módulos
+window.PS = window.PS || {};
 
 (function () {
   'use strict';
@@ -4816,6 +4822,7 @@
     }
     return arr;
   }
+  PS.shuffled = PS.shuffled || shuffled;
 
   const QUIZ_BEST_SCORE_KEY = 'proteinSynthesis.quizBestScore';
   const QUIZ_TYPE_LABELS = {

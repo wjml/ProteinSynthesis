@@ -147,9 +147,9 @@
 .info-card {
 	text-align: left;
 	background: var(--white);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow-card);
 	border: 1px solid var(--slate100);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, translate 0.2s ease;
 	opacity: 0;
@@ -1218,9 +1218,9 @@
 .panel,
 .lab-tool-panel {
 	background: var(--white);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	box-shadow: var(--shadow-card);
 	border: 1px solid var(--slate100);
 }
 

@@ -1,8 +1,8 @@
 {
   "name": "Protein Synthesis",
-  "short_name": "Protein Synthesis",
+  "short_name": "Síntese",
   "description": "Simulador interativo de genética e síntese de proteínas",
-  "start_url": "index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
@@ -12,6 +12,17 @@
       "src": "assets/images/icon-beta.png",
       "sizes": "192x192",
       "type": "image/png"
+    },
+    {
+      "src": "assets/images/icon-beta.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/images/icon-beta.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
