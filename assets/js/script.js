@@ -1,4 +1,4 @@
-/**
+﻿/**
  * script.js — Simulador de Síntese de Proteínas
  *
  * Refatorado para performance, clareza e manutenibilidade.
@@ -211,7 +211,7 @@ window.PS = window.PS || {};
 
   /**
    * Referências ao painel de mutação.
-   * Inicializadas de forma lazy na primeira chamada de mutationDifference().
+   * Inicializadas de forma lazy na primeira chamada de PS.mutationDifference().
    */
   const mutPanel = {
     panel:         null,
@@ -250,7 +250,7 @@ window.PS = window.PS || {};
   /**
    * Traduz uma string de DNA molde inteira (DNA → RNAm → proteína) sem tocar
    * no DOM — todo o resto do motor de tradução do app (translate(),
-   * translateStrand()) é acoplado aos elementos .sequenceChar reais da tela.
+   * PS.translateStrand()) é acoplado aos elementos .sequenceChar reais da tela.
    * Usada pelo Gerador de Exercícios, que precisa calcular o gabarito de
    * várias sequências de uma vez, nenhuma delas necessariamente a que está
    * no simulador no momento.
@@ -324,7 +324,7 @@ window.PS = window.PS || {};
 
   /**
    * Aplica as classes CSS de cor de base e posição de códon a uma coleção de inputs.
-   * Substitui os 4 loops idênticos em treatSequence().
+   * Substitui os 4 loops idênticos em PS.treatSequence().
    *
    * `frameStart` é a posição (em bases) onde o AUG de verdade começa nessa
    * sequência (achado via findFirstStartIndex() na fita de RNA correspondente,
@@ -336,72 +336,10 @@ window.PS = window.PS || {};
    * posição 0 como um recurso puramente visual (não há tradução de verdade
    * pra alinhar de qualquer forma).
    */
-  function applyCodonClasses(chars, frameStart) {
-    const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
-    for (let i = 0; i < chars.length; i++) {
-      const val = chars[i].value.toUpperCase();
-      let cls = 'sequenceChar base-' + val;
+  // applyCodonClasses movida para assets/js/simulator.js
 
-      if (hasFrame && i < frameStart) {
-        cls += ' codon-utr';
-        if (i === frameStart - 1) cls += ' codon-utr-end'; // último da UTR: respiro antes do 1º códon real
-      } else {
-        const rel = hasFrame ? i - frameStart : i;
-        if (rel % 3 === 0)      cls += ' codon-start';
-        else if (rel % 3 === 2) cls += ' codon-end';
-      }
-      chars[i].className = cls;
-    }
-  }
+  // renderComplementaryStrand movida para assets/js/simulator.js
 
-  /**
-   * Renderiza a fita complementar de DNA — a 2ª fita da dupla-hélice, derivada
-   * da fita molde por pareamento padrão (A-T, C-G; ver COMPLEMENT_DNA acima).
-   * Cada base entra na MESMA posição de índice da base molde correspondente
-   * (é um "emparelhamento direto", igual ao já usado pra gerar a fita de RNA
-   * — não inverte a ordem). Reaproveita o mesmo frameStart de
-   * applyCodonClasses() pra manter o agrupamento visual por códon (as
-   * margens de 8px entre trincas) idêntico ao da fita molde acima, senão as
-   * duas fileiras iriam desalinhando conforme a sequência cresce.
-   *
-   * Usa <span>, não <input>: é conteúdo só de leitura, sempre derivado da
-   * fita molde, e por isso nunca deve entrar em nenhuma coleção
-   * .sequenceChar usada pra tradução/mutação em outras funções — daí a
-   * classe própria .complementChar (ver app.css).
-   */
-  function renderComplementaryStrand(dnaChars, container, frameStart) {
-    if (!container) return;
-    const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
-    const frag = document.createDocumentFragment();
-
-    for (let i = 0; i < dnaChars.length; i++) {
-      const val  = dnaChars[i].value.toUpperCase();
-      const comp = COMPLEMENT_DNA[val] || '';
-      const span = document.createElement('span');
-      let cls = 'complementChar' + (comp ? ' base-' + comp : '');
-
-      if (hasFrame && i < frameStart) {
-        cls += ' codon-utr';
-        if (i === frameStart - 1) cls += ' codon-utr-end';
-      } else {
-        const rel = hasFrame ? i - frameStart : i;
-        if (rel % 3 === 0)      cls += ' codon-start';
-        else if (rel % 3 === 2) cls += ' codon-end';
-      }
-      span.className = cls;
-      span.textContent = comp;
-      frag.appendChild(span);
-    }
-
-    container.innerHTML = '';
-    container.appendChild(frag);
-  }
-
-  /**
-   * Percentual de Guanina + Citosina numa coleção de bases (DNA ou RNA — G e C
-   * significam a mesma coisa nos dois alfabetos, então a mesma função serve
-   * pras duas fitas). Usado no contador "GC:" da barra de estatísticas.
-   */
   function computeGCContent(chars) {
     if (!chars.length) return 0;
     let gcCount = 0;
@@ -414,22 +352,10 @@ window.PS = window.PS || {};
 
   /**
    * Remove todos os filhos com classe sequenceChar de um container.
-   * Substitui o padrão de limpeza repetido 4 vezes em clearSequence().
+   * Substitui o padrão de limpeza repetido 4 vezes em PS.clearSequence().
    */
-  function clearSequenceChars(container) {
-    if (!container) return;
-    Array.from(container.getElementsByClassName('sequenceChar'))
-      .forEach(el => container.removeChild(el));
-  }
+  // clearSequenceChars movida para assets/js/simulator.js
 
-  /**
-   * Exibe um alerta de erro.
-   * Usa SweetAlert se disponível; caso contrário, usa o alert nativo.
-   * O <script> do SweetAlert2 agora carrega ANTES de dom.js/script.js no HTML,
-   * então esse fallback só entra em ação se o CDN falhar (rede instável,
-   * bloqueador de conteúdo etc.) — deixado por segurança, não como caminho
-   * esperado.
-   */
   function showAlert(title, text) {
     if (typeof Swal !== 'undefined') {
       Swal.fire({ type: 'error', title, text });
@@ -474,43 +400,8 @@ window.PS = window.PS || {};
    * @param {string} className - classe CSS do input (default 'sequenceChar').
    * @param {string} ariaLabel - rótulo acessível para leitores de tela, ex: 'Base de DNA' ou 'Base de RNA mensageiro'.
    */
-  function newSequenceChar(value = '', className = 'sequenceChar', ariaLabel = 'Base da sequência') {
-    const input = document.createElement('input');
-    input.className = className;
-    input.maxLength = 1;
-    input.value = value.toUpperCase();
-    input.setAttribute('aria-label', ariaLabel);
-    // inputmode="none" pede pro navegador não abrir o teclado virtual ao focar este
-    // campo — a ideia é que a pessoa monte a sequência clicando nos botões A/T/C/G
-    // (ver insertBase()), não digitando num teclado na tela. Não afeta teclado físico/
-    // bluetooth, nem os listeners de keypress/keydown abaixo, que continuam funcionando
-    // normalmente para quem realmente quiser digitar (ex.: no desktop).
-    input.setAttribute('inputmode', 'none');
-    input.addEventListener('keypress', charInput);
-    input.addEventListener('keydown', actsLikeUniqueInput);
-    return input;
-  }
+  // newSequenceChar movida para assets/js/simulator.js
 
-  /**
-   * Move o foco para `el` sem deixar o navegador abrir o teclado virtual —
-   * usado nos pontos em que o foco é só "lembrete de posição" após um clique em
-   * botão (inserir base, carregar exemplo, sequência aleatória etc.), não uma
-   * intenção real de digitar. inputmode="none" (ver newSequenceChar()) já resolve
-   * a maioria dos casos, mas alguns navegadores (principalmente versões mais
-   * antigas do Safari iOS) ainda abrem o teclado num focus() disparado por script,
-   * ignorando o inputmode. Marcar o campo como readonly no instante do focus() é o
-   * truque clássico e mais confiável pra evitar isso — o teclado só aparece quando o
-   * SO decide mostrá-lo no momento do foco, então removê-lo logo em seguida não
-   * reabre nada.
-   */
-  function focusWithoutKeyboard(el) {
-    if (!el) return;
-    el.setAttribute('readonly', 'readonly');
-    el.focus({ preventScroll: true });
-    setTimeout(() => el.removeAttribute('readonly'), 100);
-  }
-
-  /** Cria e retorna um elemento de aminoácido completo com rótulos e event listeners. */
   function newAminoacid(aminoacid = { name: '', abbrevName: '' }) {
     const div = document.createElement('div');
     // Codificação por cor química: cada cartão real (não os placeholders vazios)
@@ -687,10 +578,10 @@ window.PS = window.PS || {};
     closeDrawer();
 
     // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
-    // e dispara translate()/treatSequence() uma única vez ao final.
-    for (const base of dnaBases) insertBase(base, { skipRender: true });
+    // e dispara translate()/PS.treatSequence() uma única vez ao final.
+    for (const base of dnaBases) PS.insertBase(base, { skipRender: true });
     translate();
-    treatSequence();
+    PS.treatSequence();
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1061,252 +952,20 @@ window.PS = window.PS || {};
   let _scrollLock = false;
 
   /** Sincroniza o scroll horizontal de todas as linhas (DNA, RNA, aminoácidos, fita complementar). */
-  function scrollUnique() {
-    if (_scrollLock) return;
-    _scrollLock = true;
-    const sl = this.scrollLeft;
-    for (let i = 0; i < textboxDna.length; i++) {
-      textboxDna[i].scrollLeft       = sl;
-      textboxRna[i].scrollLeft       = sl;
-      outputAminoacids[i].scrollLeft = sl;
-      if (complementContainers[i]) complementContainers[i].scrollLeft = sl;
-    }
-    _scrollLock = false;
-  }
+  // scrollUnique movida para assets/js/simulator.js
 
-  // ─── Ativação do input DNA ───────────────────────────────────────────────────
+  // activateDnaInput movida para assets/js/simulator.js
 
-  /**
-   * Cria o primeiro input de DNA se não existir nenhum,
-   * ou foca no último existente. Compartilhado entre clique no blank-space
-   * e clique na área vazia do container textbox-dna.
-   */
-  function activateDnaInput() {
-    if (dnaSequenceChars.length === 0) {
-      const dnaInput = newSequenceChar('', 'sequenceChar', 'Base de DNA');
-      const rnaInput = newSequenceChar('', 'sequenceChar', 'Base de RNA mensageiro');
-      textboxDna[0].insertBefore(dnaInput, blankSpace);
-      textboxRna[0].appendChild(rnaInput);
-      dnaInput.focus();
-    } else {
-      const last = dnaSequenceChars[dnaSequenceChars.length - 1];
-      last.focus();
-      last.selectionStart = 1;
-    }
-  }
+  // charInput movida para assets/js/simulator.js
 
-  // ─── Handlers de teclado ─────────────────────────────────────────────────────
+  // actsLikeUniqueInput movida para assets/js/simulator.js
 
-  /** Trata a entrada de caracteres em um sequenceChar (evento keypress). */
-  function charInput(event) {
-    event.preventDefault();
-    const key = event.key.toUpperCase();
-    if (key === 'CAPSLOCK' || !VALID_BASES.has(key)) return;
+  // syncFrameClasses movida para assets/js/simulator.js
 
-    const rnaEl = getRnaEquivalent(this);
+  // treatSequence movida para assets/js/simulator.js
 
-    if (this.selectionStart === 0) {
-      // Inserir antes da posição atual
-      const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
-      const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
-      textboxDna[0].insertBefore(newDna, this);
-      textboxRna[0].insertBefore(newRna, rnaEl);
-      newDna.focus();
+  // updateCodonLabels movida para assets/js/simulator.js
 
-      // Remove o input atual se estava vazio (placeholder do início da sequência)
-      if (this.value === '') {
-        textboxDna[0].removeChild(this);
-        textboxRna[0].removeChild(rnaEl);
-      }
-    } else {
-      // Inserir após a posição atual
-      const newDna = newSequenceChar(key, 'sequenceChar', 'Base de DNA');
-      const newRna = newSequenceChar(transcribe(key), 'sequenceChar', 'Base de RNA mensageiro');
-      textboxDna[0].insertBefore(newDna, this.nextElementSibling);
-      textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-      newDna.focus();
-    }
-
-    translate();
-    treatSequence();
-  }
-
-  /** Trata teclas de navegação e deleção em um sequenceChar (evento keydown). */
-  function actsLikeUniqueInput(event) {
-    const rnaEl = getRnaEquivalent(this);
-
-    // Modo "Mutação" ativo: edição totalmente livre da fita mutada — inserir
-    // e remover bases em qualquer combinação, com navegação por seta (união
-    // do que os antigos modos Adição/Deleção/Substituição permitiam). Fora
-    // do modo mutação (construindo a sequência original): mesmo
-    // comportamento de sempre, sem navegação por seta.
-    const isMutating = mutationButton.classList.contains('active');
-    const allowedKeys = isMutating
-      ? new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'BACKSPACE', 'DELETE', 'ARROWLEFT', 'ARROWRIGHT'])
-      : new Set(['CAPSLOCK', 'A', 'T', 'C', 'G', 'BACKSPACE', 'DELETE']);
-
-    if (!allowedKeys.has(event.key.toUpperCase())) {
-      showAlert('Inserção não permitida!', MUTATION_ALERTS.default);
-      event.preventDefault();
-      return;
-    }
-
-    switch (event.code) {
-      case 'Backspace':
-        event.preventDefault();
-        if (this.selectionStart === 0) {
-          try {
-            textboxDna[0].removeChild(this.previousElementSibling);
-            textboxRna[0].removeChild(rnaEl.previousElementSibling);
-          } catch (e) { console.log('Início da sequência atingido.'); }
-        } else {
-          try {
-            this.previousElementSibling.focus();
-            textboxDna[0].removeChild(this);
-            textboxRna[0].removeChild(rnaEl);
-          } catch (e) {
-            textboxDna[0].removeChild(this);
-            textboxRna[0].removeChild(rnaEl);
-          }
-        }
-        break;
-
-      case 'Delete':
-        if (this.selectionStart === 0) {
-          event.preventDefault();
-          try {
-            this.nextElementSibling.focus();
-            this.nextElementSibling.selectionStart = 0;
-            textboxDna[0].removeChild(this);
-            textboxRna[0].removeChild(rnaEl);
-          } catch (e) { console.log('Sem elemento à frente.'); }
-        } else {
-          try {
-            textboxDna[0].removeChild(this.nextElementSibling);
-            textboxRna[0].removeChild(rnaEl.nextElementSibling);
-          } catch (e) { console.log('Sem elemento à frente.'); }
-        }
-        break;
-
-      case 'ArrowLeft':
-        if (this.selectionStart === 0) {
-          try { this.previousElementSibling.focus(); }
-          catch (e) { /* início da sequência */ }
-        }
-        break;
-
-      case 'ArrowRight':
-        if (this.selectionStart === 1) {
-          try { this.nextElementSibling.focus(); }
-          catch (e) { /* fim da sequência */ }
-        }
-        break;
-
-      default:
-        return;
-    }
-
-    translate();
-    treatSequence();
-  }
-
-  // ─── Processamento de sequência ───────────────────────────────────────────────
-
-  /**
-   * Aplica as classes CSS de cor e posição de códon nas quatro linhas de sequência
-   * (DNA/RNA principal + DNA/RNA do painel de mutação).
-   *
-   * BUGFIX (alinhamento aminoácido × códon): isolada de treatSequence() porque
-   * translateStrand() precisa dessas classes JÁ aplicadas antes de medir
-   * offsetLeft (o .codon-utr-end tem margin-right:8px que desloca a posição
-   * de todo mundo depois da UTR). Antes, todo call site fazia
-   * `translate(); treatSequence();` nessa ordem — ou seja, translateStrand()
-   * sempre lia o offsetLeft com as classes ainda da tecla ANTERIOR, um passo
-   * atrasado. Isso só não quebrava por acaso quando o comprimento da UTR não
-   * mudava de uma tecla pra outra; ao digitar algo como "AATACGGG", no
-   * instante em que o AUG se completa o quadro de leitura muda e o spacer
-   * fica com a largura errada — o aminoácido sai desalinhado do códon.
-   * Ver a chamada em translate() logo abaixo.
-   */
-  function syncFrameClasses() {
-    // Cada par DNA/RNA (o do simulador principal e o do painel de mutação) tem
-    // seu próprio quadro de leitura — achado uma vez a partir da fita de RNA
-    // daquele par, e reaproveitado tanto pra fita de DNA quanto pra fita de RNA
-    // (mesma posição, mesma correspondência base a base).
-    const mainFrameStart = findFirstStartIndex(readSequence(rnaSequenceChars));
-    applyCodonClasses(dnaSequenceChars, mainFrameStart);
-    applyCodonClasses(rnaSequenceChars, mainFrameStart);
-    renderComplementaryStrand(dnaSequenceChars, complementContainers[0], mainFrameStart);
-
-    const mutRnaChars   = textboxRna[1].getElementsByClassName('sequenceChar');
-    const mutDnaChars   = textboxDna[1].getElementsByClassName('sequenceChar');
-    const mutFrameStart = findFirstStartIndex(readSequence(mutRnaChars));
-    applyCodonClasses(mutDnaChars, mutFrameStart);
-    applyCodonClasses(mutRnaChars, mutFrameStart);
-    renderComplementaryStrand(mutDnaChars, complementContainers[1], mutFrameStart);
-  }
-
-  /**
-   * Garante as classes de códon em dia (syncFrameClasses) e então dispara a
-   * análise de mutação e a injeção de rótulos de códon. Chamada depois de
-   * translate() em todo call site — mutationDifference() lê os cards de
-   * aminoácido que só existem depois que translateStrand() rodou.
-   */
-  function treatSequence() {
-    syncFrameClasses();
-    mutationDifference();
-    updateCodonLabels();
-    saveSequenceAutosave();
-  }
-
-  /**
-   * Injeta rótulos pill ("INÍCIO" / "PARADA") acima do textbox de RNA
-   * para os códons de início e parada, usando uma máquina de estados simples.
-   *
-   * BUGFIX: a versão anterior calculava a posição horizontal com constantes
-   * fixas em pixels (padding + largura de slot) espelhando o CSS manualmente.
-   * Isso quebrava silenciosamente sempre que o CSS responsivo mudava o
-   * tamanho da fonte/input em telas menores. Agora a posição é lida
-   * diretamente do `offsetLeft` do input real que inicia o códon, então o
-   * rótulo sempre acompanha o layout de verdade, não uma cópia dele.
-   */
-  function updateCodonLabels() {
-    const rnaBox = textboxRna[0];
-
-    // Remove rótulos anteriores
-    const stale = rnaBox.getElementsByClassName('codon-label');
-    while (stale.length > 0) rnaBox.removeChild(stale[0]);
-
-    const seq = readSequence(rnaSequenceChars);
-    if (seq.length < 3) return;
-
-    // Reaproveita walkCodingRegion() em vez de reimplementar a busca de AUG/STOP
-    // aqui — essa duplicação era justamente uma das duas cópias que carregavam
-    // o bug de quadro de leitura fixo na posição 0. Uma só fonte de verdade agora.
-    let wasActive = false;
-    walkCodingRegion(seq, (codon, aminoacid, isActive, baseIndex) => {
-      let kind = null;
-      if (isActive && !wasActive) kind = 'start';
-      else if (!isActive && wasActive) kind = 'stop';
-      wasActive = isActive;
-      if (!kind) return;
-
-      const startChar = rnaSequenceChars[baseIndex];
-      if (!startChar) return;
-
-      const lbl = document.createElement('div');
-      lbl.className   = 'codon-label codon-label-' + kind;
-      lbl.textContent = kind === 'start' ? 'INÍCIO' : 'PARADA';
-      lbl.style.left  = startChar.offsetLeft + 'px';
-      rnaBox.appendChild(lbl);
-    });
-  }
-
-  /**
-   * Encontra a posição do primeiro AUG na sequência de RNA — em QUALQUER
-   * posição, não necessariamente múltipla de 3 (a UTR 5' pode ter qualquer
-   * comprimento). Retorna -1 se não houver nenhum AUG.
-   */
   function findFirstStartIndex(rnaSeq) {
     return rnaSeq.indexOf('AUG');
   }
@@ -1317,7 +976,7 @@ window.PS = window.PS || {};
    * múltiplas de 3 a partir do início da string —, então uma UTR 5' de
    * qualquer comprimento (1, 2, 4 bases...) antes do AUG real é reconhecida
    * corretamente. UNIFICAÇÃO: essa regra existia duplicada em applyCodonClasses(),
-   * updateCodonLabels() e translateProteinChainPure(); agora só existe aqui.
+   * PS.updateCodonLabels() e translateProteinChainPure(); agora só existe aqui.
    *
    * Depois de encontrar um AUG e percorrer até o STOP correspondente (ou até
    * o fim da sequência, se não houver STOP), a busca recomeça a partir dali —
@@ -1327,7 +986,7 @@ window.PS = window.PS || {};
    * Para cada códon dentro de uma ORF, invoca onCodon(codon, aminoacid, isActive, baseIndex).
    * isActive é true para o AUG e todos os códons até (mas não incluindo) o STOP.
    * baseIndex é a posição (em bases) onde aquele códon começa na sequência —
-   * usado por updateCodonLabels() para posicionar os rótulos INÍCIO/PARADA.
+   * usado por PS.updateCodonLabels() para posicionar os rótulos INÍCIO/PARADA.
    *
    * Bases antes do primeiro AUG, ou fora de qualquer ORF, NÃO disparam onCodon.
    */
@@ -1398,70 +1057,8 @@ window.PS = window.PS || {};
    * Generaliza a lógica usada tanto pela fita ativa (live) quanto pela fita de comparação (baseline),
    * permitindo reuso em loadDiseaseExample().
    */
-  function translateStrand(rnaChars, outputContainer) {
-    outputContainer.innerHTML = '';
+  // translateStrand movida para assets/js/simulator.js
 
-    const sequence   = readSequence(rnaChars);
-    const frameStart = findFirstStartIndex(sequence);
-
-    // A fileira de aminoácidos não tem um "slot" pra UTR 5' (não faz sentido
-    // mostrar um card vazio pra bases que nunca chegam a ser lidas). Mas pra
-    // ela continuar alinhada embaixo da fileira de RNA — que SIM mostra a
-    // UTR, só que com um estilo apagado — precisamos de um espaço reservado
-    // do mesmo tamanho antes do primeiro slot de verdade.
-    //
-    // BUGFIX (alinhamento aminoácido × códon): a versão anterior usava
-    // rnaChars[frameStart].offsetLeft direto como largura do spacer. Isso
-    // erra de dois jeitos:
-    //   1) offsetLeft já embute o padding-left da PRÓPRIA fileira de RNA —
-    //      mas o spacer nasce dentro de .output-aminoacids, que tem seu
-    //      PRÓPRIO padding-left/border independente. Usar offsetLeft como
-    //      largura do spacer conta esse padding duas vezes.
-    //   2) .output-aminoacids usa `gap: 8px` no flexbox pra separar os
-    //      cards de aminoácido entre si — gap insere esse espaço entre TODO
-    //      par de itens adjacentes, inclusive entre o spacer (1º filho) e o
-    //      primeiro card real, sem equivalente na fileira de RNA (lá o
-    //      respiro UTR→1º códon vem só da margem pontual de
-    //      .codon-utr-end).
-    // A correção mede em qual posição X (relativa à borda esquerda de CADA
-    // fileira) o AUG começa, e calcula o quanto falta preencher no OUTRO
-    // container pra chegar nessa mesma posição X — descontando o que o
-    // border/padding/gap PRÓPRIOS de .output-aminoacids já empurram de
-    // graça. Assim funciona não importa se os dois containers têm
-    // padding/border iguais ou não, e não quebra se o CSS responsivo mudar
-    // esses valores em telas menores.
-    if (frameStart > 0 && rnaChars[frameStart]) {
-      const rnaBox = rnaChars[frameStart].parentElement;
-      const targetX = rnaChars[frameStart].getBoundingClientRect().left - rnaBox.getBoundingClientRect().left;
-
-      const outCS          = getComputedStyle(outputContainer);
-      const outBorderLeft  = parseFloat(outCS.borderLeftWidth) || 0;
-      const outPaddingLeft = parseFloat(outCS.paddingLeft) || 0;
-      const outGap         = parseFloat(outCS.columnGap) || 0;
-
-      const spacer = document.createElement('div');
-      spacer.className = 'output-aminoacids-utr-spacer';
-      spacer.style.width = Math.max(0, targetX - outBorderLeft - outPaddingLeft - outGap) + 'px';
-      outputContainer.appendChild(spacer);
-    }
-
-    walkCodingRegion(sequence, (codon, aminoacid, isActive) => {
-      outputContainer.appendChild(isActive ? newAminoacid(aminoacid) : newAminoacid());
-    });
-  }
-
-  /**
-   * Constrói a lista de passos para a animação do ribossomo: um item por códon
-   * dentro da primeira ORF encontrada (do AUG ao primeiro STOP em fase, inclusive),
-   * na ordem em que o ribossomo os seria percorrer. Reaproveita walkCodingRegion() —
-   * a mesma regra de fase de leitura usada pelo simulador e pelo quiz.
-   *
-   * Limitado à primeira ORF de propósito: animar múltiplas ORFs na mesma sequência
-   * confundiria o aluno sobre qual proteína está sendo montada.
-   *
-   * @param {string} rnaSeq
-   * @returns {Array<{codon:string, aminoacid:object, kind:'start'|'add'|'stop'}>}
-   */
   function buildRibosomeSteps(rnaSeq) {
     const steps = [];
     let inOrf = false;
@@ -1505,7 +1102,7 @@ window.PS = window.PS || {};
   // a mesma lista de passos de buildRibosomeSteps() um de cada vez, mostrando
   // visualmente o tRNA entrando, pareando com o mRNA e entregando o aminoácido
   // à cadeia em formação — em vez de renderizar a proteína inteira de uma vez
-  // como translateStrand() já faz no simulador principal.
+  // como PS.translateStrand() já faz no simulador principal.
 
   const ribosome = {
     steps: [],
@@ -1616,7 +1213,7 @@ window.PS = window.PS || {};
    * ilusão de que o tRNA está entregando o aminoácido bem ali. Como os
    * dois elementos têm sistemas de coordenadas locais DIFERENTES (mesmo
    * problema de fundo da correção de alinhamento do simulador principal —
-   * ver syncFrameClasses()/translateStrand() acima), a reconciliação usa
+   * ver PS.syncFrameClasses()/PS.translateStrand() acima), a reconciliação usa
    * getBoundingClientRect() dos dois lados em vez de offsetLeft cru.
    */
   function positionRibosomeMarker(stepIndex) {
@@ -1734,263 +1331,16 @@ window.PS = window.PS || {};
    * Traduz a fita ativa (live, índice 0) e atualiza os contadores da UI.
    * BUGFIX: a variável `aminoacids` não era declarada no original, tornando-se global.
    */
-  function translate() {
-    // BUGFIX: garante que .codon-utr/.codon-utr-end já estejam aplicadas
-    // ANTES de translateStrand() medir offsetLeft pra montar o spacer da
-    // UTR — ver nota em syncFrameClasses(). Sem isso, o spacer é medido com
-    // o layout de uma tecla atrás e o aminoácido sai desalinhado do códon.
-    syncFrameClasses();
-    translateStrand(rnaSequenceChars, outputAminoacids[0]);
-    updateCounters();
-  }
+  // translate movida para assets/js/simulator.js
 
-  /** Atualiza os contadores de códons e aminoácidos ativos na UI. */
-  function updateCounters() {
-    const codonCounter     = document.getElementById('codon-counter');
-    const aminoacidCounter = document.getElementById('aminoacid-counter');
-    const gcCounter         = document.getElementById('gc-counter');
-    if (!codonCounter || !aminoacidCounter) return;
+  // alignSequences movida para assets/js/simulator.js
 
-    const totalCodons = Math.floor(rnaSequenceChars.length / 3);
-    const activeAAs   = Array.from(outputAminoacids[0].getElementsByClassName('aminoacid'))
-                             .filter(el => !el.classList.contains('not-availlable')).length;
+  // rightAlignInsertions movida para assets/js/simulator.js
 
-    codonCounter.textContent     = totalCodons;
-    aminoacidCounter.textContent = activeAAs;
-    // GC é igual em qualquer uma das duas fitas (G sempre pareia com C), então
-    // calcular em cima da fita molde já representa a dupla-hélice inteira.
-    if (gcCounter) gcCounter.textContent = computeGCContent(dnaSequenceChars) + '%';
-  }
+  // mutationDifference movida para assets/js/simulator.js
 
-  // ─── Análise de mutação ───────────────────────────────────────────────────────
-
-  /**
-   * Alinha duas sequências (arrays de itens comparáveis) usando alinhamento
-   * com penalidade de gap afim (algoritmo de Gotoh) — a mesma técnica usada
-   * em bioinformática pra alinhar sequências com inserções/deleções.
-   *
-   * Comparar posição-a-posição (`origSeq[i] === mutSeq[i]`) quebra assim que
-   * uma base é inserida ou removida: tudo que vem depois passa a ocupar um
-   * índice diferente, então bases idênticas acabam marcadas como "diferentes"
-   * só por terem se deslocado. Este alinhamento resolve isso identificando
-   * corretamente:
-   *   - itens que continuam idênticos, mesmo deslocados de posição;
-   *   - itens realmente alterados (substituição, no mesmo "lugar" da fita);
-   *   - itens inseridos, sem correspondente na sequência original.
-   *
-   * A penalidade de abrir um gap (GAP_OPEN) é maior que a de estendê-lo
-   * (GAP_EXTEND), então o algoritmo prefere UM bloco contíguo de
-   * inserção/deleção a vários blocos espalhados — importante pra
-   * representar o evento biológico real (ex: a inserção de 4 bases na
-   * Doença de Tay-Sachs) como um único evento, e não uma sequência de
-   * trocas soltas de base.
-   *
-   * @param {Array} origItems - itens da sequência original.
-   * @param {Array} mutItems  - itens da sequência mutada.
-   * @param {function} [equalsFn] - compara dois itens (padrão: ===).
-   * @returns {Array<'match'|'sub'|'ins'>} um resultado por item de mutItems —
-   *   itens de origItems que foram deletados não geram saída (não há
-   *   posição correspondente do lado mutado pra destacar).
-   */
-  function alignSequences(origItems, mutItems, equalsFn) {
-    const eq = equalsFn || function (a, b) { return a === b; };
-    const n = origItems.length;
-    const m = mutItems.length;
-
-    if (n === 0) return mutItems.map(function () { return 'ins'; });
-    if (m === 0) return [];
-
-    const MISMATCH  = 1;
-    const GAP_OPEN   = 1;
-    const GAP_EXTEND = 0.3;
-    const INF = Infinity;
-
-    // M[i][j]  = custo mínimo alinhando origItems[0..i) com mutItems[0..j),
-    //            terminando em correspondência (match ou substituição).
-    // Ix[i][j] = ...terminando em um item original sem correspondente
-    //            (deleção — consome origItems, não gera saída em mutItems).
-    // Iy[i][j] = ...terminando em um item mutado sem correspondente
-    //            (inserção — gera saída 'ins').
-    const M = [], Ix = [], Iy = [];
-    for (let i = 0; i <= n; i++) {
-      M.push(new Array(m + 1).fill(INF));
-      Ix.push(new Array(m + 1).fill(INF));
-      Iy.push(new Array(m + 1).fill(INF));
-    }
-
-    M[0][0] = 0;
-    for (let i = 1; i <= n; i++) Ix[i][0] = GAP_OPEN + (i - 1) * GAP_EXTEND;
-    for (let j = 1; j <= m; j++) Iy[0][j] = GAP_OPEN + (j - 1) * GAP_EXTEND;
-
-    for (let i = 1; i <= n; i++) {
-      for (let j = 1; j <= m; j++) {
-        const cost = eq(origItems[i - 1], mutItems[j - 1]) ? 0 : MISMATCH;
-        M[i][j]  = Math.min(M[i - 1][j - 1], Ix[i - 1][j - 1], Iy[i - 1][j - 1]) + cost;
-        Ix[i][j] = Math.min(M[i - 1][j] + GAP_OPEN, Ix[i - 1][j] + GAP_EXTEND);
-        Iy[i][j] = Math.min(M[i][j - 1] + GAP_OPEN, Iy[i][j - 1] + GAP_EXTEND);
-      }
-    }
-
-    const EPS = 1e-9;
-    const result = new Array(m);
-    let i = n, j = m;
-    let state = (M[i][j] <= Ix[i][j] && M[i][j] <= Iy[i][j]) ? 'M' : (Ix[i][j] <= Iy[i][j] ? 'Ix' : 'Iy');
-
-    while (i > 0 || j > 0) {
-      if (state === 'M') {
-        const isMatch = eq(origItems[i - 1], mutItems[j - 1]);
-        result[j - 1] = isMatch ? 'match' : 'sub';
-        const cost = isMatch ? 0 : MISMATCH;
-        if (Math.abs(M[i][j] - (M[i - 1][j - 1] + cost)) < EPS) state = 'M';
-        else if (Math.abs(M[i][j] - (Ix[i - 1][j - 1] + cost)) < EPS) state = 'Ix';
-        else state = 'Iy';
-        i--; j--;
-      } else if (state === 'Ix') {
-        state = Math.abs(Ix[i][j] - (M[i - 1][j] + GAP_OPEN)) < EPS ? 'M' : 'Ix';
-        i--;
-      } else {
-        result[j - 1] = 'ins';
-        state = Math.abs(Iy[i][j] - (M[i][j - 1] + GAP_OPEN)) < EPS ? 'M' : 'Iy';
-        j--;
-      }
-    }
-
-    // BUGFIX: quando a sequência ao redor de uma inserção/deleção é
-    // repetitiva (comum em DNA, alfabeto de só 4 letras — ex.:
-    // "...CGACGACGA..."), mais de um alinhamento tem exatamente o MESMO
-    // custo mínimo: o bloco inserido pode "deslizar" uma ou mais posições
-    // sem gerar nenhuma diferença extra. O traceback do Gotoh acima
-    // resolve esse empate de forma arbitrária (só depende da ordem em que
-    // os estados são preenchidos), então a mesma inserção digitada em
-    // pontos diferentes da fita pode aparecer destacada uma base "pra
-    // trás" do ponto real, ou o destaque parecer não seguir nenhum
-    // padrão — exatamente o sintoma relatado (funciona na maioria dos
-    // casos, mas "buga" e destaca bases que não foram digitadas).
-    // rightAlignInsertions() elimina essa ambiguidade adotando a mesma
-    // convenção usada em nomenclatura genética (regra 3' do HGVS): entre
-    // alinhamentos de custo igual, sempre normaliza para a posição mais
-    // à direita — a mesma razão pela qual a inserção da Doença de
-    // Tay-Sachs é descrita como "1278insTATC" e não uma posição antes.
-    rightAlignInsertions(mutItems, result, eq);
-    return result;
-  }
-
-  /**
-   * Normaliza blocos de inserção ('ins') que podem ser deslocados para a
-   * direita sem alterar o custo do alinhamento — ou seja, a base que
-   * "sai" do início do bloco é idêntica à base que "entra" logo depois
-   * dele. Isso só é possível em trechos de sequência repetitivos, que são
-   * exatamente onde o traceback de alignSequences() é ambíguo (mais de um
-   * alinhamento igualmente ótimo). Sem essa normalização, o resultado do
-   * traceback depende de detalhes de implementação e não de onde a base
-   * foi realmente inserida.
-   *
-   * Ex.: original "TACCGACGACGAATT", mutada "TACTATCCGACGACGAATT"
-   * (inserção real de "TATC" logo após "TAC", como na Doença de
-   * Tay-Sachs). Sem a normalização, o traceback encontra um bloco de
-   * mesmo custo uma posição adiantado ("CTAT" em vez de "TATC"), porque
-   * "C" se repete logo depois. Deslocando o bloco pra direita enquanto a
-   * base que sai da frente for igual à que entra atrás, chegamos no
-   * bloco correto.
-   *
-   * @param {Array} mutItems - itens da sequência mutada (mesmos passados a alignSequences).
-   * @param {Array<'match'|'sub'|'ins'>} tags - resultado de alignSequences, alterado in-place.
-   * @param {function} eq - mesma função de comparação usada no alinhamento.
-   */
-  function rightAlignInsertions(mutItems, tags, eq) {
-    const m = tags.length;
-    let changed = true;
-    while (changed) {
-      changed = false;
-      let idx = 0;
-      while (idx < m) {
-        if (tags[idx] !== 'ins') { idx++; continue; }
-        let end = idx;
-        while (end < m && tags[end] === 'ins') end++;
-        // Desliza o bloco [idx, end) pra direita enquanto o item que sai
-        // da frente do bloco (mutItems[idx]) for idêntico ao item logo
-        // depois do bloco (mutItems[end]) — só então a troca não muda o
-        // resultado final da fita mutada nem o custo do alinhamento.
-        while (end < m && tags[end] === 'match' && eq(mutItems[idx], mutItems[end])) {
-          tags[idx] = 'match';
-          tags[end] = 'ins';
-          idx++; end++;
-          changed = true;
-        }
-        idx = end;
-      }
-    }
-    return tags;
-  }
-
-  /**
-   * Compara a sequência mutada com a original, destaca as diferenças
-   * e classifica o tipo de mutação.
-   */
-  function mutationDifference() {
-    // Inicialização lazy das referências ao painel (evita querySelector a cada chamada)
-    if (!mutPanel.panel) {
-      mutPanel.panel         = document.querySelector('.mutation-panel');
-      mutPanel.noMutationMsg = mutPanel.panel && mutPanel.panel.querySelector('.no-mutation-msg');
-      mutPanel.details       = mutPanel.panel && mutPanel.panel.querySelector('.mutation-details');
-      mutPanel.badge         = mutPanel.panel && mutPanel.panel.querySelector('.mutation-type-badge');
-      mutPanel.desc          = mutPanel.panel && mutPanel.panel.querySelector('.mutation-description');
-    }
-
-    const isActive = mutationWindow[0] && mutationWindow[0].classList.contains('active');
-    if (mutPanel.panel) mutPanel.panel.style.display = isActive ? 'block' : 'none';
-    if (!isActive) return;
-
-    const aminoacids        = outputAminoacids[1].getElementsByClassName('aminoacid');
-    const mutatedAminoacids = outputAminoacids[0].getElementsByClassName('aminoacid');
-    const dna        = textboxDna[1].getElementsByClassName('sequenceChar');
-    const mutatedDna = textboxDna[0].getElementsByClassName('sequenceChar');
-    const rna        = textboxRna[1].getElementsByClassName('sequenceChar');
-    const mutatedRna = textboxRna[0].getElementsByClassName('sequenceChar');
-
-    const dnaSeq        = readSequence(dna);
-    const mutatedDnaSeq = readSequence(mutatedDna);
-    const rnaSeq        = readSequence(rna);
-    const mutatedRnaSeq = readSequence(mutatedRna);
-
-    // Destaca bases mutadas no DNA e no RNA (alinhamento — ver alignSequences()
-    // — em vez de comparação posição-a-posição, que erra em inserções/deleções)
-    highlightMutated(mutatedDna, dnaSeq, mutatedDnaSeq);
-    highlightMutated(mutatedRna, rnaSeq, mutatedRnaSeq);
-
-    // Destaca aminoácidos mutados, com o mesmo alinhamento — assim um
-    // aminoácido que só "andou de posição" por causa de uma inserção/deleção
-    // anterior não é marcado como se tivesse mudado.
-    const origAaTokens = Array.prototype.map.call(aminoacids, function (el) {
-      const abbrev = el.querySelector('.abbreviated-name');
-      return abbrev ? abbrev.innerHTML : '';
-    });
-    const mutAaTokens = Array.prototype.map.call(mutatedAminoacids, function (el) {
-      const abbrev = el.querySelector('.abbreviated-name');
-      return abbrev ? abbrev.innerHTML : '';
-    });
-    const aaAlignment = alignSequences(origAaTokens, mutAaTokens);
-    for (let i = 0; i < mutatedAminoacids.length; i++) {
-      const tag = aaAlignment[i];
-      mutatedAminoacids[i].classList.toggle('mutated', tag === 'ins' || tag === 'sub');
-    }
-
-    classifyMutation(dnaSeq, mutatedDnaSeq);
-  }
-
-  /**
-   * Adiciona ou remove a classe "mutated" nos elementos da sequência mutada,
-   * usando o alinhamento de alignSequences() em vez de comparação
-   * posição-a-posição — assim inserções e deleções não desalinham (e
-   * portanto não "contaminam" com destaque falso) as bases que vêm depois
-   * delas na fita.
-   *
-   * @param {HTMLCollection} mutated  - Inputs mutados (sequenceChar).
-   * @param {string} origSeq  - Sequência original como string.
-   * @param {string} mutSeq   - Sequência mutada como string.
-   */
   function highlightMutated(mutated, origSeq, mutSeq) {
-    const alignment = alignSequences(origSeq.split(''), mutSeq.split(''));
+    const alignment = PS.alignSequences(origSeq.split(''), mutSeq.split(''));
     for (let j = 0; j < mutated.length; j++) {
       const tag = alignment[j];
       mutated[j].classList.toggle('mutated', tag === 'ins' || tag === 'sub');
@@ -1999,7 +1349,7 @@ window.PS = window.PS || {};
 
   /**
    * Classifica e exibe o tipo de mutação (frameshift, silenciosa, nonsense, missense).
-   * Extraído de mutationDifference() para separar responsabilidades.
+   * Extraído de PS.mutationDifference() para separar responsabilidades.
    *
    * @param {string} dnaSeq        - Sequência DNA original.
    * @param {string} mutatedDnaSeq - Sequência DNA mutada.
@@ -2102,50 +1452,13 @@ window.PS = window.PS || {};
    *
    * PERFORMANCE: `skipRender` permite inserir várias bases em sequência (ex.: os 3
    * nucleotídeos de um códon clicado na tabela de referência, em activateCodonItem())
-   * sem disparar translate()/treatSequence() — que recriam todos os elementos de
+   * sem disparar translate()/PS.treatSequence() — que recriam todos os elementos de
    * aminoácido e recalculam a análise de mutação — a cada base individual. Quem
-   * chama em lote é responsável por chamar translate()/treatSequence() uma única
+   * chama em lote é responsável por chamar translate()/PS.treatSequence() uma única
    * vez ao final (ver activateCodonItem() e randomSequence(), que já seguia esse padrão).
    */
-  function insertBase(base, { skipRender = false } = {}) {
-    base = base.toUpperCase();
-    if (!VALID_BASES.has(base)) return;
+  // insertBase movida para assets/js/simulator.js
 
-    const activeEl   = document.activeElement;
-    const isDnaInput = activeEl &&
-                       activeEl.classList.contains('sequenceChar') &&
-                       textboxDna[0].contains(activeEl);
-
-    if (isDnaInput) {
-      const rnaEl = getRnaEquivalent(activeEl);
-      const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
-      const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
-      textboxDna[0].insertBefore(newDna, activeEl.nextElementSibling);
-      textboxRna[0].insertBefore(newRna, rnaEl ? rnaEl.nextElementSibling : null);
-      focusWithoutKeyboard(newDna);
-    } else {
-      // Nenhum input focado: anexa ao final
-      const newDna = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
-      const newRna = newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro');
-      textboxDna[0].insertBefore(newDna, blankSpace);
-      textboxRna[0].appendChild(newRna);
-      focusWithoutKeyboard(newDna);
-    }
-
-    if (!skipRender) {
-      translate();
-      treatSequence();
-    }
-  }
-
-  /**
-   * Clona a fita primária (DNA/RNA/proteína) para a fita de comparação, no
-   * momento em que o usuário entra no modo de mutação. Migrada de dom.js:
-   * a função só existia ali porque os botões de mutação eram itens do menu
-   * lateral; agora que são controles da própria página do simulador, ela
-   * mora junto do resto do comportamento de mutação, em vez de ser a única
-   * função do arquivo de navegação exposta especificamente para este script.
-   */
   function cloneSequencePrimary() {
     const sequenceToMutate = document.getElementsByClassName('sequence')[1];
     sequenceToMutate.innerHTML = '';
@@ -2170,7 +1483,7 @@ window.PS = window.PS || {};
    * botões mutuamente exclusivos (Adição/Deleção/Substituição) que forçavam
    * o usuário a pré-classificar o tipo de edição antes de fazê-la; como o
    * mutation-panel já detecta sozinho tipo, impacto e classificação (ver
-   * mutationDifference()/classifyMutation()), um único botão "Mutação"
+   * PS.mutationDifference()/classifyMutation()), um único botão "Mutação"
    * liga/desliga a edição livre da fita mutada e a exibição do painel de
    * análise — sem restringir quais operações (inserir/remover base) o
    * usuário pode fazer.
@@ -2200,36 +1513,8 @@ window.PS = window.PS || {};
   }
 
   /** Reinicia o simulador: limpa todas as sequências e desativa o modo de mutação. */
-  function clearSequence() {
-    mutationButton.classList.remove('active');
-    mutationButton.setAttribute('aria-pressed', 'false');
-    if (mutationWindow[0]) mutationWindow[0].classList.remove('active');
+  // clearSequence movida para assets/js/simulator.js
 
-    // clearSequenceChars elimina o padrão repetido 4 vezes no original
-    clearSequenceChars(textboxDna[0]);
-    clearSequenceChars(textboxRna[0]);
-    clearSequenceChars(textboxDna[1]);
-    clearSequenceChars(textboxRna[1]);
-
-    outputAminoacids[0].innerHTML = '';
-    if (outputAminoacids[1]) outputAminoacids[1].innerHTML = '';
-
-    clearSequenceAutosave();
-
-    const appBtn = document.getElementById('app');
-    if (appBtn) appBtn.click();
-
-    translate();
-    treatSequence();
-  }
-
-  /**
-   * Gera uma string de DNA molde válida (início TAC=AUG + corpo aleatório + um dos três
-   * stop codons), sem tocar no DOM. Extraída de randomSequence() para ser reaproveitada
-   * tanto pela inserção no simulador quanto pelo gerador de perguntas do Modo Desafio.
-   * @param {number} [numCodons] - total de códons desejado (incluindo início e parada).
-   *        Se omitido, sorteia entre 4 e 7.
-   */
   function generateRandomCodingDna(numCodons) {
     const bases      = ['A', 'T', 'C', 'G'];
     const stopCodons = ['ATT', 'ATC', 'ACT']; // transcrevem para UAA, UAG, UGA
@@ -2246,27 +1531,8 @@ window.PS = window.PS || {};
   }
 
   /** Gera e insere uma sequência de DNA aleatória válida (início + corpo + parada). */
-  function randomSequence() {
-    clearSequence();
+  // randomSequence movida para assets/js/simulator.js
 
-    const dnaSeq = generateRandomCodingDna();
-
-    for (const base of dnaSeq) {
-      textboxDna[0].insertBefore(newSequenceChar(base, 'sequenceChar', 'Base de DNA'), blankSpace);
-      textboxRna[0].appendChild(newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro'));
-    }
-
-    translate();
-    treatSequence();
-  }
-
-  // ─── Exportação / Importação de sequência ────────────────────────────────────
-
-  /**
-   * Remove espaços, vírgulas e outros separadores comuns de uma string colada,
-   * e isola apenas as bases válidas (A, T, C, G). Sinaliza se algum caractere
-   * desconhecido (não-base, não-separador) foi descartado.
-   */
   function sanitizeDnaInput(raw) {
     const upper = String(raw || '').toUpperCase();
     let clean = '';
@@ -2285,7 +1551,7 @@ window.PS = window.PS || {};
 
   /**
    * Salva a sequência de DNA atual (fita ativa do simulador principal) no
-   * localStorage a cada mudança — chamada de dentro de treatSequence(), o
+   * localStorage a cada mudança — chamada de dentro de PS.treatSequence(), o
    * mesmo ponto único que já recalcula todo o resto após qualquer edição.
    * Graciosa se localStorage estiver indisponível (modo privado, cookies
    * bloqueados etc.), mesmo padrão de saveQuizBestScore(). Sequência vazia
@@ -2303,7 +1569,7 @@ window.PS = window.PS || {};
     } catch (e) { /* localStorage indisponível — segue sem persistir */ }
   }
 
-  /** Apaga o autosave — chamada por clearSequence(), pra "Limpar tudo" não voltar sozinho no próximo F5. */
+  /** Apaga o autosave — chamada por PS.clearSequence(), pra "Limpar tudo" não voltar sozinho no próximo F5. */
   function clearSequenceAutosave() {
     try {
       window.localStorage.removeItem(DNA_AUTOSAVE_KEY);
@@ -2353,24 +1619,10 @@ window.PS = window.PS || {};
   /**
    * Carrega uma sequência de DNA já validada no simulador, substituindo a sequência atual.
    * Reaproveita a mesma estratégia de inserção em lote de randomSequence(): insere todos
-   * os inputs primeiro e só então dispara translate()/treatSequence() uma única vez.
+   * os inputs primeiro e só então dispara translate()/PS.treatSequence() uma única vez.
    */
-  function loadSequenceFromString(dnaSeq) {
-    clearSequence();
+  // loadSequenceFromString movida para assets/js/simulator.js
 
-    let lastDnaInput = null;
-    for (const base of dnaSeq) {
-      lastDnaInput = newSequenceChar(base, 'sequenceChar', 'Base de DNA');
-      textboxDna[0].insertBefore(lastDnaInput, blankSpace);
-      textboxRna[0].appendChild(newSequenceChar(transcribe(base), 'sequenceChar', 'Base de RNA mensageiro'));
-    }
-    if (lastDnaInput) focusWithoutKeyboard(lastDnaInput);
-
-    translate();
-    treatSequence();
-  }
-
-  /** Preenche e abre o modal de exportação com a sequência atual e um link de compartilhamento. */
   function openExportModal() {
     const modal    = document.getElementById('export-modal');
     const seqText  = document.getElementById('export-seq-text');
@@ -2397,7 +1649,6 @@ window.PS = window.PS || {};
   // copyTextareaContent, openImportModal, handleImportSubmit movidos para assets/js/export.js
 
   // ─── Autosave ───────────────────────────────────────────────────────────
-  }
 
   /**
    * Verifica se a URL atual contém uma sequência compartilhada (?seq=...) e,
@@ -2406,66 +1657,8 @@ window.PS = window.PS || {};
    * true/false pra quem chama saber se deve tentar restoreSequenceAutosave()
    * em seguida — o link da URL tem prioridade sobre o autosave local.
    */
-  function loadSequenceFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const raw = params.get('seq');
-    if (!raw) return false;
+  // loadSequenceFromUrl movida para assets/js/simulator.js
 
-    const { clean } = sanitizeDnaInput(raw);
-    if (!clean) return false;
-
-    const appBtn = document.getElementById('app');
-    if (appBtn) appBtn.click();
-
-    loadSequenceFromString(clean);
-    showInfo('Sequência carregada!', 'Uma sequência de DNA foi importada automaticamente via link compartilhado.');
-    return true;
-  }
-
-  // ─── Doenças genéticas reais ─────────────────────────────────────────────────
-
-  /**
-   * Exemplos didáticos de mutações reais bem documentadas na literatura.
-   * As sequências de DNA são versões simplificadas (poucos códons) construídas
-   * para que o códon exato da mutação real apareça na posição correta — a base
-   * trocada/inserida e seu efeito sobre o aminoácido correspondem à mutação
-   * verdadeira, mesmo que o gene completo seja muito mais longo na realidade.
-   *
-   * wildDna  = sequência original (saudável), carregada na fita de comparação (baseline).
-   * mutDna   = sequência com a mutação real, carregada na fita ativa do simulador.
-   */
-  const DISEASE_EXAMPLES = {
-    sickle: {
-      name: 'Anemia Falciforme',
-      gene: 'HBB (Hemoglobina Beta) — códon 6',
-      wildDna: 'TACCTCATT',
-      mutDna:  'TACCACATT',
-    },
-    thalassemia: {
-      name: 'Beta-Talassemia (Códon 39)',
-      gene: 'HBB (Hemoglobina Beta) — códon 39',
-      wildDna: 'TACGTCGTCGTCATT',
-      mutDna:  'TACATCGTCGTCATT',
-    },
-    taysachs: {
-      name: 'Doença de Tay-Sachs',
-      gene: 'HEXA (Hexosaminidase A) — inserção 1278insTATC',
-      wildDna: 'TACCGACGACGAATT',
-      mutDna:  'TACTATCCGACGACGAATT',
-    },
-    silentDemo: {
-      name: 'Mutação Silenciosa (Exemplo Ilustrativo)',
-      gene: 'HBB — variação hipotética no mesmo códon 6',
-      wildDna: 'TACCTCATT',
-      mutDna:  'TACCTTATT',
-    },
-  };
-
-  /**
-   * Esvazia as quatro linhas de sequência (DNA/RNA × fita ativa/baseline) sem alterar
-   * o estado dos botões de mutação. Usado internamente por loadDiseaseExample(), que
-   * precisa de um estado limpo mas quer manter o modo de mutação ativo logo em seguida.
-   */
   function clearAllStrandsKeepingMode() {
     clearSequenceChars(textboxDna[0]);
     clearSequenceChars(textboxRna[0]);
@@ -2523,8 +1716,8 @@ window.PS = window.PS || {};
     mutationWindow[0].classList.add('active');
 
     translate();
-    translateStrand(textboxRna[1].getElementsByClassName('sequenceChar'), outputAminoacids[1]);
-    treatSequence();
+    PS.translateStrand(textboxRna[1].getElementsByClassName('sequenceChar'), outputAminoacids[1]);
+    PS.treatSequence();
 
     showInfo(disease.name, `Sequência carregada: ${disease.gene}. Veja a análise de mutação abaixo, no Simulador.`);
   }
@@ -3972,10 +3165,10 @@ window.PS = window.PS || {};
   function loadCrisprDemoSequence() {
     const appBtn = document.getElementById('app');
     if (appBtn) appBtn.click();
-    clearSequence();
-    for (const base of CRISPR_DEMO_DNA) insertBase(base, { skipRender: true });
+    PS.clearSequence();
+    for (const base of CRISPR_DEMO_DNA) PS.insertBase(base, { skipRender: true });
     translate();
-    treatSequence();
+    PS.treatSequence();
 
     crispr.currentDna = CRISPR_DEMO_DNA;
     crispr.els.guideInput.value = CRISPR_DEMO_GUIDE;
@@ -4102,8 +3295,8 @@ window.PS = window.PS || {};
     mutationWindow[0].classList.add('active');
 
     translate();
-    translateStrand(textboxRna[1].getElementsByClassName('sequenceChar'), outputAminoacids[1]);
-    treatSequence();
+    PS.translateStrand(textboxRna[1].getElementsByClassName('sequenceChar'), outputAminoacids[1]);
+    PS.treatSequence();
 
     crispr.els.modal.style.display = 'none';
     showInfo(`Edição CRISPR aplicada (${pathwayName})`, 'Veja a análise de mutação abaixo, no Simulador.');
@@ -4479,7 +3672,7 @@ window.PS = window.PS || {};
   /**
    * Traduz uma string de RNA para a cadeia de aminoácidos REALMENTE ativa
    * (a partir do primeiro AUG até o STOP, exclusive), como uma lista de
-   * abbrevNames. Espelha a lógica de translateStrand()/getActiveAAs(), porém
+   * abbrevNames. Espelha a lógica de PS.translateStrand()/getActiveAAs(), porém
    * sem criar nenhum elemento no DOM — usada apenas para gerar/corrigir
    * perguntas do quiz.
    */
@@ -6490,9 +5683,9 @@ window.PS = window.PS || {};
       if (rnaEl) rnaEl.remove();
     }
 
-    for (const base of bases) insertBase(base, { skipRender: true });
+    for (const base of bases) PS.insertBase(base, { skipRender: true });
     translate();
-    treatSequence();
+    PS.treatSequence();
 
     if (wasTruncated) {
       showInfo('Sequência cortada', `Foram inseridas as ${PASTE_MAX_BASES} primeiras bases — a sequência colada era maior que o limite.`);
@@ -6552,7 +5745,7 @@ window.PS = window.PS || {};
       // selecionada. Como isso acontece no mousedown (antes do click), o
       // clique em si continua dispachando insertBase() normalmente.
       btn.addEventListener('mousedown', (event) => event.preventDefault());
-      btn.addEventListener('click', () => insertBase(btn.dataset.base));
+      btn.addEventListener('click', () => PS.insertBase(btn.dataset.base));
     });
 
     // Cartões de doenças genéticas — antes eram onclick="loadDiseaseExample('sickle')" inline no HTML

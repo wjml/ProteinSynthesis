@@ -1,18 +1,21 @@
-﻿/**
- * simulator.js — Simulador Molecular (DNA/RNA, transcrição, tradução)
- * Funções acessam estado via PS (compartilhado com script.js).
- */
-(function () {
+﻿(function () {
   'use strict';
   var PS = window.PS = window.PS || {};
 
-  function readSequence(chars) {
-    let seq = '';
-    for (let i = 0; i < chars.length; i++) seq += chars[i].value;
-    return seq;
+  function complementBase(base) {
+    return DNA_COMPLEMENT[base.toUpperCase()] || base;
   }
 
-  /** Converte uma base do DNA molde para a base equivalente no mRNA. */
+  /** Complemento de uma fita inteira, alinhada base a base com o original (visão "escada"). */
+
+  function complementStrand(seq) {
+    return seq.toUpperCase().split('').map(complementBase).join('');
+  }
+
+  const OKAZAKI_FRAGMENT_SIZE = 4;
+
+  /** Divide o comprimento de uma fita em fragmentos de Okazaki (índices [start,end) de cada um). */
+
   function transcribe(base) {
     return DNA_TO_RNA[base.toUpperCase()] || '';
   }
@@ -29,6 +32,7 @@
    * começa em TAC=AUG, sempre um múltiplo de 3 bases). Para além disso, para
    * no primeiro STOP encontrado — mesma regra de leitura do resto do app.
    */
+
   function translateDnaHeadless(dnaSeq) {
     let rna = '';
     for (const base of dnaSeq) rna += transcribe(base);
@@ -47,22 +51,340 @@
     return { dnaSeq, rna, codons, aminoAcids };
   }
 
-  // Geração de exercícios (generateExerciseSet) movida para assets/js/exercises.js
+  /**
+   * Gera `count` exercícios distintos — cada um uma sequência de DNA válida
+   * de `numCodons` códons, já traduzida (ver translateDnaHeadless() acima).
+   * "Distintos" na prática, não garantido matematicamente: com sequências de
+   * 4+ códons aleatórios, a chance de colisão é desprezível pro tamanho de
+   * turma que esse recurso é pensado pra atender (até ~40) — mas ainda
+   * assim tenta algumas vezes antes de desistir e aceitar uma repetição, só
+   * pra não travar em looping infinito num caso extremo (numCodons muito
+   * pequeno).
+   *
+   * BUGFIX (sequência mais curta que o pedido): generateRandomCodingDna()
+   * sorteia os códons do meio livremente, sem evitar que um deles caia por
+   * acaso num padrão de parada (ATT/ATC/ACT em DNA) — ~4,7% de chance por
+   * códon do meio. Pra uma sequência "Sequência aleatória" avulsa isso é
+   * até interessante (mutação sem querer gerando parada precoce, cenário
+   * biológico real), mas aqui a pessoa escolheu um tamanho específico
+   * ("Longo, 11 códons") esperando um exercício daquele tamanho de verdade
+   * — por isso essa função tenta de novo até a tradução render exatamente
+   * numCodons-2 aminoácidos (o -2 é o INÍCIO e o STOP final, que não
+   * contam como aminoácido).
+   */
+
+  function computeGCContent(chars) {
+    if (!chars.length) return 0;
+    let gcCount = 0;
+    for (let i = 0; i < chars.length; i++) {
+      const val = chars[i].value.toUpperCase();
+      if (val === 'G' || val === 'C') gcCount++;
+    }
+    return Math.round((gcCount / chars.length) * 100);
+  }
 
   /**
-   * Aplica as classes CSS de cor de base e posição de códon a uma coleção de inputs.
-   * Substitui os 4 loops idênticos em treatSequence().
-   *
-   * `frameStart` é a posição (em bases) onde o AUG de verdade começa nessa
-   * sequência (achado via findFirstStartIndex() na fita de RNA correspondente,
-   * e reaproveitado tanto pra fita de DNA quanto pra fita de RNA, já que as
-   * duas têm o mesmo comprimento e a mesma correspondência posição a posição).
-   * Bases ANTES do frameStart são a UTR 5' — não fazem parte de nenhum códon,
-   * então recebem a classe 'codon-utr' em vez de agrupamento em trincas.
-   * Se frameStart for -1 (nenhum AUG na sequência), agrupa a partir da
-   * posição 0 como um recurso puramente visual (não há tradução de verdade
-   * pra alinhar de qualquer forma).
+   * Remove todos os filhos com classe sequenceChar de um container.
+   * Substitui o padrão de limpeza repetido 4 vezes em clearSequence().
    */
+
+  function findFirstStartIndex(rnaSeq) {
+    return rnaSeq.indexOf('AUG');
+  }
+
+  /**
+   * Percorre uma sequência de RNA procurando ORFs (do AUG ao primeiro STOP em
+   * fase). A busca pelo AUG escaneia base a base — não fica presa a posições
+   * múltiplas de 3 a partir do início da string —, então uma UTR 5' de
+   * qualquer comprimento (1, 2, 4 bases...) antes do AUG real é reconhecida
+   * corretamente. UNIFICAÇÃO: essa regra existia duplicada em applyCodonClasses(),
+   * updateCodonLabels() e translateProteinChainPure(); agora só existe aqui.
+   *
+   * Depois de encontrar um AUG e percorrer até o STOP correspondente (ou até
+   * o fim da sequência, se não houver STOP), a busca recomeça a partir dali —
+   * permitindo múltiplas ORFs na mesma sequência, cada uma na fase que seu
+   * próprio AUG define (não precisa ser a mesma fase da ORF anterior).
+   *
+   * Para cada códon dentro de uma ORF, invoca onCodon(codon, aminoacid, isActive, baseIndex).
+   * isActive é true para o AUG e todos os códons até (mas não incluindo) o STOP.
+   * baseIndex é a posição (em bases) onde aquele códon começa na sequência —
+   * usado por updateCodonLabels() para posicionar os rótulos INÍCIO/PARADA.
+   *
+   * Bases antes do primeiro AUG, ou fora de qualquer ORF, NÃO disparam onCodon.
+   */
+
+  function walkCodingRegion(rnaSeq, onCodon) {
+    let i = 0;
+    while (i <= rnaSeq.length - 3) {
+      const startIdx = rnaSeq.indexOf('AUG', i);
+      if (startIdx === -1) break;
+
+      let j = startIdx;
+      while (j + 3 <= rnaSeq.length) {
+        const codon     = rnaSeq.substr(j, 3);
+        const aminoacid = CODON_TABLE[codon];
+        if (!aminoacid) break; // não deveria ocorrer com RNA válido, mas defensivo
+
+        const isStop = aminoacid.abbrevName === 'STOP';
+        onCodon(codon, aminoacid, !isStop, j);
+        j += 3;
+        if (isStop) break;
+      }
+      i = j;
+    }
+  }
+  /**
+   * Animações de Síntese Proteica — pareamento de bases (leve, sem modal).
+   * Percorre a fita molde de DNA e o RNAm em sincronia, base a base, e pisca
+   * cada par correspondente (mesmo índice) em sequência — uma onda visual da
+   * esquerda pra direita que ilustra a transcrição acontecendo. Só adiciona/
+   * remove a classe .pairing-flash (CSS puro, ver @keyframes pairingFlash em
+   * app.css); não recalcula nem altera nenhum estado real de tradução, então
+   * pode ser chamada a qualquer momento sem risco de desincronizar a UI.
+   * Disparada pelo passo "Transcrição" do .dogma-stepper e pelo botão ▶
+   * dentro do rótulo RNAm (#btn-play-pairing).
+   */
+  let pairingAnimationTimers = [];
+
+  function anticodonFor(codon) {
+    return codon.split('').map(b => RNA_COMPLEMENT[b] || b).reverse().join('');
+  }
+
+  // ─── Animação do Ribossomo ("Ribossomo em Ação") ─────────────────────────────
+  //
+  // Modo opcional (não afeta o modo instantâneo padrão do simulador): percorre
+  // a mesma lista de passos de buildRibosomeSteps() um de cada vez, mostrando
+  // visualmente o tRNA entrando, pareando com o mRNA e entregando o aminoácido
+  // à cadeia em formação — em vez de renderizar a proteína inteira de uma vez
+  // como translateStrand() já faz no simulador principal.
+
+  const ribosome = {
+    steps: [],
+    index: 0,
+    playing: false,
+    timers: [],
+    els: {}, // preenchido em cacheRibosomeElements()
+  };
+
+  /** Localiza e armazena os elementos do DOM do modal do ribossomo (uma única vez). */
+
+  function generateRandomCodingDna(numCodons) {
+    const bases      = ['A', 'T', 'C', 'G'];
+    const stopCodons = ['ATT', 'ATC', 'ACT']; // transcrevem para UAA, UAG, UGA
+    const total = numCodons || (Math.floor(Math.random() * 4) + 4); // 4 a 7 códons
+
+    let dnaSeq = 'TAC'; // início: transcreve para AUG
+    for (let i = 0; i < total - 2; i++) {
+      dnaSeq += bases[Math.floor(Math.random() * 4)];
+      dnaSeq += bases[Math.floor(Math.random() * 4)];
+      dnaSeq += bases[Math.floor(Math.random() * 4)];
+    }
+    dnaSeq += stopCodons[Math.floor(Math.random() * stopCodons.length)];
+    return dnaSeq;
+  }
+
+  /** Gera e insere uma sequência de DNA aleatória válida (início + corpo + parada). */
+
+  function sanitizeDnaInput(raw) {
+    const upper = String(raw || '').toUpperCase();
+    let clean = '';
+    let hadInvalid = false;
+
+    for (const ch of upper) {
+      if (VALID_BASES.has(ch)) {
+        clean += ch;
+      } else if (!/[\s,;|\-_/\\]/.test(ch)) {
+        hadInvalid = true;
+      }
+    }
+
+    return { clean, hadInvalid };
+  }
+
+  /**
+   * Salva a sequência de DNA atual (fita ativa do simulador principal) no
+   * localStorage a cada mudança — chamada de dentro de treatSequence(), o
+   * mesmo ponto único que já recalcula todo o resto após qualquer edição.
+   * Graciosa se localStorage estiver indisponível (modo privado, cookies
+   * bloqueados etc.), mesmo padrão de saveQuizBestScore(). Sequência vazia
+   * não é salva — não faz sentido "restaurar" um simulador em branco, e
+   * assim uma sessão nova não sobrescreve silenciosamente um autosave válido
+   * de uma aba anterior.
+   */
+
+  function transcribeSeq(dnaSeq) {
+    let rna = '';
+    for (const base of dnaSeq) rna += transcribe(base);
+    return rna;
+  }
+
+  /**
+   * Traduz uma string de RNA para a cadeia de aminoácidos REALMENTE ativa
+   * (a partir do primeiro AUG até o STOP, exclusive), como uma lista de
+   * abbrevNames. Espelha a lógica de translateStrand()/getActiveAAs(), porém
+   * sem criar nenhum elemento no DOM — usada apenas para gerar/corrigir
+   * perguntas do quiz.
+   */
+
+  function translateProteinChainPure(rnaSeq) {
+    const chain = [];
+    walkCodingRegion(rnaSeq, (codon, aminoacid, isActive) => {
+      if (isActive) chain.push(aminoacid.abbrevName);
+    });
+    return chain;
+  }
+
+  /**
+   * Classifica uma mutação comparando duas sequências de DNA (original e mutada),
+   * em string puro — mesma regra de negócio de classifyMutation(), mas retornando
+   * apenas a chave do tipo ('frameshift'|'silent'|'nonsense'|'stoploss'|'missense'), sem
+   * mexer em nenhum elemento da UI real.
+   * @returns {string|null} null se as sequências forem idênticas (sem mutação).
+   */
+
+  function classifyMutationPure(origDnaSeq, mutDnaSeq) {
+    if (!origDnaSeq || !mutDnaSeq || origDnaSeq === mutDnaSeq) return null;
+
+    const diff    = mutDnaSeq.length - origDnaSeq.length;
+    const absDiff = Math.abs(diff);
+
+    if (diff !== 0 && diff % 3 !== 0) return 'frameshift';
+
+    const origChain = translateProteinChainPure(transcribeSeq(origDnaSeq));
+    const mutChain  = translateProteinChainPure(transcribeSeq(mutDnaSeq));
+    const aaChanged = origChain.join(',') !== mutChain.join(',');
+
+    if (!aaChanged) return 'silent';
+
+    // Perda do stop (stop-loss/nonstop): só faz sentido como conceito quando o
+    // comprimento em BASES não mudou (diff===0) — o códon de parada foi
+    // TROCADO por outro códon, não inserido/deletado — e a proteína resultante
+    // ficou mais LONGA, porque a tradução deixou de parar onde parava antes.
+    // Sem a checagem diff===0, uma inserção in-frame comum (que não toca o
+    // stop) também alongaria a proteína e seria confundida com stop-loss.
+    if (diff === 0 && mutChain.length > origChain.length) return 'stoploss';
+
+    if (mutChain.length < origChain.length) return 'nonsense';
+    return 'missense';
+  }
+
+  /** Embaralha uma cópia do array (Fisher-Yates). Não muta o array original. */
+
+  function clearSequenceChars(container) {
+    if (!container) return;
+    Array.from(container.getElementsByClassName('sequenceChar'))
+      .forEach(el => container.removeChild(el));
+  }
+
+  /**
+   * Exibe um alerta de erro.
+   * Usa SweetAlert se disponível; caso contrário, usa o alert nativo.
+   * O <script> do SweetAlert2 agora carrega ANTES de dom.js/script.js no HTML,
+   * então esse fallback só entra em ação se o CDN falhar (rede instável,
+   * bloqueador de conteúdo etc.) — deixado por segurança, não como caminho
+   * esperado.
+   */
+
+  function focusWithoutKeyboard(el) {
+    if (!el) return;
+    el.setAttribute('readonly', 'readonly');
+    el.focus({ preventScroll: true });
+    setTimeout(() => el.removeAttribute('readonly'), 100);
+  }
+
+  /** Cria e retorna um elemento de aminoácido completo com rótulos e event listeners. */
+
+  function scrollUnique() {
+    if (PS._scrollLock) return;
+    PS._scrollLock = true;
+    const sl = this.scrollLeft;
+    for (let i = 0; i < textboxDna.length; i++) {
+      PS.textboxDna[i].scrollLeft       = sl;
+      PS.textboxRna[i].scrollLeft       = sl;
+      PS.outputAminoacids[i].scrollLeft = sl;
+      if (PS.complementContainers[i]) PS.complementContainers[i].scrollLeft = sl;
+    }
+    PS._scrollLock = false;
+  }
+
+  // ─── Ativação do input DNA ───────────────────────────────────────────────────
+
+  /**
+   * Cria o primeiro input de DNA se não existir nenhum,
+   * ou foca no último existente. Compartilhado entre clique no blank-space
+   * e clique na área vazia do container textbox-dna.
+   */
+
+  function activateDnaInput() {
+    if (dnaSequenceChars.length === 0) {
+      const dnaInput = newSequenceChar('', 'sequenceChar', 'Base de DNA');
+      const rnaInput = newSequenceChar('', 'sequenceChar', 'Base de RNA mensageiro');
+      PS.textboxDna[0].insertBefore(dnaInput, PS.blankSpace);
+      PS.textboxRna[0].appendChild(rnaInput);
+      dnaInput.focus();
+    } else {
+      const last = PS.dnaSequenceChars[dnaSequenceChars.length - 1];
+      last.focus();
+      last.selectionStart = 1;
+    }
+  }
+
+  // ─── Handlers de teclado ─────────────────────────────────────────────────────
+
+  /** Trata a entrada de caracteres em um sequenceChar (evento keypress). */
+
+  function updateCounters() {
+    const codonCounter     = document.getElementById('codon-counter');
+    const aminoacidCounter = document.getElementById('aminoacid-counter');
+    const gcCounter         = document.getElementById('gc-counter');
+    if (!codonCounter || !aminoacidCounter) return;
+
+    const totalCodons = Math.floor(rnaSequenceChars.length / 3);
+    const activeAAs   = Array.from(PS.outputAminoacids[0].getElementsByClassName('aminoacid'))
+                             .filter(el => !el.classList.contains('not-availlable')).length;
+
+    codonCounter.textContent     = totalCodons;
+    aminoacidCounter.textContent = activeAAs;
+    // GC é igual em qualquer uma das duas fitas (G sempre pareia com C), então
+    // calcular em cima da fita molde já representa a dupla-hélice inteira.
+    if (gcCounter) gcCounter.textContent = computeGCContent(PS.dnaSequenceChars) + '%';
+  }
+
+  // ─── Análise de mutação ───────────────────────────────────────────────────────
+
+  /**
+   * Alinha duas sequências (arrays de itens comparáveis) usando alinhamento
+   * com penalidade de gap afim (algoritmo de Gotoh) — a mesma técnica usada
+   * em bioinformática pra alinhar sequências com inserções/deleções.
+   *
+   * Comparar posição-a-posição (`origSeq[i] === mutSeq[i]`) quebra assim que
+   * uma base é inserida ou removida: tudo que vem depois passa a ocupar um
+   * índice diferente, então bases idênticas acabam marcadas como "diferentes"
+   * só por terem se deslocado. Este alinhamento resolve isso identificando
+   * corretamente:
+   *   - itens que continuam idênticos, mesmo deslocados de posição;
+   *   - itens realmente alterados (substituição, no mesmo "lugar" da fita);
+   *   - itens inseridos, sem correspondente na sequência original.
+   *
+   * A penalidade de abrir um gap (GAP_OPEN) é maior que a de estendê-lo
+   * (GAP_EXTEND), então o algoritmo prefere UM bloco contíguo de
+   * inserção/deleção a vários blocos espalhados — importante pra
+   * representar o evento biológico real (ex: a inserção de 4 bases na
+   * Doença de Tay-Sachs) como um único evento, e não uma sequência de
+   * trocas soltas de base.
+   *
+   * @param {Array} origItems - itens da sequência original.
+   * @param {Array} mutItems  - itens da sequência mutada.
+   * @param {function} [equalsFn] - compara dois itens (padrão: ===).
+   * @returns {Array<'match'|'sub'|'ins'>} um resultado por item de mutItems —
+   *   itens de origItems que foram deletados não geram saída (não há
+   *   posição correspondente do lado mutado pra destacar).
+   */
+
+
+
+  // ─── Grupo C - Sequência e tradução ───────────────────────
+
   function applyCodonClasses(chars, frameStart) {
     const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
     for (let i = 0; i < chars.length; i++) {
@@ -96,6 +418,7 @@
    * .sequenceChar usada pra tradução/mutação em outras funções — daí a
    * classe própria .complementChar (ver app.css).
    */
+
   function renderComplementaryStrand(dnaChars, container, frameStart) {
     if (!container) return;
     const hasFrame = typeof frameStart === 'number' && frameStart >= 0;
@@ -129,565 +452,377 @@
    * significam a mesma coisa nos dois alfabetos, então a mesma função serve
    * pras duas fitas). Usado no contador "GC:" da barra de estatísticas.
    */
-  function computeGCContent(chars) {
-    if (!chars.length) return 0;
-    let gcCount = 0;
-    for (let i = 0; i < chars.length; i++) {
-      const val = chars[i].value.toUpperCase();
-      if (val === 'G' || val === 'C') gcCount++;
-    }
-    return Math.round((gcCount / chars.length) * 100);
+
+  function syncFrameClasses() {
+    // Cada par DNA/RNA (o do simulador principal e o do painel de mutação) tem
+    // seu próprio quadro de leitura — achado uma vez a partir da fita de RNA
+    // daquele par, e reaproveitado tanto pra fita de DNA quanto pra fita de RNA
+    // (mesma posição, mesma correspondência base a base).
+    const mainFrameStart = findFirstStartIndex(readSequence(PS.rnaSequenceChars));
+    applyCodonClasses(PS.dnaSequenceChars, mainFrameStart);
+    applyCodonClasses(PS.rnaSequenceChars, mainFrameStart);
+    renderComplementaryStrand(PS.dnaSequenceChars, PS.complementContainers[0], mainFrameStart);
+
+    const mutRnaChars   = PS.textboxRna[1].getElementsByClassName('sequenceChar');
+    const mutDnaChars   = PS.textboxDna[1].getElementsByClassName('sequenceChar');
+    const mutFrameStart = findFirstStartIndex(readSequence(mutRnaChars));
+    applyCodonClasses(mutDnaChars, mutFrameStart);
+    applyCodonClasses(mutRnaChars, mutFrameStart);
+    renderComplementaryStrand(mutDnaChars, PS.complementContainers[1], mutFrameStart);
   }
 
   /**
-   * Remove todos os filhos com classe sequenceChar de um container.
-   * Substitui o padrão de limpeza repetido 4 vezes em clearSequence().
+   * Garante as classes de códon em dia (syncFrameClasses) e então dispara a
+   * análise de mutação e a injeção de rótulos de códon. Chamada depois de
+   * translate() em todo call site — mutationDifference() lê os cards de
+   * aminoácido que só existem depois que translateStrand() rodou.
    */
-  function clearSequenceChars(container) {
-    if (!container) return;
-    Array.from(container.getElementsByClassName('sequenceChar'))
-      .forEach(el => container.removeChild(el));
+
+  function treatSequence() {
+    syncFrameClasses();
+    mutationDifference();
+    updateCodonLabels();
+    saveSequenceAutosave();
   }
 
   /**
-   * Exibe um alerta de erro.
-   * Usa SweetAlert se disponível; caso contrário, usa o alert nativo.
-   * O <script> do SweetAlert2 agora carrega ANTES de dom.js/script.js no HTML,
-   * então esse fallback só entra em ação se o CDN falhar (rede instável,
-   * bloqueador de conteúdo etc.) — deixado por segurança, não como caminho
-   * esperado.
-   */
-  function showAlert(title, text) {
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({ type: 'error', title, text });
-    } else {
-      window.alert(text);
-    }
-  }
-
-  /**
-   * Exibe uma notificação informativa não-bloqueante (ex: sequência carregada via link).
-   * Silenciosa se o SweetAlert ainda não estiver disponível, para não interromper a carga da página.
-   */
-  function showInfo(title, text) {
-    if (typeof Swal !== 'undefined') {
-      Swal.fire({ type: 'success', title, text, timer: 2800, showConfirmButton: false });
-    }
-  }
-
-  /** Elemento que tinha o foco antes do modal atual abrir — usado para devolver o foco ao fechar. */
-  let modalOpenerElement = null;
-
-  /**
-   * Abre um modal seq-modal-overlay (Exportar, Importar, Ribossomo, Mendel, PS.crispr, Replicação):
-   * lembra quem tinha o foco para restaurar ao fechar (ver closeModal, na vinculação de eventos)
-   * e move o foco para dentro do modal — para `focusTarget`, se informado, ou para o botão de
-   * fechar como alvo padrão. Sem isso, o foco do teclado ficava "preso" atrás do modal, numa
-   * página que o usuário não consegue mais ver.
-   */
-  function openModalDialog(modal, focusTarget) {
-    if (!modal) return;
-    modalOpenerElement = document.activeElement;
-    modal.style.display = 'flex';
-    const target = focusTarget || modal.querySelector('.seq-modal-close');
-    if (target) target.focus();
-  }
-
-  // ─── Criação de elementos DOM ─────────────────────────────────────────────────
-
-  /**
-   * Cria e retorna um novo input sequenceChar com os event listeners vinculados.
-   * @param {string} value - base inicial (opcional).
-   * @param {string} className - classe CSS do input (default 'sequenceChar').
-   * @param {string} ariaLabel - rótulo acessível para leitores de tela, ex: 'Base de DNA' ou 'Base de RNA mensageiro'.
-   */
-  function newSequenceChar(value = '', className = 'sequenceChar', ariaLabel = 'Base da sequência') {
-    const input = document.createElement('input');
-    input.className = className;
-    input.maxLength = 1;
-    input.value = value.toUpperCase();
-    input.setAttribute('aria-label', ariaLabel);
-    // inputmode="none" pede pro navegador não abrir o teclado virtual ao focar este
-    // campo — a ideia é que a pessoa monte a sequência clicando nos botões A/T/C/G
-    // (ver insertBase()), não digitando num teclado na tela. Não afeta teclado físico/
-    // bluetooth, nem os listeners de keypress/keydown abaixo, que continuam funcionando
-    // normalmente para quem realmente quiser digitar (ex.: no desktop).
-    input.setAttribute('inputmode', 'none');
-    input.addEventListener('keypress', charInput);
-    input.addEventListener('keydown', actsLikeUniqueInput);
-    return input;
-  }
-
-  /**
-   * Move o foco para `el` sem deixar o navegador abrir o teclado virtual —
-   * usado nos pontos em que o foco é só "lembrete de posição" após um clique em
-   * botão (inserir base, carregar exemplo, sequência aleatória etc.), não uma
-   * intenção real de digitar. inputmode="none" (ver newSequenceChar()) já resolve
-   * a maioria dos casos, mas alguns navegadores (principalmente versões mais
-   * antigas do Safari iOS) ainda abrem o teclado num focus() disparado por script,
-   * ignorando o inputmode. Marcar o campo como readonly no instante do focus() é o
-   * truque clássico e mais confiável pra evitar isso — o teclado só aparece quando o
-   * SO decide mostrá-lo no momento do foco, então removê-lo logo em seguida não
-   * reabre nada.
-   */
-  function focusWithoutKeyboard(el) {
-    if (!el) return;
-    el.setAttribute('readonly', 'readonly');
-    el.focus({ preventScroll: true });
-    setTimeout(() => el.removeAttribute('readonly'), 100);
-  }
-
-  /** Cria e retorna um elemento de aminoácido completo com rótulos e event listeners. */
-  function newAminoacid(aminoacid = { name: '', abbrevName: '' }) {
-    const div = document.createElement('div');
-    // Codificação por cor química: cada cartão real (não os placeholders vazios)
-    // recebe a classe de categoria físico-química do aminoácido (base-apolar/
-    // base-polar/base-basic/base-acid), que estiliza a faixa colorida no topo
-    // do cartão — ver .aminoacid::before em app.css.
-    const categoryClass = aminoacid.abbrevName ? aminoacidCategoryClass(aminoacid.abbrevName) : '';
-    div.className = aminoacid.name
-      ? 'aminoacid ' + aminoacid.name + (categoryClass ? ' ' + categoryClass : '')
-      : 'aminoacid not-availlable';
-
-    const abbrevEl = document.createElement('div');
-    abbrevEl.className = 'abbreviated-name';
-    abbrevEl.innerHTML = aminoacid.abbrevName;
-
-    const moleculeEl = document.createElement('div');
-    moleculeEl.className = 'molecule';
-    if (aminoacid.abbrevName) {
-      moleculeEl.style.backgroundImage = `url('assets/images/aminoacids/${aminoacid.abbrevName}.png')`;
-    }
-
-    const nameEl = document.createElement('div');
-    nameEl.className = 'full-name';
-    nameEl.innerHTML = aminoacid.name;
-
-    div.appendChild(abbrevEl);
-    div.appendChild(moleculeEl);
-    div.appendChild(nameEl);
-
-    // Interações do PS.drawer apenas para aminoácidos reais (não para placeholders vazios).
-    // PERFORMANCE + A11Y: nenhum listener é registrado aqui — cada tecla digitada recriaria
-    // 3 listeners por aminoácido. Em vez disso, expomos `data-abbrev` + atributos de teclado/ARIA
-    // e um único par de listeners delegados no container (ver bindAminoacidOutputEvents(),
-    // registrado uma única vez em DOMContentLoaded) cuida de clique, hover e teclado para
-    // todos os aminoácidos presentes e futuros.
-    if (aminoacid.abbrevName) {
-      div.style.cursor = 'pointer';
-      div.dataset.abbrev = aminoacid.abbrevName;
-      div.tabIndex = 0;
-      div.setAttribute('role', 'button');
-      div.setAttribute('aria-label', `Ver detalhes do aminoácido ${aminoacid.name}`);
-    }
-
-    return div;
-  }
-
-  // ─── Tabela de códons (gerada dinamicamente) ─────────────────────────────────
-
-  /**
-   * Mapeia o tipo químico de um aminoácido (AMINOACIDS_DB) para a classe CSS
-   * de cor compartilhada por TODO o app: tabela de códons, roda de códons,
-   * cartões de aminoácido (newAminoacid()) e o selo do PS.drawer de detalhes —
-   * uma única taxonomia visual (ver os blocos .base-apolar/.base-polar/
-   * .base-basic/.base-acid em pages.css) em vez de cada componente decidir
-   * suas próprias cores.
-   */
-  function aminoacidCategoryClass(abbrevName) {
-    const data = AMINOACIDS_DB[abbrevName];
-    const type = (data && data.type) || '';
-    if (type.includes('Ácido'))  return 'base-acid';
-    if (type.includes('Básico')) return 'base-basic';
-    if (type.includes('Apolar')) return 'base-apolar';
-    return 'base-polar';
-  }
-
-  /** Mapeia o tipo químico do aminoácido (AMINOACIDS_DB) para a classe CSS de cor da célula, incluindo STOP. */
-  function codonCellClass(abbrevName) {
-    if (abbrevName === 'STOP') return 'codon-stop';
-    return aminoacidCategoryClass(abbrevName);
-  }
-
-  /** Formata o nome abreviado do aminoácido para exibição (ex: 'PHE' → 'Phe'; 'STOP' permanece 'STOP'). */
-  function codonDisplayName(abbrevName) {
-    if (abbrevName === 'STOP') return 'STOP';
-    return abbrevName.charAt(0) + abbrevName.slice(1).toLowerCase();
-  }
-
-  /**
-   * Gera a tabela de 64 códons (#codon-matrix-body) inteiramente a partir de
-   * CODON_TABLE e AMINOACIDS_DB, que já são a fonte de verdade usada pelo
-   * simulador para tradução.
+   * Injeta rótulos pill ("INÍCIO" / "PARADA") acima do textbox de RNA
+   * para os códons de início e parada, usando uma máquina de estados simples.
    *
-   * REFATORAÇÃO: antes, essa tabela existia duplicada como ~250 linhas de HTML
-   * estático em index.html, mantidas manualmente em sincronia com CODON_TABLE.
-   * Qualquer correção feita em um lugar e esquecida no outro fazia a tabela
-   * visual divergir silenciosamente da lógica real de tradução. Agora há uma
-   * única fonte de dados.
+   * BUGFIX: a versão anterior calculava a posição horizontal com constantes
+   * fixas em pixels (padding + largura de slot) espelhando o CSS manualmente.
+   * Isso quebrava silenciosamente sempre que o CSS responsivo mudava o
+   * tamanho da fonte/input em telas menores. Agora a posição é lida
+   * diretamente do `offsetLeft` do input real que inicia o códon, então o
+   * rótulo sempre acompanha o layout de verdade, não uma cópia dele.
    */
-  function buildCodonTable() {
-    const tbody = document.getElementById('codon-matrix-body');
-    if (!tbody) return;
 
-    const BASES = ['U', 'C', 'A', 'G'];
-    tbody.innerHTML = '';
+  function updateCodonLabels() {
+    const rnaBox = PS.textboxRna[0];
 
-    for (const first of BASES) {
-      const tr = document.createElement('tr');
+    // Remove rótulos anteriores
+    const stale = rnaBox.getElementsByClassName('codon-label');
+    while (stale.length > 0) rnaBox.removeChild(stale[0]);
 
-      const firstCell = document.createElement('td');
-      firstCell.className = 'first-base-cell';
-      firstCell.textContent = first;
-      tr.appendChild(firstCell);
+    const seq = readSequence(PS.rnaSequenceChars);
+    if (seq.length < 3) return;
 
-      for (const second of BASES) {
-        const td = document.createElement('td');
-        const group = document.createElement('div');
-        group.className = 'codon-cell-group';
+    // Reaproveita walkCodingRegion() em vez de reimplementar a busca de AUG/STOP
+    // aqui — essa duplicação era justamente uma das duas cópias que carregavam
+    // o bug de quadro de leitura fixo na posição 0. Uma só fonte de verdade agora.
+    let wasActive = false;
+    walkCodingRegion(seq, (codon, aminoacid, isActive, baseIndex) => {
+      let kind = null;
+      if (isActive && !wasActive) kind = 'start';
+      else if (!isActive && wasActive) kind = 'stop';
+      wasActive = isActive;
+      if (!kind) return;
 
-        for (const third of BASES) {
-          const codon = first + second + third;
-          const aminoacid = CODON_TABLE[codon];
-          if (!aminoacid) continue;
+      const startChar = PS.rnaSequenceChars[baseIndex];
+      if (!startChar) return;
 
-          const item = document.createElement('div');
-          item.className = 'codon-item ' + codonCellClass(aminoacid.abbrevName);
-          item.setAttribute('data-codon', codon);
-          item.setAttribute('role', 'button');
-          item.setAttribute('tabindex', '0');
-          item.setAttribute('aria-label',
-            `Códon ${codon}, ${aminoacid.name}. Clique para inserir no simulador.`);
+      const lbl = document.createElement('div');
+      lbl.className   = 'codon-label codon-label-' + kind;
+      lbl.textContent = kind === 'start' ? 'INÍCIO' : 'PARADA';
+      lbl.style.left  = startChar.offsetLeft + 'px';
+      rnaBox.appendChild(lbl);
+    });
+  }
 
-          const nameSpan = document.createElement('span');
-          nameSpan.className = 'codon-name';
-          nameSpan.textContent = codon;
+  /**
+   * Encontra a posição do primeiro AUG na sequência de RNA — em QUALQUER
+   * posição, não necessariamente múltipla de 3 (a UTR 5' pode ter qualquer
+   * comprimento). Retorna -1 se não houver nenhum AUG.
+   */
 
-          const aaSpan = document.createElement('span');
-          aaSpan.className = 'codon-aa';
-          aaSpan.textContent = codonDisplayName(aminoacid.abbrevName);
+  function translateStrand(rnaChars, outputContainer) {
+    outputContainer.innerHTML = '';
 
-          item.appendChild(nameSpan);
-          item.appendChild(document.createTextNode(' '));
-          item.appendChild(aaSpan);
-          group.appendChild(item);
+    const sequence   = readSequence(rnaChars);
+    const frameStart = findFirstStartIndex(sequence);
+
+    // A fileira de aminoácidos não tem um "slot" pra UTR 5' (não faz sentido
+    // mostrar um card vazio pra bases que nunca chegam a ser lidas). Mas pra
+    // ela continuar alinhada embaixo da fileira de RNA — que SIM mostra a
+    // UTR, só que com um estilo apagado — precisamos de um espaço reservado
+    // do mesmo tamanho antes do primeiro slot de verdade.
+    //
+    // BUGFIX (alinhamento aminoácido × códon): a versão anterior usava
+    // rnaChars[frameStart].offsetLeft direto como largura do spacer. Isso
+    // erra de dois jeitos:
+    //   1) offsetLeft já embute o padding-left da PRÓPRIA fileira de RNA —
+    //      mas o spacer nasce dentro de .output-aminoacids, que tem seu
+    //      PRÓPRIO padding-left/border independente. Usar offsetLeft como
+    //      largura do spacer conta esse padding duas vezes.
+    //   2) .output-aminoacids usa `gap: 8px` no flexbox pra separar os
+    //      cards de aminoácido entre si — gap insere esse espaço entre TODO
+    //      par de itens adjacentes, inclusive entre o spacer (1º filho) e o
+    //      primeiro card real, sem equivalente na fileira de RNA (lá o
+    //      respiro UTR→1º códon vem só da margem pontual de
+    //      .codon-utr-end).
+    // A correção mede em qual posição X (relativa à borda esquerda de CADA
+    // fileira) o AUG começa, e calcula o quanto falta preencher no OUTRO
+    // container pra chegar nessa mesma posição X — descontando o que o
+    // border/padding/gap PRÓPRIOS de .output-aminoacids já empurram de
+    // graça. Assim funciona não importa se os dois containers têm
+    // padding/border iguais ou não, e não quebra se o CSS responsivo mudar
+    // esses valores em telas menores.
+    if (frameStart > 0 && rnaChars[frameStart]) {
+      const rnaBox = rnaChars[frameStart].parentElement;
+      const targetX = rnaChars[frameStart].getBoundingClientRect().left - rnaBox.getBoundingClientRect().left;
+
+      const outCS          = getComputedStyle(outputContainer);
+      const outBorderLeft  = parseFloat(outCS.borderLeftWidth) || 0;
+      const outPaddingLeft = parseFloat(outCS.paddingLeft) || 0;
+      const outGap         = parseFloat(outCS.columnGap) || 0;
+
+      const spacer = document.createElement('div');
+      spacer.className = 'output-aminoacids-utr-spacer';
+      spacer.style.width = Math.max(0, targetX - outBorderLeft - outPaddingLeft - outGap) + 'px';
+      outputContainer.appendChild(spacer);
+    }
+
+    walkCodingRegion(sequence, (codon, aminoacid, isActive) => {
+      outputContainer.appendChild(isActive ? newAminoacid(aminoacid) : newAminoacid());
+    });
+  }
+
+  /**
+   * Constrói a lista de passos para a animação do ribossomo: um item por códon
+   * dentro da primeira ORF encontrada (do AUG ao primeiro STOP em fase, inclusive),
+   * na ordem em que o ribossomo os seria percorrer. Reaproveita walkCodingRegion() —
+   * a mesma regra de fase de leitura usada pelo simulador e pelo quiz.
+   *
+   * Limitado à primeira ORF de propósito: animar múltiplas ORFs na mesma sequência
+   * confundiria o aluno sobre qual proteína está sendo montada.
+   *
+   * @param {string} rnaSeq
+   * @returns {Array<{codon:string, aminoacid:object, kind:'start'|'add'|'stop'}>}
+   */
+
+  function translate() {
+    // BUGFIX: garante que .codon-utr/.codon-utr-end já estejam aplicadas
+    // ANTES de translateStrand() medir offsetLeft pra montar o spacer da
+    // UTR — ver nota em syncFrameClasses(). Sem isso, o spacer é medido com
+    // o layout de uma tecla atrás e o aminoácido sai desalinhado do códon.
+    syncFrameClasses();
+    translateStrand(PS.rnaSequenceChars, PS.outputAminoacids[0]);
+    updateCounters();
+  }
+
+  /** Atualiza os contadores de códons e aminoácidos ativos na UI. */
+  // updateCounters movida para assets/js/simulator.js
+
+
+  function alignSequences(origItems, mutItems, equalsFn) {
+    const eq = equalsFn || function (a, b) { return a === b; };
+    const n = origItems.length;
+    const m = mutItems.length;
+
+    if (n === 0) return mutItems.map(function () { return 'ins'; });
+    if (m === 0) return [];
+
+    const MISMATCH  = 1;
+    const GAP_OPEN   = 1;
+    const GAP_EXTEND = 0.3;
+    const INF = Infinity;
+
+    // M[i][j]  = custo mínimo alinhando origItems[0..i) com mutItems[0..j),
+    //            terminando em correspondência (match ou substituição).
+    // Ix[i][j] = ...terminando em um item original sem correspondente
+    //            (deleção — consome origItems, não gera saída em mutItems).
+    // Iy[i][j] = ...terminando em um item mutado sem correspondente
+    //            (inserção — gera saída 'ins').
+    const M = [], Ix = [], Iy = [];
+    for (let i = 0; i <= n; i++) {
+      M.push(new Array(m + 1).fill(INF));
+      Ix.push(new Array(m + 1).fill(INF));
+      Iy.push(new Array(m + 1).fill(INF));
+    }
+
+    M[0][0] = 0;
+    for (let i = 1; i <= n; i++) Ix[i][0] = GAP_OPEN + (i - 1) * GAP_EXTEND;
+    for (let j = 1; j <= m; j++) Iy[0][j] = GAP_OPEN + (j - 1) * GAP_EXTEND;
+
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        const cost = eq(origItems[i - 1], mutItems[j - 1]) ? 0 : MISMATCH;
+        M[i][j]  = Math.min(M[i - 1][j - 1], Ix[i - 1][j - 1], Iy[i - 1][j - 1]) + cost;
+        Ix[i][j] = Math.min(M[i - 1][j] + GAP_OPEN, Ix[i - 1][j] + GAP_EXTEND);
+        Iy[i][j] = Math.min(M[i][j - 1] + GAP_OPEN, Iy[i][j - 1] + GAP_EXTEND);
+      }
+    }
+
+    const EPS = 1e-9;
+    const result = new Array(m);
+    let i = n, j = m;
+    let state = (M[i][j] <= Ix[i][j] && M[i][j] <= Iy[i][j]) ? 'M' : (Ix[i][j] <= Iy[i][j] ? 'Ix' : 'Iy');
+
+    while (i > 0 || j > 0) {
+      if (state === 'M') {
+        const isMatch = eq(origItems[i - 1], mutItems[j - 1]);
+        result[j - 1] = isMatch ? 'match' : 'sub';
+        const cost = isMatch ? 0 : MISMATCH;
+        if (Math.abs(M[i][j] - (M[i - 1][j - 1] + cost)) < EPS) state = 'M';
+        else if (Math.abs(M[i][j] - (Ix[i - 1][j - 1] + cost)) < EPS) state = 'Ix';
+        else state = 'Iy';
+        i--; j--;
+      } else if (state === 'Ix') {
+        state = Math.abs(Ix[i][j] - (M[i - 1][j] + GAP_OPEN)) < EPS ? 'M' : 'Ix';
+        i--;
+      } else {
+        result[j - 1] = 'ins';
+        state = Math.abs(Iy[i][j] - (M[i][j - 1] + GAP_OPEN)) < EPS ? 'M' : 'Iy';
+        j--;
+      }
+    }
+
+    // BUGFIX: quando a sequência ao redor de uma inserção/deleção é
+    // repetitiva (comum em DNA, alfabeto de só 4 letras — ex.:
+    // "...CGACGACGA..."), mais de um alinhamento tem exatamente o MESMO
+    // custo mínimo: o bloco inserido pode "deslizar" uma ou mais posições
+    // sem gerar nenhuma diferença extra. O traceback do Gotoh acima
+    // resolve esse empate de forma arbitrária (só depende da ordem em que
+    // os estados são preenchidos), então a mesma inserção digitada em
+    // pontos diferentes da fita pode aparecer destacada uma base "pra
+    // trás" do ponto real, ou o destaque parecer não seguir nenhum
+    // padrão — exatamente o sintoma relatado (funciona na maioria dos
+    // casos, mas "buga" e destaca bases que não foram digitadas).
+    // rightAlignInsertions() elimina essa ambiguidade adotando a mesma
+    // convenção usada em nomenclatura genética (regra 3' do HGVS): entre
+    // alinhamentos de custo igual, sempre normaliza para a posição mais
+    // à direita — a mesma razão pela qual a inserção da Doença de
+    // Tay-Sachs é descrita como "1278insTATC" e não uma posição antes.
+    rightAlignInsertions(mutItems, result, eq);
+    return result;
+  }
+
+  /**
+   * Normaliza blocos de inserção ('ins') que podem ser deslocados para a
+   * direita sem alterar o custo do alinhamento — ou seja, a base que
+   * "sai" do início do bloco é idêntica à base que "entra" logo depois
+   * dele. Isso só é possível em trechos de sequência repetitivos, que são
+   * exatamente onde o traceback de alignSequences() é ambíguo (mais de um
+   * alinhamento igualmente ótimo). Sem essa normalização, o resultado do
+   * traceback depende de detalhes de implementação e não de onde a base
+   * foi realmente inserida.
+   *
+   * Ex.: original "TACCGACGACGAATT", mutada "TACTATCCGACGACGAATT"
+   * (inserção real de "TATC" logo após "TAC", como na Doença de
+   * Tay-Sachs). Sem a normalização, o traceback encontra um bloco de
+   * mesmo custo uma posição adiantado ("CTAT" em vez de "TATC"), porque
+   * "C" se repete logo depois. Deslocando o bloco pra direita enquanto a
+   * base que sai da frente for igual à que entra atrás, chegamos no
+   * bloco correto.
+   *
+   * @param {Array} mutItems - itens da sequência mutada (mesmos passados a alignSequences).
+   * @param {Array<'match'|'sub'|'ins'>} tags - resultado de alignSequences, alterado in-place.
+   * @param {function} eq - mesma função de comparação usada no alinhamento.
+   */
+
+  function rightAlignInsertions(mutItems, tags, eq) {
+    const m = tags.length;
+    let changed = true;
+    while (changed) {
+      changed = false;
+      let idx = 0;
+      while (idx < m) {
+        if (tags[idx] !== 'ins') { idx++; continue; }
+        let end = idx;
+        while (end < m && tags[end] === 'ins') end++;
+        // Desliza o bloco [idx, end) pra direita enquanto o item que sai
+        // da frente do bloco (mutItems[idx]) for idêntico ao item logo
+        // depois do bloco (mutItems[end]) — só então a troca não muda o
+        // resultado final da fita mutada nem o custo do alinhamento.
+        while (end < m && tags[end] === 'match' && eq(mutItems[idx], mutItems[end])) {
+          tags[idx] = 'match';
+          tags[end] = 'ins';
+          idx++; end++;
+          changed = true;
         }
-
-        td.appendChild(group);
-        tr.appendChild(td);
+        idx = end;
       }
-
-      // Coluna de legenda da 3ª base — uma por linha, igual ao layout original
-      const thirdBaseCell = document.createElement('td');
-      const list = document.createElement('div');
-      list.className = 'third-base-list';
-      for (const b of BASES) {
-        const div = document.createElement('div');
-        div.textContent = b;
-        list.appendChild(div);
-      }
-      thirdBaseCell.appendChild(list);
-      tr.appendChild(thirdBaseCell);
-
-      tbody.appendChild(tr);
     }
+    return tags;
   }
 
   /**
-   * Insere as 3 bases de DNA correspondentes a um códon de RNAm no simulador
-   * e força uma nova tradução — lógica compartilhada entre o clique na
-   * tabela de códons (activateCodonItem(), abaixo) e o clique num códon
-   * completo na Roda de Códons (handleWheelSegmentActivate()).
+   * Compara a sequência mutada com a original, destaca as diferenças
+   * e classifica o tipo de mutação.
    */
-  function insertCodonAndTranslate(codon) {
-    // Converte bases do mRNA para DNA molde: A→T, U→A, C→G, G→C
-    const dnaBases = codon.split('').map(b => RNA_BASE_TO_DNA[b] || b).join('');
 
-    const appBtn = document.getElementById('app');
-    if (appBtn) appBtn.click();
-
-    // A Roda de Códons abre o PS.drawer de detalhes ao completar um códon (ver
-    // handleWheelSegmentActivate()); como acabamos de navegar para a página
-    // do simulador, o PS.drawer — inclusive seu estado "fixado por clique" —
-    // precisa ser fechado aqui, senão ele fica visível por cima da página
-    // errada até o usuário passar o mouse por fora dele.
-    closeDrawer();
-
-    // PERFORMANCE: insere as 3 bases sem re-renderizar a cada uma (skipRender),
-    // e dispara translate()/treatSequence() uma única vez ao final.
-    for (const base of dnaBases) insertBase(base, { skipRender: true });
-    translate();
-    treatSequence();
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // Visualizador Dinâmico da Roda de Códons (Codon Wheel)
-  // ═══════════════════════════════════════════════════════════════════════
-  // Substitui a tabela estática como visão PADRÃO da aba "Roda de Códons"
-  // (a tabela em grade continua disponível via o alternador Roda/Tabela, ver
-  // HTML). Um SVG de 3 anéis + miolo, gerado 100% a partir de CODON_TABLE/
-  // AMINOACIDS_DB (mesma fonte de verdade da tabela) — nunca hardcoded, então
-  // as duas visões nunca podem divergir. Interação: cada anel representa uma
-  // posição do tripleto (1ª/2ª/3ª base); o aminoácido correspondente vai
-  // sendo destacado progressivamente à medida que cada base é escolhida, e o
-  // 3º clique (ou um clique direto no anel externo) completa o códon, insere
-  // no simulador e abre o PS.drawer de detalhes — mesma ação da tabela.
-
-  const codonWheelState = { first: null, second: null, third: null };
-
-  /** Converte coordenadas polares (ângulo em graus, 0° = topo, sentido horário) em cartesianas. */
-  function wheelPolarToCartesian(cx, cy, r, angleDeg) {
-    const rad = (angleDeg - 90) * Math.PI / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  }
-
-  /** Gera o "d" de um path SVG para um setor anular (anel parcial) entre dois raios e dois ângulos. */
-  function wheelSectorPath(cx, cy, rInner, rOuter, startAngle, endAngle) {
-    const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
-    const p1 = wheelPolarToCartesian(cx, cy, rOuter, startAngle);
-    const p2 = wheelPolarToCartesian(cx, cy, rOuter, endAngle);
-    const p3 = wheelPolarToCartesian(cx, cy, rInner, endAngle);
-    const p4 = wheelPolarToCartesian(cx, cy, rInner, startAngle);
-    return [
-      `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
-      `A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
-      `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
-      `A ${rInner} ${rInner} 0 ${largeArc} 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`,
-      'Z',
-    ].join(' ');
-  }
-
-  /** transform="translate(...) rotate(...)" para um rótulo radial que permanece sempre legível (nunca de cabeça pra baixo). */
-  function wheelLabelTransform(cx, cy, r, midAngle) {
-    const pos = wheelPolarToCartesian(cx, cy, r, midAngle);
-    const normalized = ((midAngle % 360) + 360) % 360;
-    const rotation = (normalized > 90 && normalized < 270) ? midAngle + 180 : midAngle;
-    return `translate(${pos.x.toFixed(2)} ${pos.y.toFixed(2)}) rotate(${rotation.toFixed(2)})`;
-  }
-
-  /** Constrói o SVG da roda de códons inteiro a partir de CODON_TABLE, uma única vez. */
-  function buildCodonWheel() {
-    const wrapper = document.getElementById('codon-wheel-svg-wrapper');
-    if (!wrapper) return;
-
-    const BASES = ['U', 'C', 'A', 'G'];
-    const cx = 300, cy = 300;
-    const r0 = 34, r1 = 108, r2 = 175, r3 = 235, r4 = 288;
-
-    let svg = '<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" ' +
-      'aria-label="Roda de códons interativa: escolha a 1ª, depois a 2ª e a 3ª base do RNAm ' +
-      'para descobrir o aminoácido correspondente" class="codon-wheel-svg">';
-
-    // Anel 1 — 1ª base (4 setores de 90°)
-    BASES.forEach((first, i) => {
-      const start = i * 90, end = start + 90, mid = start + 45;
-      const d  = wheelSectorPath(cx, cy, r0, r1, start, end);
-      const lp = wheelPolarToCartesian(cx, cy, (r0 + r1) / 2, mid);
-      svg += `<g class="codon-wheel-segment codon-wheel-ring1 codon-wheel-nt-${first}" ` +
-        `data-wheel-ring="1" data-first="${first}" tabindex="0" role="button" ` +
-        `aria-label="1ª base do códon: ${first}">` +
-        `<path d="${d}"/>` +
-        `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${first}</text>` +
-        `</g>`;
-    });
-
-    // Anel 2 — 2ª base (16 setores de 22.5°)
-    BASES.forEach((first, i) => {
-      BASES.forEach((second, j) => {
-        const start = i * 90 + j * 22.5, end = start + 22.5, mid = start + 11.25;
-        const d  = wheelSectorPath(cx, cy, r1, r2, start, end);
-        const lp = wheelPolarToCartesian(cx, cy, (r1 + r2) / 2, mid);
-        svg += `<g class="codon-wheel-segment codon-wheel-ring2 codon-wheel-nt-${second}" ` +
-          `data-wheel-ring="2" data-first="${first}" data-second="${second}" tabindex="0" role="button" ` +
-          `aria-label="2ª base do códon: ${second}, com 1ª base ${first}">` +
-          `<path d="${d}"/>` +
-          `<text x="${lp.x.toFixed(1)}" y="${lp.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle">${second}</text>` +
-          `</g>`;
-      });
-    });
-
-    // Anel 3 — 3ª base + aminoácido (até 64 setores de 5.625°), colorido pela
-    // mesma taxonomia química da tabela/cartões (ver codonCellClass()).
-    BASES.forEach((first, i) => {
-      BASES.forEach((second, j) => {
-        BASES.forEach((third, k) => {
-          const codon     = first + second + third;
-          const aminoacid = CODON_TABLE[codon];
-          if (!aminoacid) return;
-
-          const start = i * 90 + j * 22.5 + k * 5.625, end = start + 5.625, mid = start + 2.8125;
-          const d = wheelSectorPath(cx, cy, r2, r3, start, end);
-          const labelTransform  = wheelLabelTransform(cx, cy, (r3 + r4) / 2, mid);
-          const categoryClass  = codonCellClass(aminoacid.abbrevName);
-          const label = aminoacid.abbrevName === 'STOP' ? '■' : aminoacid.abbrevName;
-          // Letrinha da 3ª base (U/C/A/G), no centro da própria faixa do anel 3
-          // (r2–r3) — mesmo padrão de "letra no centro da faixa" dos anéis 1 e 2.
-          // Fica com opacity:0 por padrão (ver CSS) e só aparece quando o
-          // segmento está em foco (não .dimmed), pedido do usuário: ajuda a
-          // enxergar de cara qual 3ª base cada fatia representa assim que ela
-          // deixa de estar apagada, sem poluir a roda inteira com 64 letrinhas
-          // de uma vez.
-          const baseLabelPos = wheelPolarToCartesian(cx, cy, (r2 + r3) / 2, mid);
-
-          svg += `<g class="codon-wheel-segment codon-wheel-ring3 ${categoryClass}" ` +
-            `data-wheel-ring="3" data-codon="${codon}" data-abbrev="${aminoacid.abbrevName}" ` +
-            `tabindex="0" role="button" ` +
-            `aria-label="Códon ${codon}: ${aminoacid.name}. Clique para inserir no simulador.">` +
-            `<path d="${d}"/>` +
-            `<text x="${baseLabelPos.x.toFixed(1)}" y="${baseLabelPos.y.toFixed(1)}" text-anchor="middle" ` +
-            `dominant-baseline="middle" class="codon-wheel-ring3-base-label">${third}</text>` +
-            `<text transform="${labelTransform}" text-anchor="middle" dominant-baseline="middle" ` +
-            `class="codon-wheel-ring3-label">${label}</text>` +
-            `</g>`;
-        });
-      });
-    });
-
-    // Miolo central — mostra o tripleto sendo montado ("_ _ _" → "A U G") e o resultado
-    svg += `<circle cx="${cx}" cy="${cy}" r="${r0}" class="codon-wheel-hub"/>` +
-      `<text x="${cx}" y="${cy - 6}" text-anchor="middle" dominant-baseline="middle" ` +
-      `class="codon-wheel-hub-codon" id="codon-wheel-hub-codon">_ _ _</text>` +
-      `<text x="${cx}" y="${cy + 15}" text-anchor="middle" dominant-baseline="middle" ` +
-      `class="codon-wheel-hub-hint" id="codon-wheel-hub-hint">Toque numa base</text>`;
-
-    svg += '</svg>';
-    wrapper.innerHTML = svg;
-    renderCodonWheelState();
-  }
-
-  /** Aplica o estado atual (codonWheelState) como classes visuais (dimmed/wheel-selected/wheel-completed) e atualiza o miolo. */
-  function renderCodonWheelState() {
-    const wrapper = document.getElementById('codon-wheel-svg-wrapper');
-    if (!wrapper) return;
-    const { first, second, third } = codonWheelState;
-
-    wrapper.querySelectorAll('.codon-wheel-ring1').forEach((el) => {
-      const f = el.getAttribute('data-first');
-      el.classList.toggle('dimmed', !!first && f !== first);
-      el.classList.toggle('wheel-selected', !!first && f === first);
-    });
-
-    wrapper.querySelectorAll('.codon-wheel-ring2').forEach((el) => {
-      const f = el.getAttribute('data-first');
-      const s = el.getAttribute('data-second');
-      const matchesFirst = !first || f === first;
-      const isSelected = !!(first && second) && f === first && s === second;
-      el.classList.toggle('dimmed', !matchesFirst || (!!second && !isSelected));
-      el.classList.toggle('wheel-selected', isSelected);
-    });
-
-    wrapper.querySelectorAll('.codon-wheel-ring3').forEach((el) => {
-      const codon = el.getAttribute('data-codon');
-      const f = codon.charAt(0), s = codon.charAt(1), t = codon.charAt(2);
-      const matchesFirst  = !first  || f === first;
-      const matchesSecond = !second || s === second;
-      const isComplete = !!(first && second && third) && f === first && s === second && t === third;
-      el.classList.toggle('dimmed', !matchesFirst || !matchesSecond);
-      el.classList.toggle('wheel-completed', isComplete);
-    });
-
-    const hubCodon = document.getElementById('codon-wheel-hub-codon');
-    const hubHint  = document.getElementById('codon-wheel-hub-hint');
-    const status   = document.getElementById('codon-wheel-status');
-    if (hubCodon) hubCodon.textContent = `${first || '_'} ${second || '_'} ${third || '_'}`;
-
-    let hintText = 'Toque numa base';
-    if (first && second && third) {
-      const aminoacid = CODON_TABLE[first + second + third];
-      hintText = aminoacid ? aminoacid.name : '';
-    } else if (first && second) {
-      hintText = 'Escolha a 3ª base';
-    } else if (first) {
-      hintText = 'Escolha a 2ª base';
-    }
-    if (hubHint) hubHint.textContent = hintText;
-    if (status)  status.textContent = hintText;
-
-    const sendBtn = document.getElementById('codon-wheel-send-btn');
-    if (sendBtn) sendBtn.disabled = !(first && second && third);
-  }
-
-  /** Aplica a seleção de um segmento clicado/ativado ao estado da roda; um anel 3 completo insere o códon no simulador. */
-  function handleWheelSegmentActivate(el) {
-    const ring = el.getAttribute('data-wheel-ring');
-
-    if (ring === '1') {
-      codonWheelState.first  = el.getAttribute('data-first');
-      codonWheelState.second = null;
-      codonWheelState.third  = null;
-    } else if (ring === '2') {
-      codonWheelState.first  = el.getAttribute('data-first');
-      codonWheelState.second = el.getAttribute('data-second');
-      codonWheelState.third  = null;
-    } else if (ring === '3') {
-      const codon = el.getAttribute('data-codon');
-      codonWheelState.first  = codon.charAt(0);
-      codonWheelState.second = codon.charAt(1);
-      codonWheelState.third  = codon.charAt(2);
-    } else {
-      return;
+  function mutationDifference() {
+    // Inicialização lazy das referências ao painel (evita querySelector a cada chamada)
+    if (!mutPanel.panel) {
+      mutPanel.panel         = document.querySelector('.mutation-panel');
+      mutPanel.noMutationMsg = mutPanel.panel && mutPanel.panel.querySelector('.no-mutation-msg');
+      mutPanel.details       = mutPanel.panel && mutPanel.panel.querySelector('.mutation-details');
+      mutPanel.badge         = mutPanel.panel && mutPanel.panel.querySelector('.mutation-type-badge');
+      mutPanel.desc          = mutPanel.panel && mutPanel.panel.querySelector('.mutation-description');
     }
 
-    renderCodonWheelState();
+    const isActive = PS.mutationWindow[0] && PS.mutationWindow[0].classList.contains('active');
+    if (mutPanel.panel) mutPanel.panel.style.display = isActive ? 'block' : 'none';
+    if (!isActive) return;
 
-    if (ring === '3') {
-      // Antes o clique no anel 3 já inseria o códon e navegava direto pro
-      // simulador. Agora ele só "estaciona" o códon completo (mostra o
-      // preview no PS.drawer) — quem efetivamente insere é o botão #codon-
-      // wheel-send-btn (ver sendCodonWheelSelection()), pra dar chance da
-      // pessoa conferir o aminoácido antes de mandar pro simulador.
-      const abbrev = el.getAttribute('data-abbrev');
-      openAminoacidDrawer(abbrev, true);
+    const aminoacids        = PS.outputAminoacids[1].getElementsByClassName('aminoacid');
+    const mutatedAminoacids = PS.outputAminoacids[0].getElementsByClassName('aminoacid');
+    const dna        = PS.textboxDna[1].getElementsByClassName('sequenceChar');
+    const mutatedDna = PS.textboxDna[0].getElementsByClassName('sequenceChar');
+    const rna        = PS.textboxRna[1].getElementsByClassName('sequenceChar');
+    const mutatedRna = PS.textboxRna[0].getElementsByClassName('sequenceChar');
+
+    const dnaSeq        = readSequence(dna);
+    const mutatedDnaSeq = readSequence(mutatedDna);
+    const rnaSeq        = readSequence(rna);
+    const mutatedRnaSeq = readSequence(mutatedRna);
+
+    // Destaca bases mutadas no DNA e no RNA (alinhamento — ver alignSequences()
+    // — em vez de comparação posição-a-posição, que erra em inserções/deleções)
+    highlightMutated(mutatedDna, dnaSeq, mutatedDnaSeq);
+    highlightMutated(mutatedRna, rnaSeq, mutatedRnaSeq);
+
+    // Destaca aminoácidos mutados, com o mesmo alinhamento — assim um
+    // aminoácido que só "andou de posição" por causa de uma inserção/deleção
+    // anterior não é marcado como se tivesse mudado.
+    const origAaTokens = Array.prototype.map.call(aminoacids, function (el) {
+      const abbrev = el.querySelector('.abbreviated-name');
+      return abbrev ? abbrev.innerHTML : '';
+    });
+    const mutAaTokens = Array.prototype.map.call(mutatedAminoacids, function (el) {
+      const abbrev = el.querySelector('.abbreviated-name');
+      return abbrev ? abbrev.innerHTML : '';
+    });
+    const aaAlignment = alignSequences(origAaTokens, mutAaTokens);
+    for (let i = 0; i < mutatedAminoacids.length; i++) {
+      const tag = aaAlignment[i];
+      mutatedAminoacids[i].classList.toggle('mutated', tag === 'ins' || tag === 'sub');
     }
-  }
 
-  /** Insere no simulador o códon atualmente "estacionado" na roda (botão "Enviar para o simulador") e limpa a seleção. */
-  function sendCodonWheelSelection() {
-    const { first, second, third } = codonWheelState;
-    if (!first || !second || !third) return;
-    insertCodonAndTranslate(first + second + third);
-    resetCodonWheel();
-  }
-
-  /** Limpa a seleção da roda de volta para "_ _ _". */
-  function resetCodonWheel() {
-    codonWheelState.first  = null;
-    codonWheelState.second = null;
-    codonWheelState.third  = null;
-    renderCodonWheelState();
+    classifyMutation(dnaSeq, mutatedDnaSeq);
   }
 
   /**
+   * Adiciona ou remove a classe "mutated" nos elementos da sequência mutada,
+   * usando o alinhamento de alignSequences() em vez de comparação
+   * posição-a-posição — assim inserções e deleções não desalinham (e
+   * portanto não "contaminam" com destaque falso) as bases que vêm depois
+   * delas na fita.
+   *
+   * @param {HTMLCollection} mutated  - Inputs mutados (sequenceChar).
+   * @param {string} origSeq  - Sequência original como string.
+   * @param {string} mutSeq   - Sequência mutada como string.
+   */
 
   // ─── Registro no PS ───────────────────────────────────────────────────
-  var simFns = ['readSequence','transcribe','applyCodonClasses','renderComplementaryStrand',
-    'clearSequenceChars','newSequenceChar','insertCodonAndTranslate','charInput',
-    'actsLikeUniqueInput','treatSequence','animateBasePairing','translateStrand',
-    'openRibosomeModal','pauseRibosome','resetRibosomeAnimation','translate',
-    'classifyMutation','insertBase','clearSequence','generateRandomCodingDna',
-    'randomSequence','saveSequenceAutosave','clearSequenceAutosave',
-    'restoreSequenceAutosave','loadSequenceFromString','loadSequenceFromUrl',
-    'clearAllStrandsKeepingMode','fillStrand','complementStrand',
-    'resetReplicationAnimation','openReplicationModal','pauseReplication',
-    'transcribeSeq','translateProteinChainPure','classifyMutationPure',
-    'applyComplementaryStrandVisibility','sanitizeDnaInput','showInfo',
-    'syncFrameClasses','mutationDifference','updateCodonLabels','updateCounters',
-    'findFirstStartIndex','walkCodingRegion','computeGCContent',
-    'alignSequences','rightAlignInsertions','buildRibosomeSteps','anticodonFor',
-    'cacheRibosomeElements','clearRibosomeTimers','scheduleRibosome',
-    'renderRibosomeTrack','positionRibosomeMarker','setPlayButtonState',
-    'stepRibosome','playRibosome','focusWithoutKeyboard','newAminoacid',
-    'aminoacidCategoryClass','codonCellClass','codonDisplayName',
-    'buildCodonTable','buildCodonWheel','renderCodonWheelState',
-    'handleWheelSegmentActivate','sendCodonWheelSelection','resetCodonWheel',
-    'initCodonWheelInteractions','openAminoacidDrawer','closeDrawer',
-    'bindAminoacidOutputEvents','scrollUnique','activateDnaInput',
-    'wheelPolarToCartesian','wheelSectorPath','wheelLabelTransform',
-    'getRnaEquivalent','cacheRibosomeElementsIfNeeded'];;
-  simFns.forEach(function(fnName) {
-    if (typeof eval(fnName) === 'function') {
-      PS[fnName] = eval(fnName);
-    }
-  });
-
+  var fns = ['complementBase','complementStrand','transcribe','translateDnaHeadless',
+    'computeGCContent','findFirstStartIndex','walkCodingRegion','anticodonFor',
+    'generateRandomCodingDna','sanitizeDnaInput','transcribeSeq',
+    'translateProteinChainPure','classifyMutationPure',
+    'clearSequenceChars','focusWithoutKeyboard','scrollUnique',
+    'activateDnaInput','updateCounters',
+    'applyCodonClasses','renderComplementaryStrand','syncFrameClasses','treatSequence','updateCodonLabels','translateStrand','translate','alignSequences','rightAlignInsertions','mutationDifference']
+  for (var i = 0; i < fns.length; i++) {
+    (function(n) { try { PS[n] = eval(n); } catch(e) {} })(fns[i]);
+  }
 })();
