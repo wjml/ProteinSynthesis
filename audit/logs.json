@@ -1,14 +1,30 @@
 [
   {
     "url": "http://localhost:8080/",
-    "msg": "Captured global error: SyntaxError: Unexpected token 'function'"
+    "msg": "Captured global error: ReferenceError: scrollUnique is not defined\n    at http://localhost:8080/assets/js/script.js:548:46\n    at http://localhost:8080/assets/js/script.js:1050:3"
   },
   {
     "url": "http://localhost:8080/",
-    "msg": "Unexpected token 'function'"
+    "msg": "scrollUnique is not defined"
   },
   {
     "url": "http://localhost:8080/",
-    "msg": "FATAL: elementHandle.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    56 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    "msg": "Captured global error: ReferenceError: showQuestion is not defined\n    at http://localhost:8080/assets/js/quiz.js:1873:21\n    at http://localhost:8080/assets/js/quiz.js:1884:3"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "showQuestion is not defined"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "Captured global error: SyntaxError: Invalid or unexpected token"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "Invalid or unexpected token"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "FATAL: elementHandle.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    57 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
   }
 ]

@@ -15,6 +15,7 @@ const ASSETS = [
   './assets/js/karyotype.js',
   './assets/js/popgen.js',
   './assets/js/mendel.js',
+  './assets/js/simulator.js',
   './assets/images/Logo.svg',
   './assets/images/icon-beta.png'
 ];
