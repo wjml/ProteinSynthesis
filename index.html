@@ -2311,11 +2311,38 @@
     <script src="assets/js/script.js"></script>
     <script src="assets/js/exercises.js"></script>
     <script src="assets/js/quiz.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script src="assets/js/crispr.js"></script>
+    <script src="assets/js/karyotype.js"></script>
+    <script src="assets/js/popgen.js"></script>
+    <script src="assets/js/mendel.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('sw.js')
-                    .then(function (reg) { console.log('Service Worker registrado!', reg); })
+                    .then(function (reg) {
+                        console.log('Service Worker registrado!', reg);
+                        if (reg.waiting) {
+                            console.log('Nova versão do app disponível — recarregue para atualizar.');
+                        }
+                        reg.addEventListener('updatefound', function () {
+                            var installing = reg.installing;
+                            if (installing) {
+                                installing.addEventListener('statechange', function () {
+                                    if (this.state === 'installed' && navigator.serviceWorker.controller) {
+                                        if (typeof Swal !== 'undefined') {
+                                            Swal.fire({
+                                                icon: 'info',
+                                                title: 'Atualização disponível',
+                                                text: 'Uma nova versão do Protein Synthesis foi carregada. Feche e reabra o app para usar a versão mais recente.',
+                                                confirmButtonText: 'OK'
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    })
                     .catch(function (err) { console.error('Erro no Service Worker:', err); });
             });
         }

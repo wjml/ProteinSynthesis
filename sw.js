@@ -10,6 +10,11 @@ const ASSETS = [
   './assets/js/script.js',
   './assets/js/exercises.js',
   './assets/js/quiz.js',
+  './assets/js/export.js',
+  './assets/js/crispr.js',
+  './assets/js/karyotype.js',
+  './assets/js/popgen.js',
+  './assets/js/mendel.js',
   './assets/images/Logo.svg',
   './assets/images/icon-beta.png'
 ];

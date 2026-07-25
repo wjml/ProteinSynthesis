@@ -2394,79 +2394,9 @@ window.PS = window.PS || {};
     openModalDialog(modal);
   }
 
-  /**
-   * Copia o conteúdo de um textarea para a área de transferência, com feedback visual.
-   * Usa a Clipboard API moderna com fallback para document.execCommand em navegadores antigos.
-   */
-  function copyTextareaContent(textareaId, feedbackEl, successMsg) {
-    const el = document.getElementById(textareaId);
-    if (!el || !el.value) return;
+  // copyTextareaContent, openImportModal, handleImportSubmit movidos para assets/js/export.js
 
-    const reportResult = (ok) => {
-      if (!feedbackEl) return;
-      feedbackEl.textContent = ok
-        ? successMsg
-        : 'Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.';
-      feedbackEl.classList.toggle('error', !ok);
-    };
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(el.value).then(() => reportResult(true)).catch(() => reportResult(false));
-    } else {
-      el.select();
-      try {
-        document.execCommand('copy');
-        reportResult(true);
-      } catch (e) {
-        reportResult(false);
-      }
-    }
-  }
-
-  /** Limpa e abre o modal de importação, pronto para receber uma nova sequência colada. */
-  function openImportModal() {
-    const modal    = document.getElementById('import-modal');
-    const input    = document.getElementById('import-seq-input');
-    const feedback = document.getElementById('import-feedback');
-    if (!modal) return;
-
-    if (input) input.value = '';
-    if (feedback) {
-      feedback.textContent = '';
-      feedback.classList.remove('error');
-    }
-
-    openModalDialog(modal, input);
-  }
-
-  /** Valida o texto colado no modal de importação e, se houver bases válidas, carrega a sequência. */
-  function handleImportSubmit() {
-    const modal    = document.getElementById('import-modal');
-    const input    = document.getElementById('import-seq-input');
-    const feedback = document.getElementById('import-feedback');
-    if (!input) return;
-
-    const { clean, hadInvalid } = sanitizeDnaInput(input.value);
-
-    if (!clean) {
-      if (feedback) {
-        feedback.textContent = 'Digite ao menos uma base válida (A, T, C ou G).';
-        feedback.classList.add('error');
-      }
-      return;
-    }
-
-    loadSequenceFromString(clean);
-
-    if (feedback) {
-      feedback.classList.remove('error');
-      feedback.textContent = hadInvalid
-        ? `Sequência carregada (${clean.length} bases). Caracteres inválidos foram ignorados.`
-        : `Sequência carregada com sucesso (${clean.length} bases).`;
-    }
-
-    // Fecha o modal após um curto intervalo para que o aluno veja a confirmação
-    setTimeout(() => { if (modal) modal.style.display = 'none'; }, hadInvalid ? 1800 : 900);
+  // ─── Autosave ───────────────────────────────────────────────────────────
   }
 
   /**
@@ -3657,228 +3587,9 @@ window.PS = window.PS || {};
   // (q²), a partir da frequência alélica (p), e um teste de equilíbrio via
   // qui-quadrado comparando genótipos observados numa amostra contra os
   // esperados sob Hardy-Weinberg (útil com marcadores codominantes, onde os
-  // 3 genótipos são distinguíveis por fenótipo — ex.: grupos sanguíneos MN).
+// 3 genótipos são distinguíveis por fenótipo — ex.: grupos sanguíneos MN).
 
-  /** Calcula p, q e as frequências genotípicas a partir da frequência do fenótipo recessivo (q²). */
-  function hwFromQSquared(qSquared) {
-    const q = Math.sqrt(qSquared);
-    const p = 1 - q;
-    return { p, q, pSquared: p * p, twoPQ: 2 * p * q, qSquared: q * q };
-  }
-
-  /** Calcula q e as frequências genotípicas a partir da frequência do alelo dominante (p). */
-  function hwFromP(p) {
-    const q = 1 - p;
-    return { p, q, pSquared: p * p, twoPQ: 2 * p * q, qSquared: q * q };
-  }
-
-  /** Calcula as frequências alélicas REAIS (contagem direta de alelos) a partir das contagens genotípicas observadas. */
-  function hwObservedFrequencies(countAA, countAa, countaa) {
-    const total = countAA + countAa + countaa;
-    const p = (2 * countAA + countAa) / (2 * total);
-    const q = (2 * countaa + countAa) / (2 * total);
-    return { total, p, q };
-  }
-
-  /**
-   * Testa se uma amostra está em equilíbrio de Hardy-Weinberg: calcula as frequências
-   * alélicas observadas, as frequências genotípicas ESPERADAS sob HW, e compara com
-   * as contagens observadas via teste de qui-quadrado (1 grau de liberdade: 3 classes
-   * genotípicas − 1 − 1 parâmetro estimado (p); valor crítico 3,841 para α=0,05).
-   */
-  function hwChiSquare(countAA, countAa, countaa) {
-    const { total, p, q } = hwObservedFrequencies(countAA, countAa, countaa);
-    const expectedAA = p * p * total;
-    const expectedAa = 2 * p * q * total;
-    const expectedaa = q * q * total;
-    const chiSquare =
-      Math.pow(countAA - expectedAA, 2) / expectedAA +
-      Math.pow(countAa - expectedAa, 2) / expectedAa +
-      Math.pow(countaa - expectedaa, 2) / expectedaa;
-    const criticalValue = 3.841;
-    return {
-      expectedAA, expectedAa, expectedaa, chiSquare, criticalValue,
-      inEquilibrium: chiSquare <= criticalValue, p, q, total,
-    };
-  }
-
-  // ─── Camada de DOM: alternância de modos, cálculo e renderização dos resultados ─
-
-  const popgen = { els: {}, mode: 'qsquared' };
-
-  /** Localiza e armazena os elementos da calculadora de genética populacional (uma única vez). */
-  function cachePopgenElements() {
-    popgen.els = {
-      modeQsquaredBtn: document.getElementById('popgen-mode-qsquared'),
-      modePBtn:        document.getElementById('popgen-mode-p'),
-      modeTestBtn:     document.getElementById('popgen-mode-test'),
-      panelQsquared:   document.getElementById('popgen-panel-qsquared'),
-      panelP:          document.getElementById('popgen-panel-p'),
-      panelTest:       document.getElementById('popgen-panel-test'),
-      results:         document.getElementById('popgen-results'),
-      alleleFreqs:     document.getElementById('popgen-allele-freqs'),
-      bar:             document.getElementById('popgen-bar'),
-      barLegend:       document.getElementById('popgen-bar-legend'),
-      tableWrap:       document.getElementById('popgen-table-wrap'),
-      explanation:     document.getElementById('popgen-explanation'),
-    };
-  }
-
-  /** Alterna entre os 3 modos da calculadora, mostrando o painel de entrada correspondente. */
-  function setPopgenMode(mode) {
-    if (!popgen.els.modeQsquaredBtn) cachePopgenElements();
-    popgen.mode = mode;
-    const els = popgen.els;
-
-    els.modeQsquaredBtn.classList.toggle('active', mode === 'qsquared');
-    els.modePBtn.classList.toggle('active', mode === 'p');
-    els.modeTestBtn.classList.toggle('active', mode === 'test');
-    els.modeQsquaredBtn.setAttribute('aria-pressed', String(mode === 'qsquared'));
-    els.modePBtn.setAttribute('aria-pressed', String(mode === 'p'));
-    els.modeTestBtn.setAttribute('aria-pressed', String(mode === 'test'));
-
-    els.panelQsquared.style.display = mode === 'qsquared' ? 'block' : 'none';
-    els.panelP.style.display        = mode === 'p' ? 'block' : 'none';
-    els.panelTest.style.display     = mode === 'test' ? 'block' : 'none';
-    els.results.style.display = 'none';
-  }
-
-  /** Renderiza os dois cartões de frequência alélica (p e q) em destaque. */
-  function renderPopgenAlleleFreqs(p, q) {
-    popgen.els.alleleFreqs.innerHTML = `
-      <div class="popgen-stat-card">
-        <span class="popgen-stat-label">Alelo dominante (p)</span>
-        <span class="popgen-stat-value">${(p * 100).toFixed(2)}%</span>
-      </div>
-      <div class="popgen-stat-card">
-        <span class="popgen-stat-label">Alelo recessivo (q)</span>
-        <span class="popgen-stat-value">${(q * 100).toFixed(2)}%</span>
-      </div>`;
-  }
-
-  /** Renderiza a barra de proporção empilhada (p² / 2pq / q²) e sua legenda. */
-  function renderPopgenBar(pSquared, twoPQ, qSquared) {
-    const segments = [
-      { pct: pSquared * 100, color: '#1e88e5', label: 'p² — Homozigoto dominante (AA)' },
-      { pct: twoPQ * 100,    color: '#f59e0b', label: '2pq — Heterozigoto, portador (Aa)' },
-      { pct: qSquared * 100, color: '#e53935', label: 'q² — Homozigoto recessivo (aa)' },
-    ];
-    popgen.els.bar.innerHTML = segments.map(s =>
-      `<div class="popgen-bar-segment" style="width:${s.pct}%;background:${s.color};">` +
-      `${s.pct >= 8 ? s.pct.toFixed(1) + '%' : ''}</div>`
-    ).join('');
-    popgen.els.barLegend.innerHTML = segments.map(s =>
-      `<span class="legend-item"><span class="lab-swatch" style="background:${s.color};"></span>${s.label} (${s.pct.toFixed(2)}%)</span>`
-    ).join('');
-  }
-
-  /** Renderiza a tabela simples de frequências genotípicas (modos 1 e 2), com contagens esperadas se N for dado. */
-  function renderPopgenGenotypeTable(pSquared, twoPQ, qSquared, n) {
-    const hasN = n && n > 0;
-    let html = '<table><thead><tr><th>Genótipo</th><th>Frequência</th>' + (hasN ? '<th>Indivíduos esperados</th>' : '') + '</tr></thead><tbody>';
-    const rows = [
-      ['AA (homozigoto dominante)', pSquared],
-      ['Aa (heterozigoto)', twoPQ],
-      ['aa (homozigoto recessivo)', qSquared],
-    ];
-    rows.forEach(([label, freq]) => {
-      html += `<tr><td>${label}</td><td>${(freq * 100).toFixed(2)}%</td>` +
-        (hasN ? `<td>${Math.round(freq * n)}</td>` : '') + '</tr>';
-    });
-    html += '</tbody></table>';
-    popgen.els.tableWrap.innerHTML = html;
-  }
-
-  /** Calcula e exibe o resultado a partir da frequência do fenótipo recessivo (Modo 1). */
-  function calcPopgenFromQSquared() {
-    if (!popgen.els.alleleFreqs) cachePopgenElements();
-    const n = Number(document.getElementById('popgen-n').value) || 0;
-    const affected = Number(document.getElementById('popgen-affected').value) || 0;
-    if (n <= 0 || affected < 0 || affected > n) {
-      showAlert('Valores inválidos', 'Confira o tamanho da população e o número de afetados (não pode ser maior que a população).');
-      return;
-    }
-    const qSquared = affected / n;
-    const r = hwFromQSquared(qSquared);
-
-    renderPopgenAlleleFreqs(r.p, r.q);
-    renderPopgenBar(r.pSquared, r.twoPQ, r.qSquared);
-    renderPopgenGenotypeTable(r.pSquared, r.twoPQ, r.qSquared, n);
-
-    const carrierCount = Math.round(r.twoPQ * n);
-    popgen.els.explanation.innerHTML = `Com <strong>${affected}</strong> afetados em <strong>${n}</strong> ` +
-      `indivíduos, q² = ${qSquared.toFixed(6)}, logo q = ${r.q.toFixed(4)} e p = ${r.p.toFixed(4)}. ` +
-      `Aproximadamente <strong>${carrierCount}</strong> indivíduos (${(r.twoPQ * 100).toFixed(2)}%) devem ser ` +
-      `portadores heterozigotos — não afetados, mas capazes de transmitir o alelo recessivo.`;
-    popgen.els.results.style.display = 'block';
-  }
-
-  /** Calcula e exibe o resultado a partir da frequência alélica p informada diretamente (Modo 2). */
-  function calcPopgenFromP() {
-    if (!popgen.els.alleleFreqs) cachePopgenElements();
-    const p = Number(document.getElementById('popgen-p-input').value);
-    const n = Number(document.getElementById('popgen-n2').value) || 0;
-    if (isNaN(p) || p < 0 || p > 1) {
-      showAlert('Valor inválido', 'A frequência alélica p deve ser um número entre 0 e 1.');
-      return;
-    }
-    const r = hwFromP(p);
-
-    renderPopgenAlleleFreqs(r.p, r.q);
-    renderPopgenBar(r.pSquared, r.twoPQ, r.qSquared);
-    renderPopgenGenotypeTable(r.pSquared, r.twoPQ, r.qSquared, n);
-
-    popgen.els.explanation.innerHTML = `Com p = ${r.p.toFixed(4)}, a frequência do alelo recessivo é ` +
-      `q = 1 − p = ${r.q.toFixed(4)}. As frequências genotípicas esperadas seguem diretamente de ` +
-      `p² + 2pq + q² = 1.`;
-    popgen.els.results.style.display = 'block';
-  }
-
-  /** Testa o equilíbrio de Hardy-Weinberg a partir de contagens genotípicas observadas (Modo 3). */
-  function testPopgenEquilibrium() {
-    if (!popgen.els.alleleFreqs) cachePopgenElements();
-    const countAA = Number(document.getElementById('popgen-count-aa').value);
-    const countAa = Number(document.getElementById('popgen-count-het').value);
-    const countaa = Number(document.getElementById('popgen-count-rec').value);
-    if ([countAA, countAa, countaa].some(v => isNaN(v) || v < 0) || (countAA + countAa + countaa) === 0) {
-      showAlert('Valores inválidos', 'Digite contagens genotípicas válidas (números não-negativos, soma maior que zero).');
-      return;
-    }
-
-    const r = hwChiSquare(countAA, countAa, countaa);
-    renderPopgenAlleleFreqs(r.p, r.q);
-    renderPopgenBar(r.p * r.p, 2 * r.p * r.q, r.q * r.q);
-
-    let html = '<table><thead><tr><th>Genótipo</th><th>Observado</th><th>Esperado (HW)</th></tr></thead><tbody>';
-    html += `<tr><td>AA</td><td>${countAA}</td><td>${r.expectedAA.toFixed(1)}</td></tr>`;
-    html += `<tr><td>Aa</td><td>${countAa}</td><td>${r.expectedAa.toFixed(1)}</td></tr>`;
-    html += `<tr><td>aa</td><td>${countaa}</td><td>${r.expectedaa.toFixed(1)}</td></tr>`;
-    html += `<tr><td>Total</td><td>${r.total}</td><td>${r.total}</td></tr>`;
-    html += '</tbody></table>';
-    popgen.els.tableWrap.innerHTML = html;
-
-    const verdictClass = r.inEquilibrium ? 'in-equilibrium' : 'out-equilibrium';
-    const verdictText = r.inEquilibrium
-      ? 'CONSISTENTE com o equilíbrio de Hardy-Weinberg'
-      : 'FORA do equilíbrio de Hardy-Weinberg';
-    popgen.els.explanation.innerHTML = `Qui-quadrado (χ²) = <strong>${r.chiSquare.toFixed(3)}</strong>, valor ` +
-      `crítico = 3,841 (1 grau de liberdade, α = 0,05). Como ${r.chiSquare.toFixed(3)} ` +
-      `${r.inEquilibrium ? '≤' : '>'} 3,841, essa amostra é ` +
-      `<span class="popgen-verdict ${verdictClass}">${verdictText}</span>. ` +
-      (r.inEquilibrium
-        ? 'As diferenças entre observado e esperado são pequenas o bastante para serem atribuídas ao acaso.'
-        : 'As diferenças são grandes demais para serem só acaso — algo está violando as condições de equilíbrio (seleção, deriva, migração, acasalamento não-aleatório ou mutação).');
-    popgen.els.results.style.display = 'block';
-  }
-
-  // ─── Cariótipo e Não-disjunção ────────────────────────────────────────────────
-  //
-  // Visualizador de cariótipo (normal e aneuploidias clássicas) + simulador de
-  // não-disjunção meiótica. A "não-disjunção" gera gametas com número anormal
-  // de cromossomos (n+1 ou n−1); ao fertilizar com um gameta normal do outro
-  // genitor, o zigoto resultante é uma trissomia ou monossomia — o mesmo motor
-  // de contagem de cromossomos é reaproveitado tanto para os cariótipos
-  // pré-definidos (Down, Turner...) quanto para os gerados pela simulação.
+  // ─── PopGen movido para assets/js/popgen.js ───────────────────────────
 
   /** Tamanhos relativos aproximados (Mb) dos 22 autossomos + X/Y, só para escala visual das barras. */
   const CHROMOSOME_SIZES = {
@@ -6862,8 +6573,8 @@ window.PS = window.PS || {};
     const mLabTabAbo      = document.getElementById('mendel-lab-tab-abo');
     if (btnClear)      btnClear.addEventListener('click', clearSequence);
     if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
-    if (btnExport)     btnExport.addEventListener('click', PS.openExportModal || openExportModal);
-    if (btnImport)     btnImport.addEventListener('click', PS.openImportModal || openImportModal);
+    if (btnExport)     btnExport.addEventListener('click', PS.openExportModal);
+    if (btnImport)     btnImport.addEventListener('click', PS.openImportModal);
     if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
     if (btnCrispr)     btnCrispr.addEventListener('click', PS.openCrisprModal || openCrisprModal);
     if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
@@ -6979,6 +6690,7 @@ window.PS = window.PS || {};
       if (isFocusable(focusTarget)) focusTarget.focus();
       modalOpenerElement = null;
     };
+    PS.closeModal = closeModal;
 
     if (exportCloseBtn)      exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
     if (importCloseBtn)      importCloseBtn.addEventListener('click', () => closeModal(importModal));
@@ -7090,12 +6802,12 @@ window.PS = window.PS || {};
     const popgenCalcQsquaredBtn = document.getElementById('popgen-calc-qsquared-btn');
     const popgenCalcPBtn        = document.getElementById('popgen-calc-p-btn');
     const popgenTestBtn         = document.getElementById('popgen-test-btn');
-    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('qsquared'));
-    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('p'));
-    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', () => (PS.setPopgenMode || setPopgenMode)('test'));
-    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', PS.calcPopgenFromQSquared || calcPopgenFromQSquared);
-    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', PS.calcPopgenFromP || calcPopgenFromP);
-    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', PS.testPopgenEquilibrium || testPopgenEquilibrium);
+    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', function () { PS.setPopgenMode('qsquared'); });
+    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', function () { PS.setPopgenMode('p'); });
+    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', function () { PS.setPopgenMode('test'); });
+    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', PS.calcPopgenFromQSquared);
+    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', PS.calcPopgenFromP);
+    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', PS.testPopgenEquilibrium);
 
     // Controles do Visualizador de Cariótipo e do Simulador de Não-disjunção
     const karyoViewBtn      = document.getElementById('karyo-view-btn');
@@ -7119,7 +6831,7 @@ window.PS = window.PS || {};
           }
           return;
         }
-        (PS.exportNodeAsPng || exportNodeAsPng)(svg, 'heredograma.png');
+        (PS.exportNodeAsPng)(svg, 'heredograma.png');
       });
     }
     if (karyoExportBtn) {
@@ -7131,7 +6843,7 @@ window.PS = window.PS || {};
           }
           return;
         }
-        exportNodeAsPng(grid, 'cariotipo.svg');
+        PS.exportNodeAsPng(grid, 'cariotipo.svg');
       });
     }
 
@@ -7151,11 +6863,11 @@ window.PS = window.PS || {};
 
     if (exportCopySeqBtn) {
       exportCopySeqBtn.addEventListener('click', () =>
-        (PS.copyTextareaContent || copyTextareaContent)('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
+        PS.copyTextareaContent('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
     }
     if (exportCopyLinkBtn) {
       exportCopyLinkBtn.addEventListener('click', () =>
-        (PS.copyTextareaContent || copyTextareaContent)('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
+        PS.copyTextareaContent('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
     }
     if (exportImageBtn) {
       exportImageBtn.addEventListener('click', () => {
@@ -7169,7 +6881,7 @@ window.PS = window.PS || {};
           return;
         }
         const panel = document.getElementById('main-sequence-panel');
-        exportNodeAsPng(panel, 'simulador-genetica.svg');
+        PS.exportNodeAsPng(panel, 'simulador-genetica.svg');
         if (feedback) {
           feedback.textContent = 'Imagem baixada!';
           feedback.classList.remove('error');
@@ -7177,11 +6889,11 @@ window.PS = window.PS || {};
       });
     }
 
-    if (importLoadBtn) importLoadBtn.addEventListener('click', handleImportSubmit);
+    if (importLoadBtn) importLoadBtn.addEventListener('click', PS.handleImportSubmit);
     if (importSeqInput) {
       // Atalho Ctrl/Cmd+Enter para carregar sem precisar clicar no botão
       importSeqInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) handleImportSubmit();
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) PS.handleImportSubmit();
       });
     }
 
@@ -7266,13 +6978,12 @@ window.PS = window.PS || {};
   PS.buildQuestionPool = buildQuestionPool;
   PS.showFeedback = showFeedback;
 
-  // ─── Export / Import ─────────────────────────────────────────────────
-  PS.openExportModal = openExportModal;
-  PS.openImportModal = openImportModal;
+  // ─── Export / Import — código em assets/js/export.js ─────────────────
   PS.exportNodeAsPng = exportNodeAsPng;
-  PS.handleImportSubmit = handleImportSubmit;
-  PS.copyTextareaContent = copyTextareaContent;
   PS.downloadSvgBlob = downloadSvgBlob;
+  PS.readSequence = readSequence;
+  PS.sanitizeDnaInput = sanitizeDnaInput;
+  PS.loadSequenceFromString = loadSequenceFromString;
 
   // ─── CRISPR ──────────────────────────────────────────────────────────
   PS.openCrisprModal = openCrisprModal;
@@ -7287,11 +6998,7 @@ window.PS = window.PS || {};
   PS.setNondisMode = setNondisMode;
   PS.runNondisjunctionSimulation = runNondisjunctionSimulation;
 
-  // ─── PopGen ──────────────────────────────────────────────────────────
-  PS.setPopgenMode = setPopgenMode;
-  PS.calcPopgenFromQSquared = calcPopgenFromQSquared;
-  PS.calcPopgenFromP = calcPopgenFromP;
-  PS.testPopgenEquilibrium = testPopgenEquilibrium;
+  // ─── PopGen — código em assets/js/popgen.js ─────────────────────────
 
   // ─── Mendel / Epistasia / ABO ────────────────────────────────────────
   PS.setMendelMode = setMendelMode;
