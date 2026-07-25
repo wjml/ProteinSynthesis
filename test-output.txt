@@ -1,0 +1,22 @@
+
+Running 4 tests using 1 worker
+
+[CONSOLE ERROR] Captured global error: TypeError: Cannot read properties of undefined (reading '0')
+    at http://localhost:8080/assets/js/simulator.js:1505:16
+    at http://localhost:8080/assets/js/simulator.js:2177:3
+[PAGE ERROR] Cannot read properties of undefined (reading '0')
+  x  1 [desktop] ÔÇ║ tests\specs\tools.spec.js:12:3 ÔÇ║ Ferramentas ÔÇ║ Gerar exerc├¡cios (31.1s)
+[CONSOLE ERROR] Captured global error: TypeError: Cannot read properties of undefined (reading '0')
+    at http://localhost:8080/assets/js/simulator.js:1505:16
+    at http://localhost:8080/assets/js/simulator.js:2177:3
+[PAGE ERROR] Cannot read properties of undefined (reading '0')
+  x  2 [desktop] ÔÇ║ tests\specs\tools.spec.js:12:3 ÔÇ║ Ferramentas ÔÇ║ Gerar exerc├¡cios (retry #1) (31.2s)
+[CONSOLE ERROR] Captured global error: TypeError: Cannot read properties of undefined (reading '0')
+    at http://localhost:8080/assets/js/simulator.js:1505:16
+    at http://localhost:8080/assets/js/simulator.js:2177:3
+[PAGE ERROR] Cannot read properties of undefined (reading '0')
+  x  3 [desktop] ÔÇ║ tests\specs\tools.spec.js:30:3 ÔÇ║ Ferramentas ÔÇ║ Exportar sequ├¬ncia (31.9s)
+[CONSOLE ERROR] Captured global error: TypeError: Cannot read properties of undefined (reading '0')
+    at http://localhost:8080/assets/js/simulator.js:1505:16
+    at http://localhost:8080/assets/js/simulator.js:2177:3
+[PAGE ERROR] Cannot read properties of undefined (reading '0')

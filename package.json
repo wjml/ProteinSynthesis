@@ -3,14 +3,18 @@
   "version": "1.0.0",
   "description": "Protein Synthesis Simulation Web Application",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "npx playwright test",
+    "test:report": "npx playwright show-report tests/report"
   },
   "dependencies": {
     "express": "^4.19.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "playwright": "^1.61.1"
   }
 }

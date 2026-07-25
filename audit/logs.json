@@ -1,14 +1,22 @@
 [
   {
     "url": "http://localhost:8080/",
-    "msg": "Captured global error: ReferenceError: scrollUnique is not defined\n    at http://localhost:8080/assets/js/script.js:5697:46\n    at http://localhost:8080/assets/js/script.js:6209:3"
+    "msg": "Captured global error: ReferenceError: generateRandomCodingDna is not defined\n    at http://localhost:8080/assets/js/script.js:694:32\n    at http://localhost:8080/assets/js/script.js:754:3"
   },
   {
     "url": "http://localhost:8080/",
-    "msg": "scrollUnique is not defined"
+    "msg": "generateRandomCodingDna is not defined"
   },
   {
     "url": "http://localhost:8080/",
-    "msg": "FATAL: elementHandle.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    55 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    "msg": "Captured global error: ReferenceError: toggleComplementaryBtn is not defined\n    at http://localhost:8080/assets/js/simulator.js:833:3\n    at http://localhost:8080/assets/js/simulator.js:2177:3"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "toggleComplementaryBtn is not defined"
+  },
+  {
+    "url": "http://localhost:8080/",
+    "msg": "FATAL: elementHandle.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    56 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"swal2-container swal2-center swal2-shown\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
   }
 ]
