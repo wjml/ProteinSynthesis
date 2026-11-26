@@ -176,6 +176,12 @@
   const textboxDna       = document.getElementsByClassName('textbox-dna');
   const textboxRna       = document.getElementsByClassName('textbox-rna');
   const outputAminoacids = document.getElementsByClassName('output-aminoacids');
+  window.PS = window.PS || {};
+  window.PS.CODON_TABLE = CODON_TABLE;
+  window.PS.AMINOACIDS_DB = AMINOACIDS_DB;
+  window.PS.textboxDna = textboxDna;
+  window.PS.textboxRna = textboxRna;
+  window.PS.outputAminoacids = outputAminoacids;
   const blankSpace       = document.getElementById('blank-space');
   const dnaSequenceChars = textboxDna[0].getElementsByClassName('sequenceChar');
   const rnaSequenceChars = textboxRna[0].getElementsByClassName('sequenceChar');
@@ -438,7 +444,7 @@
    */
   function showInfo(title, text) {
     if (typeof Swal !== 'undefined') {
-      Swal.fire({ type: 'success', title, text, timer: 2800, showConfirmButton: false });
+      Swal.fire({ type: 'success', title, text, timer: 2800, showConfirmButton: false, allowOutsideClick: true });
     }
   }
 

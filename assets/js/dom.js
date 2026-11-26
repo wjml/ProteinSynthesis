@@ -432,7 +432,7 @@
   // Melhoria #18 — Error Boundary Global
   // ═══════════════════════════════════════════════════════════════════════
   window.addEventListener('error', function (event) {
-    console.error('Captured global error:', event.error);
+    console.error('Captured global error:', event.error ? event.error.message : event.message, 'at', event.filename || '', 'line', event.lineno || '');
     if (typeof Swal !== 'undefined') {
       Swal.fire({
         type: 'error',

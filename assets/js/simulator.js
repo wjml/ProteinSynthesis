@@ -1,6 +1,11 @@
 (function () {
   "use strict";
   var PS = window.PS = window.PS || {};
+  const CODON_TABLE = PS.CODON_TABLE;
+  const AMINOACIDS_DB = PS.AMINOACIDS_DB;
+  PS.codonWheelState = PS.codonWheelState || { first: null, second: null, third: null };
+  const codonWheelState = PS.codonWheelState;
+  const drawer = PS.drawer = PS.drawer || {};
 
   function complementBase(base) {
     return DNA_COMPLEMENT[base.toUpperCase()] || base;
@@ -1540,451 +1545,26 @@
   });
 
   // Scroll sync — apenas a linha de DNA emite; as demais são dirigidas por ela
-  for (let i = 0; i < textboxDna.length; i++) {
-    PS.textboxDna[i].addEventListener('scroll', scrollUnique);
+  if (PS.textboxDna && typeof PS.scrollUnique === 'function') {
+    for (let i = 0; i < PS.textboxDna.length; i++) {
+      PS.textboxDna[i].addEventListener('scroll', PS.scrollUnique);
+    }
   }
 
   // Clique no blank-space ou na área vazia do container ativa o input de DNA
-  blankSpace.addEventListener('click', activateDnaInput);
-  PS.textboxDna[0].addEventListener('click', function (event) {
-    if (event.target.classList && event.target.classList.contains('sequenceChar')) return;
-    if (event.target === PS.blankSpace) return;
-    activateDnaInput();
-  });
-
-  // DOMContentLoaded — vincula controles que dependem de elementos renderizados após este script
-  document.addEventListener('DOMContentLoaded', function () {
-    // Gera a tabela de 64 códons a partir de CODON_TABLE antes de vincular os cliques nela
-    buildCodonTable();
-
-    // Roda de Códons interativa (mesma fonte de dados da tabela acima)
-    buildCodonWheel();
-    initCodonWheelInteractions();
-
-    // Inicializa o Modo Desafio (Quiz)
-    initQuizUI();
-
-    // Preenche o cache do PS.drawer uma única vez
-    drawer.panel   = document.getElementById('aminoacid-details-drawer');
-    drawer.title   = document.getElementById('drawer-title');
-    drawer.abbrevs = document.getElementById('drawer-abbrevs');
-    drawer.codons  = document.getElementById('drawer-codons');
-    drawer.type    = document.getElementById('drawer-type');
-    drawer.func    = document.getElementById('drawer-function');
-    drawer.img     = document.getElementById('drawer-img');
-
-    // Delegação de eventos do PS.drawer de aminoácido — um único par de listeners
-    // por container, em vez de 3 listeners recriados a cada aminoácido renderizado
-    // (ver newAminoacid() e bindAminoacidOutputEvents()).
-    for (let i = 0; i < outputAminoacids.length; i++) {
-      bindAminoacidOutputEvents(PS.outputAminoacids[i]);
-    }
-
-    // Botões de inserção de base (A/T/C/G) — antes eram onclick="insertBase('A')" inline no HTML
-    document.querySelectorAll('.btn-base[data-base]').forEach((btn) => {
-      // mousedown com preventDefault() evita que o navegador mova o foco pro
-      // próprio botão ao ser clicado. Sem isso, o clique "rouba" o foco do
-      // sequenceChar que a pessoa tinha selecionado (por exemplo, ao escolher
-      // onde aplicar uma mutação de adição/substituição) — e, no momento em
-      // que insertBase() lê document.activeElement, ele já não é mais aquele
-      // input, e sim o próprio botão. O resultado, sem essa correção, é a base
-      // sempre acabar inserida no final da sequência, ignorando a posição
-      // selecionada. Como isso acontece no mousedown (antes do click), o
-      // clique em si continua dispachando insertBase() normalmente.
-      btn.addEventListener('mousedown', (event) => event.preventDefault());
-      btn.addEventListener('click', () => PS.insertBase(btn.dataset.base));
+  const blankSpaceEl = document.getElementById('blank-space');
+  if (blankSpaceEl && typeof PS.activateDnaInput === 'function') {
+    blankSpaceEl.addEventListener('click', PS.activateDnaInput);
+  }
+  if (PS.textboxDna && PS.textboxDna[0] && typeof PS.activateDnaInput === 'function') {
+    PS.textboxDna[0].addEventListener('click', function (event) {
+      if (event.target.classList && event.target.classList.contains('sequenceChar')) return;
+      if (event.target === blankSpaceEl) return;
+      PS.activateDnaInput();
     });
+  }
 
-    // Cartões de doenças genéticas — antes eram onclick="loadDiseaseExample('sickle')" inline no HTML
-    document.querySelectorAll('.disease-load-btn[data-disease]').forEach((btn) => {
-      btn.addEventListener('click', () => loadDiseaseExample(btn.dataset.disease));
-    });
-
-    // Controles do simulador
-    const btnClear  = document.getElementById('btn-clear');
-    const btnRandom = document.getElementById('btn-random');
-    const btnExport = document.getElementById('btn-export');
-    const btnImport = document.getElementById('btn-import');
-    const btnAnimate = document.getElementById('btn-animate');
-    const btnCrispr = document.getElementById('btn-crispr');
-    const btnReplicate = document.getElementById('btn-replicate');
-    const mLabTabCross    = document.getElementById('mendel-lab-tab-cross');
-    const mLabTabEpistasis = document.getElementById('mendel-lab-tab-epistasis');
-    const mLabTabAbo      = document.getElementById('mendel-lab-tab-abo');
-    if (btnClear)      btnClear.addEventListener('click', clearSequence);
-    if (btnRandom)     btnRandom.addEventListener('click', randomSequence);
-    if (btnExport)     btnExport.addEventListener('click', PS.openExportModal);
-    if (btnImport)     btnImport.addEventListener('click', PS.openImportModal);
-    if (btnAnimate)    btnAnimate.addEventListener('click', openRibosomeModal);
-    if (btnCrispr)     btnCrispr.addEventListener('click', PS.openCrisprModal || openCrisprModal);
-    if (btnReplicate)  btnReplicate.addEventListener('click', openReplicationModal);
-    if (mLabTabCross)     mLabTabCross.addEventListener('click', () => (PS.setMendelLabTab || setMendelLabTab)('cross'));
-    if (mLabTabEpistasis) mLabTabEpistasis.addEventListener('click', openEpistasisModal);
-    if (mLabTabAbo)       mLabTabAbo.addEventListener('click', openAboModal);
-
-    // Hierarquia Visual do Dogma Central — .dogma-stepper (topo da barra de
-    // ferramentas) navega direto pra ação de cada módulo: Replicação abre o
-    // modal de replicação, Transcrição toca a animação leve de pareamento de
-    // bases e rola até o RNAm, Tradução abre o modal do ribossomo. O botão ▶
-    // dentro do próprio rótulo RNAm dispara a mesma animação de pareamento.
-    const dogmaStepReplication   = document.getElementById('dogma-step-replication');
-    const dogmaStepTranscription = document.getElementById('dogma-step-transcription');
-    const dogmaStepTranslation   = document.getElementById('dogma-step-translation');
-    const btnPlayPairing         = document.getElementById('btn-play-pairing');
-    const transcriptionProcessBox = document.getElementById('transcription-process-box');
-
-    if (dogmaStepReplication) dogmaStepReplication.addEventListener('click', openReplicationModal);
-    if (dogmaStepTranslation) dogmaStepTranslation.addEventListener('click', openRibosomeModal);
-    if (dogmaStepTranscription) {
-      dogmaStepTranscription.addEventListener('click', () => {
-        if (transcriptionProcessBox && transcriptionProcessBox.scrollIntoView) {
-          transcriptionProcessBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        animateBasePairing();
-      });
-    }
-    if (btnPlayPairing) {
-      btnPlayPairing.addEventListener('click', (event) => {
-        event.stopPropagation();
-        animateBasePairing();
-      });
-    }
-
-    const btnExerciseGenerator = document.getElementById('btn-exercise-generator');
-    if (btnExerciseGenerator) btnExerciseGenerator.addEventListener('click', PS.openExerciseGeneratorModal || openExerciseGeneratorModal);
-
-    const epistasisGenerateBtn = document.getElementById('epistasis-generate-btn');
-    const epistasisScenarioSelect = document.getElementById('epistasis-scenario-select');
-    if (epistasisGenerateBtn) epistasisGenerateBtn.addEventListener('click', PS.renderEpistasisResult || renderEpistasisResult);
-    if (epistasisScenarioSelect) epistasisScenarioSelect.addEventListener('change', PS.renderEpistasisResult || renderEpistasisResult);
-
-    const aboGenerateBtn = document.getElementById('abo-generate-btn');
-    if (aboGenerateBtn) aboGenerateBtn.addEventListener('click', PS.renderAboResult || renderAboResult);
-
-    const exerciseGenGenerateBtn = document.getElementById('exercise-gen-generate-btn');
-    const exerciseGenActions     = document.getElementById('exercise-gen-actions');
-    if (exerciseGenGenerateBtn) {
-      exerciseGenGenerateBtn.addEventListener('click', () => {
-        const count     = Number(document.getElementById('exercise-gen-count').value) || 10;
-        const numCodons = Number(document.getElementById('exercise-gen-length').value) || 7;
-        const generate = PS.generateExerciseSet || generateExerciseSet;
-        const preview  = PS.renderExercisePreview || renderExercisePreview;
-        const printables = PS.renderExercisePrintables || renderExercisePrintables;
-        const set = generate(count, numCodons);
-        if (typeof PS.exerciseSet !== 'undefined') PS.exerciseSet = set;
-        preview(set);
-        printables(set);
-        if (exerciseGenActions) exerciseGenActions.hidden = false;
-      });
-    }
-
-    const exerciseGenPrintWorksheetBtn = document.getElementById('exercise-gen-print-worksheet');
-    const exerciseGenPrintKeyBtn       = document.getElementById('exercise-gen-print-key');
-    const exerciseGenDownloadBtn       = document.getElementById('exercise-gen-download-txt');
-    if (exerciseGenPrintWorksheetBtn) {
-      exerciseGenPrintWorksheetBtn.addEventListener('click', () => (PS.printExerciseContent || printExerciseContent)('exercise-worksheet-printable'));
-    }
-    if (exerciseGenPrintKeyBtn) {
-      exerciseGenPrintKeyBtn.addEventListener('click', () => (PS.printExerciseContent || printExerciseContent)('exercise-answerkey-printable'));
-    }
-    if (exerciseGenDownloadBtn) {
-      exerciseGenDownloadBtn.addEventListener('click', () => (PS.downloadExercisesAsText || downloadExercisesAsText)(typeof PS.exerciseSet !== 'undefined' ? PS.exerciseSet : exerciseSet));
-    }
-
-    // Modais de exportar/importar/animar sequência/CRISPR/replicação
-    // (Mendel/Epistasia/ABO migraram para painel com abas — não são mais modais)
-    const exportModal = document.getElementById('export-modal');
-    const importModal = document.getElementById('import-modal');
-    const ribosomeModal = document.getElementById('ribosome-modal');
-    const crisprModal = document.getElementById('crispr-modal');
-    const replicationModal = document.getElementById('replication-modal');
-    const exerciseGeneratorModal = document.getElementById('exercise-generator-modal');
-    const exportCloseBtn = document.getElementById('export-modal-close');
-    const importCloseBtn = document.getElementById('import-modal-close');
-    const ribosomeCloseBtn = document.getElementById('ribosome-modal-close');
-    const crisprCloseBtn = document.getElementById('crispr-modal-close');
-    const replicationCloseBtn = document.getElementById('replication-modal-close');
-    const exerciseGeneratorCloseBtn = document.getElementById('exercise-generator-modal-close');
-    const exportCopySeqBtn  = document.getElementById('export-copy-seq');
-    const exportCopyLinkBtn = document.getElementById('export-copy-link');
-    const exportImageBtn    = document.getElementById('export-image-btn');
-    const importLoadBtn  = document.getElementById('import-load-btn');
-    const importSeqInput = document.getElementById('import-seq-input');
-
-    // A animação do ribossomo e a de replicação precisam parar seus timers ao
-    // fechar; os demais modais não têm estado de animação e só precisam de display:none.
-    // Também devolve o foco a quem abriu o modal (ver openModalDialog, nos Utilitários) —
-    // com uma ressalva: Exportar/Importar/CRISPR/Replicar vivem dentro do menu "Mais
-    // ações", que já se escondeu (dom.js fecha o dropdown assim que um item é escolhido,
-    // ver closeMoreActions) quando o modal é fechado depois. Um elemento display:none
-    // não é focável, então nesses casos cai para o próprio botão "Mais ações".
-    const closeModal = (modal) => {
-      if (!modal) return;
-      if (modal === ribosomeModal) { pauseRibosome(); }
-      if (modal === replicationModal) { pauseReplication(); }
-      modal.style.display = 'none';
-
-      const isFocusable = (el) => !!el && typeof el.focus === 'function' && el.offsetParent !== null;
-      const fallback = document.getElementById('more-actions-toggle');
-      const focusTarget = isFocusable(modalOpenerElement) ? modalOpenerElement : fallback;
-      if (isFocusable(focusTarget)) focusTarget.focus();
-      modalOpenerElement = null;
-    };
-    PS.closeModal = closeModal;
-
-    if (exportCloseBtn)      exportCloseBtn.addEventListener('click', () => closeModal(exportModal));
-    if (importCloseBtn)      importCloseBtn.addEventListener('click', () => closeModal(importModal));
-    if (ribosomeCloseBtn)    ribosomeCloseBtn.addEventListener('click', () => closeModal(ribosomeModal));
-    if (crisprCloseBtn)      crisprCloseBtn.addEventListener('click', () => closeModal(crisprModal));
-    if (replicationCloseBtn) replicationCloseBtn.addEventListener('click', () => closeModal(replicationModal));
-    if (exerciseGeneratorCloseBtn) exerciseGeneratorCloseBtn.addEventListener('click', () => closeModal(exerciseGeneratorModal));
-
-    // Fecha ao clicar fora da caixa (no overlay escurecido)
-    const allSeqModals = [exportModal, importModal, ribosomeModal, crisprModal, replicationModal, exerciseGeneratorModal];
-    allSeqModals.forEach((modal) => {
-      if (!modal) return;
-      modal.addEventListener('click', (event) => {
-        if (event.target === modal) closeModal(modal);
-      });
-    });
-
-    // Seletor de elementos focáveis, para prender o Tab dentro do modal aberto (ver abaixo).
-    const FOCUSABLE_IN_MODAL = 'a[href], button:not([disabled]), textarea:not([disabled]), ' +
-      'input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-    // Esc fecha só o modal que estiver aberto no momento; Tab/Shift+Tab ficam presos
-    // dentro dele enquanto estiver aberto, para o foco do teclado não escapar para
-    // a página por trás (WCAG 2.4.3 — ordem de foco / dialog pattern).
-    document.addEventListener('keydown', (event) => {
-      const activeModal = allSeqModals.find((modal) => modal && modal.style.display !== 'none');
-      if (!activeModal) return;
-
-      if (event.key === 'Escape') {
-        closeModal(activeModal);
-        return;
-      }
-
-      if (event.key === 'Tab') {
-        const focusable = Array.from(activeModal.querySelectorAll(FOCUSABLE_IN_MODAL));
-        if (!focusable.length) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
-    });
-
-    // Controles de reprodução da animação do ribossomo
-    const riboPlayBtn  = document.getElementById('ribo-play-pause');
-    const riboResetBtn = document.getElementById('ribo-reset');
-    if (riboPlayBtn) {
-      riboPlayBtn.addEventListener('click', () => {
-        if (ribosome.playing) pauseRibosome(); else playRibosome();
-      });
-    }
-    if (riboResetBtn) riboResetBtn.addEventListener('click', resetRibosomeAnimation);
-
-    // Controles de reprodução da animação de replicação do DNA
-    const replPlayBtn  = document.getElementById('repl-play-pause');
-    const replResetBtn = document.getElementById('repl-reset');
-    if (replPlayBtn) {
-      replPlayBtn.addEventListener('click', () => {
-        if (replication.playing) pauseReplication(); else playReplication();
-      });
-    }
-    if (replResetBtn) replResetBtn.addEventListener('click', resetReplicationAnimation);
-
-    // Controle de Mutação (Genética Molecular) — botão único, liga/desliga
-    // a edição livre da fita mutada (ver setMutationMode()).
-    if (PS.mutationButton) {
-      mutationButton.addEventListener('click', () => {
-        setMutationMode(!mutationButton.classList.contains('active'));
-      });
-    }
-
-    // Controles do construtor de cruzamentos (Genética Mendeliana)
-    const mendelModeMonoBtn = document.getElementById('mendel-mode-mono');
-    const mendelModeDiBtn   = document.getElementById('mendel-mode-di');
-    const mendelGenerateBtn = document.getElementById('mendel-generate-btn');
-    const mendelG1Pattern   = document.getElementById('mendel-g1-pattern');
-    const mendelG2Pattern   = document.getElementById('mendel-g2-pattern');
-    if (mendelModeMonoBtn) mendelModeMonoBtn.addEventListener('click', () => (PS.setMendelMode || setMendelMode)('mono'));
-    if (mendelModeDiBtn)   mendelModeDiBtn.addEventListener('click', () => (PS.setMendelMode || setMendelMode)('di'));
-    if (mendelGenerateBtn) mendelGenerateBtn.addEventListener('click', PS.generateMendelCross || generateMendelCross);
-    if (mendelG1Pattern)   mendelG1Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(0));
-    if (mendelG2Pattern)   mendelG2Pattern.addEventListener('change', () => updateMendelHetFieldVisibility(1));
-
-    // Controles da ferramenta de Heredogramas
-    const pedigreeModeStudyBtn = document.getElementById('pedigree-mode-study');
-    const pedigreeModeQuizBtn  = document.getElementById('pedigree-mode-quiz');
-    const pedigreeGenerateBtn  = document.getElementById('pedigree-generate-btn');
-    const pedigreeQuizGenerateBtn = document.getElementById('pedigree-quiz-generate-btn');
-    const pedigreeQuizAnswersWrap = document.getElementById('pedigree-quiz-answers');
-    if (pedigreeModeStudyBtn)     pedigreeModeStudyBtn.addEventListener('click', () => (PS.setPedigreeMode || setPedigreeMode)('study'));
-    if (pedigreeModeQuizBtn)      pedigreeModeQuizBtn.addEventListener('click', () => (PS.setPedigreeMode || setPedigreeMode)('quiz'));
-    if (pedigreeGenerateBtn)      pedigreeGenerateBtn.addEventListener('click', PS.generateStudyPedigree || generateStudyPedigree);
-    if (pedigreeQuizGenerateBtn)  pedigreeQuizGenerateBtn.addEventListener('click', PS.generateQuizPedigree || generateQuizPedigree);
-    if (pedigreeQuizAnswersWrap) {
-      pedigreeQuizAnswersWrap.querySelectorAll('.crispr-pathway-card').forEach((btn) => {
-        btn.addEventListener('click', () => (PS.answerPedigreeQuiz || answerPedigreeQuiz)(btn.dataset.answer));
-      });
-    }
-
-    // Controles da calculadora de Genética Populacional (Hardy-Weinberg)
-    const popgenModeQsquaredBtn = document.getElementById('popgen-mode-qsquared');
-    const popgenModePBtn        = document.getElementById('popgen-mode-p');
-    const popgenModeTestBtn     = document.getElementById('popgen-mode-test');
-    const popgenCalcQsquaredBtn = document.getElementById('popgen-calc-qsquared-btn');
-    const popgenCalcPBtn        = document.getElementById('popgen-calc-p-btn');
-    const popgenTestBtn         = document.getElementById('popgen-test-btn');
-    if (popgenModeQsquaredBtn) popgenModeQsquaredBtn.addEventListener('click', function () { PS.setPopgenMode('qsquared'); });
-    if (popgenModePBtn)        popgenModePBtn.addEventListener('click', function () { PS.setPopgenMode('p'); });
-    if (popgenModeTestBtn)     popgenModeTestBtn.addEventListener('click', function () { PS.setPopgenMode('test'); });
-    if (popgenCalcQsquaredBtn) popgenCalcQsquaredBtn.addEventListener('click', PS.calcPopgenFromQSquared);
-    if (popgenCalcPBtn)        popgenCalcPBtn.addEventListener('click', PS.calcPopgenFromP);
-    if (popgenTestBtn)         popgenTestBtn.addEventListener('click', PS.testPopgenEquilibrium);
-
-    // Controles do Visualizador de Cariótipo e do Simulador de Não-disjunção
-    const karyoViewBtn      = document.getElementById('karyo-view-btn');
-    const nondisModeMiBtn   = document.getElementById('nondis-mode-mi');
-    const nondisModeMiiBtn  = document.getElementById('nondis-mode-mii');
-    const nondisSimulateBtn = document.getElementById('nondis-simulate-btn');
-    if (karyoViewBtn)      karyoViewBtn.addEventListener('click', PS.viewSelectedKaryotype || viewSelectedKaryotype);
-    if (nondisModeMiBtn)   nondisModeMiBtn.addEventListener('click', () => (PS.setNondisMode || setNondisMode)('MI'));
-    if (nondisModeMiiBtn)  nondisModeMiiBtn.addEventListener('click', () => (PS.setNondisMode || setNondisMode)('MII'));
-    if (nondisSimulateBtn) nondisSimulateBtn.addEventListener('click', PS.runNondisjunctionSimulation || runNondisjunctionSimulation);
-
-    // Exportação como PNG (Heredograma e Cariótipo)
-    const pedigreeExportBtn = document.getElementById('pedigree-export-btn');
-    const karyoExportBtn    = document.getElementById('karyo-export-btn');
-    if (pedigreeExportBtn) {
-      pedigreeExportBtn.addEventListener('click', () => {
-        const svg = document.querySelector('#pedigree-svg-wrapper svg');
-        if (!svg) {
-          if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'info', title: 'Gere um heredograma primeiro para poder exportá-lo.' });
-          }
-          return;
-        }
-        (PS.exportNodeAsPng)(svg, 'heredograma.png');
-      });
-    }
-    if (karyoExportBtn) {
-      karyoExportBtn.addEventListener('click', () => {
-        const grid = document.getElementById('karyo-grid');
-        if (!grid || !grid.children.length) {
-          if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'info', title: 'Visualize um cariótipo primeiro para poder exportá-lo.' });
-          }
-          return;
-        }
-        PS.exportNodeAsPng(grid, 'cariotipo.svg');
-      });
-    }
-
-    // Controles do editor CRISPR-Cas9
-    const crisprLoadDemoBtn    = document.getElementById('crispr-load-demo');
-    const crisprSearchBtn      = document.getElementById('crispr-search-btn');
-    const crisprPathwayNhejBtn = document.getElementById('crispr-pathway-nhej');
-    const crisprPathwayHdrBtn  = document.getElementById('crispr-pathway-hdr');
-    const crisprHdrGenerateBtn = document.getElementById('crispr-hdr-generate-btn');
-    const crisprApplyBtn       = document.getElementById('crispr-apply-btn');
-    if (crisprLoadDemoBtn)    crisprLoadDemoBtn.addEventListener('click', PS.loadCrisprDemoSequence || loadCrisprDemoSequence);
-    if (crisprSearchBtn)      crisprSearchBtn.addEventListener('click', PS.searchCrisprTarget || searchCrisprTarget);
-    if (crisprPathwayNhejBtn) crisprPathwayNhejBtn.addEventListener('click', () => (PS.selectCrisprPathway || selectCrisprPathway)('nhej'));
-    if (crisprPathwayHdrBtn)  crisprPathwayHdrBtn.addEventListener('click', () => (PS.selectCrisprPathway || selectCrisprPathway)('hdr'));
-    if (crisprHdrGenerateBtn) crisprHdrGenerateBtn.addEventListener('click', PS.generateCrisprHdrPreview || generateCrisprHdrPreview);
-    if (crisprApplyBtn)       crisprApplyBtn.addEventListener('click', PS.applyCrisprEditToSimulator || applyCrisprEditToSimulator);
-
-    if (exportCopySeqBtn) {
-      exportCopySeqBtn.addEventListener('click', () =>
-        PS.copyTextareaContent('export-seq-text', document.getElementById('export-feedback'), 'Sequência copiada!'));
-    }
-    if (exportCopyLinkBtn) {
-      exportCopyLinkBtn.addEventListener('click', () =>
-        PS.copyTextareaContent('export-seq-link', document.getElementById('export-feedback'), 'Link copiado!'));
-    }
-    if (exportImageBtn) {
-      exportImageBtn.addEventListener('click', () => {
-        const feedback = document.getElementById('export-feedback');
-        const dnaSeq = readSequence(PS.dnaSequenceChars);
-        if (!dnaSeq) {
-          if (feedback) {
-            feedback.textContent = 'A sequência está vazia — insira bases no simulador antes de exportar.';
-            feedback.classList.add('error');
-          }
-          return;
-        }
-        const panel = document.getElementById('main-sequence-panel');
-        PS.exportNodeAsPng(panel, 'simulador-genetica.svg');
-        if (feedback) {
-          feedback.textContent = 'Imagem baixada!';
-          feedback.classList.remove('error');
-        }
-      });
-    }
-
-    if (importLoadBtn) importLoadBtn.addEventListener('click', PS.handleImportSubmit);
-    if (importSeqInput) {
-      // Atalho Ctrl/Cmd+Enter para carregar sem precisar clicar no botão
-      importSeqInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) PS.handleImportSubmit();
-      });
-    }
-
-    // Botão de fechar o PS.drawer
-    const closeBtn = document.querySelector('.drawer-close-btn');
-    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-
-    // Fecha o PS.drawer ao sair com o mouse (a menos que esteja fixado por clique)
-    if (drawer.panel) {
-      drawer.panel.addEventListener('mouseleave', function () {
-        if (!this.classList.contains('clicked-open')) {
-          this.classList.remove('open');
-        }
-      });
-    }
-
-    // Tabela de códons — clique (ou Enter/Espaço, via teclado) insere as bases de DNA correspondentes no simulador
-    // (insertCodonAndTranslate() é compartilhada com a Roda de Códons — ver definição perto de buildCodonTable()).
-    function activateCodonItem() {
-      const codon = this.getAttribute('data-codon');
-      if (!codon) return;
-      insertCodonAndTranslate(codon);
-    }
-
-    document.querySelectorAll('.codon-item').forEach(function (item) {
-      item.addEventListener('click', activateCodonItem);
-      // Os itens são focáveis (tabindex="0", role="button") para navegação por teclado;
-      // Enter e Espaço replicam o comportamento de clique.
-      item.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          activateCodonItem.call(this);
-        }
-      });
-    });
-
-    // Restaura a preferência de "fita complementar" ANTES da sequência ser
-    // renderizada pela 1ª vez (linha abaixo) — assim, se estava ligada, a
-    // fita já nasce visível e preenchida, sem piscar entre estados.
-    try {
-      applyComplementaryStrandVisibility(localStorage.getItem(SHOW_COMPLEMENTARY_STRAND_KEY) === '1');
-    } catch (e) {
-      // localStorage indisponível — fica no padrão (desligado).
-    }
-
-    // Carrega automaticamente uma sequência compartilhada via link (?seq=...), se presente;
-    // senão, tenta restaurar a última sequência autosalva localmente (ver DNA_AUTOSAVE_KEY).
-    // A URL tem prioridade — um link de desafio não deve ser ofuscado pelo autosave de uma
-    // sessão anterior no mesmo navegador.
-    if (!loadSequenceFromUrl()) restoreSequenceAutosave();
-  });
+  // DOMContentLoaded já é gerenciado por script.js (evita duplicação de listeners e referências locais).
 
   // Nenhuma exportação global é necessária: os cartões de doença e os botões de base
   // agora usam data-attributes + listeners delegados (ver bloco de vinculação de eventos
@@ -2024,8 +1604,6 @@
   // sendo destacado progressivamente à medida que cada base é escolhida, e o
   // 3º clique (ou um clique direto no anel externo) completa o códon, insere
   // no simulador e abre o PS.drawer de detalhes — mesma ação da tabela.
-
-  const codonWheelState = { first: null, second: null, third: null };
 
   /** Converte coordenadas polares (ângulo em graus, 0° = topo, sentido horário) em cartesianas. */
 
@@ -2170,8 +1748,74 @@
    */
 
   // ---- Registro no PS ----
-  var fnList = ["complementBase","complementStrand","transcribe","translateDnaHeadless","computeGCContent","findFirstStartIndex","walkCodingRegion","anticodonFor","generateRandomCodingDna","sanitizeDnaInput","transcribeSeq","translateProteinChainPure","classifyMutationPure","clearSequenceChars","focusWithoutKeyboard","scrollUnique","activateDnaInput","updateCounters","newSequenceChar","charInput","actsLikeUniqueInput","insertBase","clearSequence","randomSequence","loadSequenceFromString","loadSequenceFromUrl","applyCodonClasses","renderComplementaryStrand","syncFrameClasses","treatSequence","updateCodonLabels","translateStrand","translate","alignSequences","rightAlignInsertions","mutationDifference","openRibosomeModal","cacheRibosomeElements","cacheRibosomeElementsIfNeeded","clearRibosomeTimers","scheduleRibosome","renderRibosomeTrack","positionRibosomeMarker","setPlayButtonState","stepRibosome","playRibosome","pauseRibosome","resetRibosomeAnimation","buildRibosomeSteps","openReplicationModal","resetReplicationAnimation","pauseReplication","stepReplication","animateBasePairing","classifyMutation","fillStrand","clearAllStrandsKeepingMode","applyComplementaryStrandVisibility","buildCodonTable","buildCodonWheel","renderCodonWheelState","handleWheelSegmentActivate","sendCodonWheelSelection","resetCodonWheel","initCodonWheelInteractions","wheelPolarToCartesian","wheelSectorPath","wheelLabelTransform","openAminoacidDrawer","closeDrawer","bindAminoacidOutputEvents","newAminoacid","aminoacidCategoryClass","codonCellClass","codonDisplayName","saveSequenceAutosave","clearSequenceAutosave","restoreSequenceAutosave","getRnaEquivalent","cleanPastedSequence","insertCodonAndTranslate","buildOkazakiFragments","cacheReplicationElements","clearReplicationTimers","scheduleReplication","renderReplicationStaticRow","renderReplicationPendingRow","setReplicationPlayButtonState","positionReplicationFork","finishReplicationLigase","playReplication"];
-  for (var i = 0; i < fnList.length; i++) {
-    (function(n) { try { PS[n] = eval(n); } catch(e) {} })(fnList[i]);
-  }
+  Object.assign(PS, {
+    complementBase,
+    complementStrand,
+    transcribe,
+    translateDnaHeadless,
+    computeGCContent,
+    findFirstStartIndex,
+    walkCodingRegion,
+    anticodonFor,
+    generateRandomCodingDna,
+    sanitizeDnaInput,
+    transcribeSeq,
+    translateProteinChainPure,
+    classifyMutationPure,
+    openRibosomeModal,
+    cacheRibosomeElements,
+    cacheRibosomeElementsIfNeeded,
+    clearRibosomeTimers,
+    scheduleRibosome,
+    renderRibosomeTrack,
+    positionRibosomeMarker,
+    setPlayButtonState,
+    stepRibosome,
+    playRibosome,
+    pauseRibosome,
+    resetRibosomeAnimation,
+    buildRibosomeSteps,
+    openReplicationModal,
+    resetReplicationAnimation,
+    pauseReplication,
+    stepReplication,
+    animateBasePairing,
+    classifyMutation,
+    fillStrand,
+    clearAllStrandsKeepingMode,
+    applyComplementaryStrandVisibility,
+    buildCodonTable,
+    buildCodonWheel,
+    renderCodonWheelState,
+    handleWheelSegmentActivate,
+    sendCodonWheelSelection,
+    resetCodonWheel,
+    initCodonWheelInteractions,
+    wheelPolarToCartesian,
+    wheelSectorPath,
+    wheelLabelTransform,
+    openAminoacidDrawer,
+    closeDrawer,
+    bindAminoacidOutputEvents,
+    newAminoacid,
+    aminoacidCategoryClass,
+    codonCellClass,
+    codonDisplayName,
+    saveSequenceAutosave,
+    clearSequenceAutosave,
+    restoreSequenceAutosave,
+    getRnaEquivalent,
+    cleanPastedSequence,
+    insertCodonAndTranslate,
+    buildOkazakiFragments,
+    cacheReplicationElements,
+    clearReplicationTimers,
+    scheduleReplication,
+    renderReplicationStaticRow,
+    renderReplicationPendingRow,
+    setReplicationPlayButtonState,
+    positionReplicationFork,
+    finishReplicationLigase,
+    playReplication
+  });
 })();
