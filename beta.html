@@ -263,14 +263,22 @@
             </div>
           </div>
 
-          <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle -->
+          <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle (alinhados aos códons) -->
           <div class="beta-card">
             <div class="wb-section-head">
               <h2>Cadeia Polipeptídica Sintetizada</h2>
               <span class="mutation-badge" id="wb-mutation-badge">Referência (Wild-Type)</span>
             </div>
-            <div class="protein-scroll" id="wb-scroll-protein">
-              <div class="protein-grid" id="wb-protein-grid"></div>
+            <div class="duplex-box protein-box">
+              <div class="strand-ends strand-ends-left mono">
+                <span class="end-badge end-diff">aa</span>
+              </div>
+              <div class="strand-scroll protein-scroll" id="wb-scroll-protein">
+                <div class="protein-grid" id="wb-protein-grid"></div>
+              </div>
+              <div class="strand-ends strand-ends-right mono">
+                <span class="end-badge end-diff">N→C</span>
+              </div>
             </div>
 
             <div class="hydropathy-box" data-visible-layers="advanced">
@@ -278,7 +286,19 @@
                 <h3>Perfil de Hidropatia (Kyte-Doolittle)</h3>
                 <span class="mono muted-text" id="wb-gravy-badge">GRAVY: 0.00</span>
               </div>
-              <div id="wb-hydropathy-chart" class="hydropathy-chart"></div>
+              <div class="duplex-box hydro-box">
+                <div class="strand-ends strand-ends-left mono">
+                  <span class="end-badge end-diff">+4.5</span>
+                  <span class="end-badge end-diff">KD</span>
+                  <span class="end-badge end-diff">-4.5</span>
+                </div>
+                <div class="strand-scroll" id="wb-scroll-hydro">
+                  <div id="wb-hydropathy-chart" class="hydropathy-chart"></div>
+                </div>
+                <div class="strand-ends strand-ends-right mono">
+                  <span class="end-badge end-diff">Hφ</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

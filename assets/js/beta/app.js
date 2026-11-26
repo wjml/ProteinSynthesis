@@ -114,16 +114,19 @@ function renderHydropathyChart(profile) {
     host.textContent = 'Insira ao menos 1 códon traduzível para visualizar o perfil.';
     return;
   }
-  const W = 640;
-  const H = 140;
-  const pad = 22;
+  const colW = 84;
+  const gap = 11;
+  const totalW = profile.length * colW + Math.max(0, profile.length - 1) * gap;
+  const H = 130;
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('viewBox', `0 0 ${totalW} ${H}`);
+  svg.style.width = `${totalW}px`;
+  svg.style.height = `${H}px`;
 
   const zeroLine = document.createElementNS(svgNS, 'line');
-  zeroLine.setAttribute('x1', pad);
-  zeroLine.setAttribute('x2', W - pad);
+  zeroLine.setAttribute('x1', 0);
+  zeroLine.setAttribute('x2', totalW);
   zeroLine.setAttribute('y1', H / 2);
   zeroLine.setAttribute('y2', H / 2);
   zeroLine.setAttribute('stroke', 'currentColor');
@@ -132,15 +135,27 @@ function renderHydropathyChart(profile) {
   svg.appendChild(zeroLine);
 
   const pts = profile.map((p, idx) => {
-    const x = profile.length === 1 ? W / 2 : pad + (idx / (profile.length - 1)) * (W - pad * 2);
-    const y = H / 2 - (p.kd / 4.5) * (H / 2 - 16);
+    const x = idx * (colW + gap) + colW / 2;
+    const y = H / 2 - (p.kd / 4.5) * (H / 2 - 20);
     return { x, y, ...p };
+  });
+
+  // Guias verticais alinhadas ao centro de cada códon/aminoácido
+  pts.forEach((p) => {
+    const guide = document.createElementNS(svgNS, 'line');
+    guide.setAttribute('x1', p.x.toFixed(1));
+    guide.setAttribute('x2', p.x.toFixed(1));
+    guide.setAttribute('y1', 6);
+    guide.setAttribute('y2', H - 6);
+    guide.setAttribute('stroke', 'currentColor');
+    guide.setAttribute('stroke-opacity', '0.1');
+    svg.appendChild(guide);
   });
 
   const poly = document.createElementNS(svgNS, 'polyline');
   poly.setAttribute('fill', 'none');
   poly.setAttribute('stroke', 'var(--accent)');
-  poly.setAttribute('stroke-width', '2.5');
+  poly.setAttribute('stroke-width', '2.2');
   poly.setAttribute('points', pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
   svg.appendChild(poly);
 
@@ -154,6 +169,17 @@ function renderHydropathyChart(profile) {
     title.textContent = `${p.pos} · ${p.abbr}: ${p.kd}`;
     c.appendChild(title);
     svg.appendChild(c);
+
+    const lbl = document.createElementNS(svgNS, 'text');
+    lbl.setAttribute('x', p.x.toFixed(1));
+    lbl.setAttribute('y', (p.kd >= 0 ? p.y - 8 : p.y + 14).toFixed(1));
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('font-size', '10');
+    lbl.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    lbl.setAttribute('fill', 'currentColor');
+    lbl.setAttribute('fill-opacity', '0.72');
+    lbl.textContent = (p.kd > 0 ? '+' : '') + p.kd.toFixed(1);
+    svg.appendChild(lbl);
   });
 
   host.appendChild(svg);
@@ -384,8 +410,8 @@ async function init() {
   $('wb-dna-input').addEventListener('input', refreshWorkbench);
   $('wb-compare-wt').addEventListener('change', refreshWorkbench);
 
-  // Scroll horizontal sincronizado entre DNA, RNAm, Alinhamento e Proteína
-  const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-diff'), $('wb-scroll-protein')].filter(Boolean);
+  // Scroll horizontal sincronizado entre DNA, RNAm, Alinhamento, Proteína e Hidropatia
+  const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-diff'), $('wb-scroll-protein'), $('wb-scroll-hydro')].filter(Boolean);
   let syncingScroll = false;
   scrollEls.forEach((src) => {
     src.addEventListener('scroll', () => {
