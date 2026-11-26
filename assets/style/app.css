@@ -1,4 +1,4 @@
-.content.app {
+﻿.content.app {
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
@@ -1054,7 +1054,7 @@ button.quiz-option.mutation-type-badge.frameshift {
     margin: 0.5rem auto 1.5rem auto;
     background: var(--white);
     padding: 1rem 1.5rem;
-    border-radius: 12px;
+    border-radius: var(--radius-card);
     border: 1px solid var(--slate200);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
@@ -1402,7 +1402,7 @@ button.quiz-chip.active {
 .quiz-question-area {
     background: var(--slate50);
     border: 1px solid var(--slate200);
-    border-radius: 12px;
+    border-radius: var(--radius-card);
     padding: 1.5rem;
 }
 
@@ -1570,7 +1570,7 @@ button.quiz-option.quiz-correct-reveal {
     padding: 1rem 1.25rem;
     background: var(--slate50);
     border: 1px solid var(--slate200);
-    border-radius: 12px;
+    border-radius: var(--radius-card);
 }
 
 .quiz-practice-stats-title {
@@ -1627,7 +1627,7 @@ button.quiz-option.quiz-correct-reveal {
     text-align: center;
     background: var(--slate50);
     border: 1px solid var(--slate200);
-    border-radius: 12px;
+    border-radius: var(--radius-card);
     padding: 2rem 1.5rem;
 }
 

@@ -305,7 +305,7 @@
 
 .version-card {
 	background: var(--white);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem;
 	border: 1px solid var(--slate100);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -360,7 +360,7 @@
 	display: flex;
 	gap: 1.5rem;
 	background: var(--white);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem;
 	border: 1px solid var(--slate100);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -591,7 +591,7 @@
 	width: 100%;
 	overflow-x: auto;
 	background: var(--white);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	border: 1px solid var(--slate200);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	padding: 1.5rem;
@@ -989,7 +989,7 @@
 	overflow-y: auto;
 	background: var(--white);
 	border: 1px solid var(--slate100);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 24px;
 	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
 	color: var(--slate700);
@@ -1132,7 +1132,7 @@
 	flex-wrap: wrap;
 	background: linear-gradient(135deg, var(--white), var(--colorDetailsBg));
 	border: 1px solid var(--colorDetailsBorderLight);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem 1.75rem;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	margin-top: 1.5rem;
@@ -1159,6 +1159,7 @@
    mesmo papel conceitual (CTA principal) mas tratamentos visuais diferentes
    (aqui era preenchimento sólido, lá gradiente). Padronizado no gradiente,
    mantendo padding/border-radius/demais propriedades como estavam. */
+.btn-control.content-cta-btn,
 .content-cta-btn {
 	flex: 0 0 auto;
 	width: auto;
@@ -1171,7 +1172,9 @@
 	cursor: pointer;
 }
 
+.btn-control.content-cta-btn:hover,
 .content-cta-btn:hover {
+	color: white;
 	filter: brightness(1.1);
 }
 
@@ -1953,7 +1956,7 @@ details.version-card ul {
 .splash-feature {
 	background: var(--white);
 	border: 1px solid var(--slate100);
-	border-radius: 12px;
+	border-radius: var(--radius-card);
 	padding: 1.5rem 1.25rem;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 	text-align: left;
@@ -1986,6 +1989,7 @@ details.version-card ul {
 	gap: 0.85rem;
 }
 
+.btn-control.splash-cta-btn,
 .splash-cta-btn {
 	background: linear-gradient(135deg, var(--colorDetailsText), var(--colorDetails));
 	color: white;
@@ -1994,7 +1998,9 @@ details.version-card ul {
 	padding: 0.9rem 2.2rem;
 }
 
+.btn-control.splash-cta-btn:hover,
 .splash-cta-btn:hover {
+	color: white;
 	filter: brightness(1.08);
 }
 

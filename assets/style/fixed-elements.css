@@ -126,7 +126,7 @@ h4 {
 	   empilhar grid, remover max-width, reduzir padding) ou 768px (a troca
 	   estrutural do layout: sidebar vira barra horizontal). Não introduza um
 	   terceiro valor sem um motivo documentado. */
-	--footerSize: 25px;
+	--footerSize: 0px;
 	--sidebarSize: 265px;
 	--colorDetails: #14b8a6;
 	/* Modern Teal — usar para bordas, ícones e fundos decorativos */
@@ -462,6 +462,7 @@ footer {
 	color: var(--slate400);
 	background: var(--bgDarkest);
 	height: var(--footerSize);
+	overflow: hidden;
 	font-size: 0.8rem;
 	/*border-top: 1px solid var(--slate800);*/
 }
@@ -521,7 +522,7 @@ nav #logo img {
 	   proporções. Agora cada linha tem altura natural (flex: 0 0 auto) e,
 	   se o conteúdo não couber num monitor baixo, a barra rola — o layout
 	   nunca mais "quebra" por causa de um item a mais. */
-	overflow-y: hidden;
+	overflow-y: auto;
 	overflow-x: hidden;
 }
 
@@ -573,7 +574,7 @@ nav #logo img {
 	font-size: 0.75rem;
 	font-weight: 700;
 	letter-spacing: 0.1em;
-	color: var(--slate600);
+	color: var(--slate400);
 }
 
 .sidebar .button i {
@@ -853,7 +854,7 @@ nav #logo img {
 
 .menu-label-group .sub-label {
 	font-size: 0.7rem;
-	color: var(--slate500);
+	color: var(--slate400);
 	font-weight: normal;
 }
 
