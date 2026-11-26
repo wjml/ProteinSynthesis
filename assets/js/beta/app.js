@@ -189,13 +189,14 @@ function renderHydropathyChart(profile, wildProfile = null) {
   const poly = document.createElementNS(svgNS, 'polyline');
   poly.setAttribute('fill', 'none');
   poly.setAttribute('stroke', 'var(--accent)');
-  poly.setAttribute('stroke-width', '2.4');
+  poly.setAttribute('stroke-width', '3');
+  poly.setAttribute('stroke-opacity', '0.85');
   poly.setAttribute('points', pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
   svg.appendChild(poly);
 
-  // Linha tracejada Wild-Type desenhada por cima para permanecer visível em toda a extensão
+  // Linha tracejada + marcadores Wild-Type para TODOS os aminoácidos (com leve deslocamento para não ficar oculta sob a linha Atual)
   if (wildProfile && wildProfile.length) {
-    const wPts = toPts(wildProfile);
+    const wPts = toPts(wildProfile).map(p => ({ ...p, y: p.y + 1.5 }));
     const wPoly = document.createElementNS(svgNS, 'polyline');
     wPoly.setAttribute('fill', 'none');
     wPoly.setAttribute('stroke', 'var(--base-t)');
@@ -203,6 +204,19 @@ function renderHydropathyChart(profile, wildProfile = null) {
     wPoly.setAttribute('stroke-dasharray', '5 4');
     wPoly.setAttribute('points', wPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
     svg.appendChild(wPoly);
+
+    wPts.forEach((p) => {
+      const m = document.createElementNS(svgNS, 'polygon');
+      const s = 3.5;
+      m.setAttribute('points', `${p.x},${p.y - s} ${p.x + s},${p.y} ${p.x},${p.y + s} ${p.x - s},${p.y}`);
+      m.setAttribute('fill', 'var(--bg)');
+      m.setAttribute('stroke', 'var(--base-t)');
+      m.setAttribute('stroke-width', '1.6');
+      const title = document.createElementNS(svgNS, 'title');
+      title.textContent = `WT ${p.pos} · ${p.abbr}: ${p.kd}`;
+      m.appendChild(title);
+      svg.appendChild(m);
+    });
   }
 
   pts.forEach((p) => {
@@ -278,6 +292,7 @@ async function refreshWorkbench() {
     analyzeDna(raw),
     compareWt ? analyzeDna(state.wildDna) : Promise.resolve(null)
   ]);
+  if (!state.wildDna && cur.dna) state.wildDna = cur.dna;
 
   state.currentAnalysis = cur;
   state.wildAnalysis = wild;
