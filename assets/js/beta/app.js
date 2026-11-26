@@ -16,6 +16,7 @@ const state = {
   diseases: [],
   activeRef: null,
   wildDna: '',
+  selectedOrfFrame: '+1',
   currentAnalysis: null,
   wildAnalysis: null
 };
@@ -59,18 +60,31 @@ function applyTheme(isDark) {
 }
 
 function makeBaseShape(base, posClass, isMut = false) {
+  const wrap = document.createElement('span');
+  wrap.className = `nt-wrap${isMut ? ' is-mut' : ''}`;
   const el = document.createElement('span');
-  el.className = `nt-shape ${posClass} nt-${base} bg-${base}${isMut ? ' nt-mut' : ''}`;
+  el.className = `nt-shape ${posClass} nt-${base} bg-${base}`;
   el.textContent = base;
-  return el;
+  wrap.appendChild(el);
+  return wrap;
 }
 
-function renderDuplexDna(container, dna, compDna, compareSeq = '') {
+function getOrfRange(analysis, frame) {
+  if (!analysis || !analysis.orfs) return null;
+  const orf = analysis.orfs.find(o => o.frame === frame);
+  if (!orf || !orf.hasOrf || !frame.startsWith('+')) return null;
+  const startIdx = orf.startNt - 1;
+  const endIdx = startIdx + orf.lengthAa * 3 + (orf.hasStop ? 3 : 0);
+  return { startIdx, endIdx };
+}
+
+function renderDuplexDna(container, dna, compDna, compareSeq = '', orfRange = null) {
   container.textContent = '';
   for (let i = 0; i < dna.length; i++) {
     const col = document.createElement('div');
     const isCodonEnd = (i + 1) % 3 === 0 && i < dna.length - 1;
-    col.className = `bp-col${isCodonEnd ? ' codon-end' : ''}`;
+    const outOfOrf = orfRange && (i < orfRange.startIdx || i >= orfRange.endIdx);
+    col.className = `bp-col has-phosphate-top has-phosphate-bottom${isCodonEnd ? ' codon-end' : ''}${outOfOrf ? ' out-of-orf' : ''}`;
 
     const bTop = dna[i];
     const bBot = compDna[i] || '';
@@ -95,19 +109,22 @@ function renderDuplexDna(container, dna, compDna, compareSeq = '') {
   }
 }
 
-function renderMrnaTrack(container, mrna) {
+function renderMrnaTrack(container, mrna, orfRange = null) {
   container.textContent = '';
   for (let i = 0; i < mrna.length; i++) {
     const col = document.createElement('div');
     const isCodonEnd = (i + 1) % 3 === 0 && i < mrna.length - 1;
-    col.className = `bp-col${isCodonEnd ? ' codon-end' : ''}`;
+    const outOfOrf = orfRange && (i < orfRange.startIdx || i >= orfRange.endIdx);
+    col.className = `bp-col has-phosphate-bottom${isCodonEnd ? ' codon-end' : ''}${outOfOrf ? ' out-of-orf' : ''}`;
     col.appendChild(makeBaseShape(mrna[i], 'nt-bottom', false));
     container.appendChild(col);
   }
 }
 
-function renderHydropathyChart(profile) {
+function renderHydropathyChart(profile, wildProfile = null) {
   const host = $('wb-hydropathy-chart');
+  const wtLegend = $('wb-hydro-legend-wt');
+  if (wtLegend) wtLegend.hidden = !(wildProfile && wildProfile.length);
   if (!host) return;
   host.textContent = '';
   if (!profile || profile.length === 0) {
@@ -116,7 +133,8 @@ function renderHydropathyChart(profile) {
   }
   const colW = 84;
   const gap = 11;
-  const totalW = profile.length * colW + Math.max(0, profile.length - 1) * gap;
+  const maxLen = Math.max(profile.length, wildProfile ? wildProfile.length : 0);
+  const totalW = maxLen * colW + Math.max(0, maxLen - 1) * gap;
   const H = 130;
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
@@ -134,11 +152,13 @@ function renderHydropathyChart(profile) {
   zeroLine.setAttribute('stroke-dasharray', '4 4');
   svg.appendChild(zeroLine);
 
-  const pts = profile.map((p, idx) => {
-    const x = idx * (colW + gap) + colW / 2;
-    const y = H / 2 - (p.kd / 4.5) * (H / 2 - 20);
-    return { x, y, ...p };
-  });
+  const toPts = (arr) => arr.map((p, idx) => ({
+    x: idx * (colW + gap) + colW / 2,
+    y: H / 2 - (p.kd / 4.5) * (H / 2 - 20),
+    ...p
+  }));
+
+  const pts = toPts(profile);
 
   // Guias verticais alinhadas ao centro de cada códon/aminoácido
   pts.forEach((p) => {
@@ -151,6 +171,19 @@ function renderHydropathyChart(profile) {
     guide.setAttribute('stroke-opacity', '0.1');
     svg.appendChild(guide);
   });
+
+  // Linha tracejada Wild-Type quando comparação está ativa
+  if (wildProfile && wildProfile.length) {
+    const wPts = toPts(wildProfile);
+    const wPoly = document.createElementNS(svgNS, 'polyline');
+    wPoly.setAttribute('fill', 'none');
+    wPoly.setAttribute('stroke', 'var(--muted)');
+    wPoly.setAttribute('stroke-width', '1.8');
+    wPoly.setAttribute('stroke-dasharray', '5 4');
+    wPoly.setAttribute('stroke-opacity', '0.75');
+    wPoly.setAttribute('points', wPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+    svg.appendChild(wPoly);
+  }
 
   const poly = document.createElementNS(svgNS, 'polyline');
   poly.setAttribute('fill', 'none');
@@ -240,8 +273,10 @@ async function refreshWorkbench() {
   $('wb-seq-stats').textContent = `${cur.lengthNt} nt · ${cur.biochemistry.lengthAa} aa · GC ${cur.gcPercent}%`;
 
   const cmpDna = compareWt ? state.wildDna : '';
-  renderDuplexDna($('wb-duplex-grid'), cur.dna, cur.complementDna, cmpDna);
-  renderMrnaTrack($('wb-track-rna'), cur.mrna);
+  const isAdv = document.body.getAttribute('data-layer') === 'advanced';
+  const orfRange = isAdv ? getOrfRange(cur, state.selectedOrfFrame) : null;
+  renderDuplexDna($('wb-duplex-grid'), cur.dna, cur.complementDna, cmpDna, orfRange);
+  renderMrnaTrack($('wb-track-rna'), cur.mrna, orfRange);
 
   const diffEl = $('wb-track-diff');
   diffEl.textContent = '';
@@ -276,21 +311,14 @@ async function refreshWorkbench() {
     card.className = `aa-card${changed ? ' aa-mut' : ''}`;
     const abbr = document.createElement('div');
     abbr.className = 'aa-card-abbr mono';
-    abbr.textContent = `${aa.position} · ${aa.abbr}`;
+    abbr.textContent = changed ? `${aa.position} · ${wAa.abbr}→${aa.abbr}` : `${aa.position} · ${aa.abbr}`;
     const name = document.createElement('div');
     name.className = 'aa-card-name';
     name.textContent = aa.name;
-    card.append(abbr, name);
-    if (changed) {
-      const diffNote = document.createElement('div');
-      diffNote.className = 'aa-mut-diff mono';
-      diffNote.textContent = `WT: ${wAa.abbr} → ${aa.abbr}`;
-      card.appendChild(diffNote);
-    }
     const type = document.createElement('span');
     type.className = 'aa-card-type';
     type.textContent = aa.type;
-    card.appendChild(type);
+    card.append(abbr, name, type);
     pGrid.appendChild(card);
   });
 
@@ -302,7 +330,10 @@ async function refreshWorkbench() {
   $('ins-gravy').textContent = String(cur.biochemistry.gravy);
   $('wb-gravy-badge').textContent = `GRAVY: ${cur.biochemistry.gravy}`;
 
-  renderHydropathyChart(cur.biochemistry.hydropathyProfile);
+  renderHydropathyChart(
+    cur.biochemistry.hydropathyProfile,
+    compareWt && wild ? wild.biochemistry.hydropathyProfile : null
+  );
 
   const orfList = $('wb-orf-list');
   const orfPrev = $('wb-orf-preview');
@@ -319,8 +350,12 @@ async function refreshWorkbench() {
     right.textContent = orf.hasOrf ? `${orf.lengthAa} aa (nt ${orf.startNt})` : 'Sem AUG';
     row.append(left, right);
     row.addEventListener('click', () => {
+      state.selectedOrfFrame = orf.frame;
       orfList.querySelectorAll('.orf-item').forEach(el => el.classList.remove('active'));
       row.classList.add('active');
+      const r = getOrfRange(cur, orf.frame);
+      renderDuplexDna($('wb-duplex-grid'), cur.dna, cur.complementDna, cmpDna, r);
+      renderMrnaTrack($('wb-track-rna'), cur.mrna, r);
       if (orfPrev) {
         orfPrev.hidden = false;
         orfPrev.textContent = orf.hasOrf
