@@ -337,6 +337,12 @@ body {
 	transition: background 0.2s ease-in-out, font-size 0.2s ease-in-out;
 }
 
+/* Impede o SweetAlert2 de colapsar a altura do <body> para auto ao abrir modais */
+body.swal2-shown.swal2-height-auto {
+	height: 100vh !important;
+	height: 100dvh !important;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    Modo Escuro
    ═══════════════════════════════════════════════════════════════════════
