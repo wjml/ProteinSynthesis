@@ -1,9 +1,43 @@
-prompts-redesign-protein-synthesis.md
+# Dependências
 node_modules
-auditoria.md
-audit/screenshots/
-AUDITORIA-PROTEIN-SYNTHESIS.md
+
+# Arquivos de prompt/documentação (não fazem parte do código)
+prompts-redesign-protein-synthesis.md
 prompts-refatoracao-modularizacao.md
+prompts-testes-automatizados.md
+auditoria.md
+AUDITORIA-PROTEIN-SYNTHESIS.md
+documentacao-interface.md
+
+# Build artifacts
+build-simulator.mjs
+*.artifact.json
+
+# Testes e logs
 tests/
 test-results/
-build-simulator.mjs
+audit/logs.json
+audit/screenshots/
+audit/relatorio-testes.md
+out*.txt
+debug*.txt
+a11y*.txt
+final*.txt
+test-output.txt
+
+# Desenhos/diagramas temporários
+drawing-*.png
+
+# Configuração local do opencode
+opencode.json
+skills/
+
+# Open Design (pastas externas ao projeto)
+.od-skills/
+Open Design/
+Open-Design/
+
+# Sistema
+desktop.ini
+Thumbs.db
+.DS_Store
