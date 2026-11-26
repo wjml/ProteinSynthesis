@@ -1,0 +1,33 @@
+/* Alternativa 3: Editorial Acadêmico */
+:root {
+  --bgPage: #f8f7f4;
+  --white: #ffffff;
+  --slate50: #f8f7f4;
+  --slate100: #f1efe9;
+  --slate200: #e5e2da;
+  --slate800: #1c1917;
+  --colorDetails: #0f766e;
+  --colorDetailsText: #0f766e;
+  --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.06);
+}
+nav {
+  background: #141923;
+}
+.splash-hero h2, .page-header h2 {
+  letter-spacing: -0.02em;
+}
+.splash-feature, .info-card, .strand-section, .simulator-controls, .quiz-card {
+  border: 1px solid var(--slate200);
+  border-top: 3px solid var(--colorDetailsText);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.04);
+}
+.btn-control.splash-cta-btn {
+  background: #0f766e;
+  border-radius: 6px;
+}
+body.dark-theme {
+  --bgPage: #0c1220;
+  --white: #151e30;
+  --slate200: #25324b;
+}

@@ -1,0 +1,98 @@
+/* Alternativa 1: Biotech Clean (Neutral Modern + Cobalt)
+ * Baseado em Open-Design/brand-spec.md
+ */
+:root {
+  --font-serif: "Inter", "Work Sans", system-ui, sans-serif;
+  --font-sans: "Inter", "Work Sans", system-ui, sans-serif;
+  --sidebarSize: 240px;
+  --bgPage: #fafafa;
+  --white: #ffffff;
+  --slate50: #fafafa;
+  --slate100: #f3f4f6;
+  --slate200: #e5e5e5;
+  --slate300: #d4d4d4;
+  --slate600: #525252;
+  --slate700: #262626;
+  --slate800: #111111;
+  --colorDetails: #2f6feb;
+  --colorDetailsText: #2f6feb;
+  --colorDetailsHover: #1d4ed8;
+  --colorDetailsBg: #eff6ff;
+  --colorDetailsBorderLight: #bfdbfe;
+  --shadow-card: 0 0 0 1px #e5e5e5;
+}
+body:not(.dark-theme) nav {
+  background: #ffffff;
+  border-right: 1px solid #e5e5e5;
+}
+body:not(.dark-theme) nav #logo {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+}
+body:not(.dark-theme) nav #logo img {
+  filter: invert(1) hue-rotate(180deg) brightness(0.25);
+}
+body:not(.dark-theme) .sidebar .button,
+body:not(.dark-theme) .sidebar .menu-label-group .main-label,
+body:not(.dark-theme) .sidebar-toggle {
+  color: #404040;
+}
+body:not(.dark-theme) .sidebar .header-title span,
+body:not(.dark-theme) .sidebar .menu-label-group .sub-label {
+  color: #737373;
+}
+body:not(.dark-theme) .sidebar .button:hover,
+body:not(.dark-theme) .sidebar-toggle:hover {
+  background: #f3f4f6;
+  color: #111111;
+}
+body:not(.dark-theme) .sidebar .collapsible {
+  background: #f9fafb;
+}
+body:not(.dark-theme) .sidebar .button.collapsible-toggle,
+body:not(.dark-theme) .sidebar .header-title#about,
+body:not(.dark-theme) .sidebar-toggle {
+  border-top-color: #e5e5e5;
+}
+.sidebar .button.active,
+.sidebar .button.active:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 8px;
+  margin: 2px 8px;
+  font-weight: 600;
+}
+.sidebar .button:not(.collapsible-toggle).active::before,
+.sidebar .button:not(.collapsible-toggle).active::after {
+  display: none;
+}
+.splash-feature, .info-card, .strand-section, .simulator-controls, .quiz-card {
+  box-shadow: 0 0 0 1px var(--slate200);
+  border-radius: 10px;
+}
+.btn-control.splash-cta-btn, .btn-control.content-cta-btn {
+  background: #2f6feb;
+  border-radius: 8px;
+  box-shadow: none;
+}
+body.dark-theme {
+  --bgPage: #0d1117;
+  --white: #161b22;
+  --slate50: #0d1117;
+  --slate100: #161b22;
+  --slate200: #30363d;
+  --slate800: #e6edf3;
+  --colorDetails: #58a6ff;
+  --colorDetailsText: #58a6ff;
+}
+body.dark-theme nav {
+  background: #0d1117;
+  border-right: 1px solid #30363d;
+}
+body.dark-theme nav #logo {
+  background: #161b22;
+}
+body.dark-theme .sidebar .button.active {
+  background: rgba(88, 166, 255, 0.14);
+  color: #58a6ff;
+}
