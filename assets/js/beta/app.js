@@ -369,7 +369,8 @@ async function refreshWorkbench() {
   } else {
     activeProtein.forEach((aa, idx) => {
       const wAa = wild && wild.protein[idx];
-      const changed = compareWt && !orfMeta && wAa && wAa.abbr !== aa.abbr;
+      const isPrimaryFrame = !orfMeta || orfMeta.frame === '+1';
+      const changed = compareWt && isPrimaryFrame && wAa && wAa.abbr !== aa.abbr;
       const card = document.createElement('div');
       card.className = `aa-card${changed ? ' aa-mut' : ''}`;
       const abbr = document.createElement('div');
@@ -406,7 +407,7 @@ async function refreshWorkbench() {
     : cur.biochemistry.hydropathyProfile;
   renderHydropathyChart(
     activeHydro,
-    compareWt && !orfMeta && wild ? wild.biochemistry.hydropathyProfile : null
+    compareWt && (!orfMeta || orfMeta.frame === '+1') && wild ? wild.biochemistry.hydropathyProfile : null
   );
 
   const orfList = $('wb-orf-list');
