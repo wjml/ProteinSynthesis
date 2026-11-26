@@ -7,6 +7,7 @@ const ASSETS = [
   './assets/js/beta/store.js',
   './assets/js/beta/bio.js',
   './assets/js/beta/labs.js',
+  './assets/js/beta/labs_extra.js',
   './assets/js/beta/app.js',
   './manifest.json',
   './assets/style/fixed-elements.css',

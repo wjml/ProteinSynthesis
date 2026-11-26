@@ -296,6 +296,14 @@ body.dark-theme .beta-btn-mini.active { color: #0d1117; }
 .hw-bars { display: flex; flex-direction: column; gap: 3px; }
 .hw-bar-obs { height: 7px; background: var(--accent); border-radius: 4px; }
 .hw-bar-exp { height: 7px; background: var(--base-t); border-radius: 4px; opacity: 0.8; }
+.pedigree-svg-host { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.pedigree-svg-host svg { width: 100%; max-height: 260px; display: block; }
+.karyo-denver-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin: 10px 0; }
+.karyo-pair { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.74rem; }
+.karyo-chroms { display: flex; align-items: flex-end; gap: 3px; min-height: 56px; }
+.chrom-bar { width: 8px; border-radius: 4px; background: var(--muted); }
+.chrom-bar.is-anomaly { background: var(--base-t); }
+.chrom-bar.is-sex { background: var(--base-u); }
 .crispr-result-box { margin-top: 12px; padding: 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
 .punnett-grid { display: grid; grid-template-columns: repeat(3, 88px); gap: 6px; margin: 12px 0; }
 .punnett-cell { padding: 12px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); text-align: center; font-family: var(--font-mono); font-weight: 700; }

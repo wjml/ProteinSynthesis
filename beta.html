@@ -72,6 +72,14 @@
     <section class="beta-view" id="view-atlas" hidden>
       <div class="atlas-grid">
         <article class="atlas-article">
+          <div class="mendel-mode-tabs" id="atlas-chapter-tabs" style="margin-bottom:14px;">
+            <button type="button" class="beta-btn-mini active" data-atlas-ch="diseases">Cap. 4 · Doença Falciforme</button>
+            <button type="button" class="beta-btn-mini" data-atlas-ch="dna">Cap. 1 · DNA &amp; Chargaff</button>
+            <button type="button" class="beta-btn-mini" data-atlas-ch="rna">Cap. 2 · RNA &amp; Splicing</button>
+            <button type="button" class="beta-btn-mini" data-atlas-ch="codons">Cap. 3 · Código Genético</button>
+          </div>
+
+          <div id="atlas-ch-diseases" class="atlas-chapter">
           <div class="atlas-kicker">Capítulo Interativo · Patologia Molecular</div>
           <h1>Doença Falciforme: quando uma única base altera toda a fisiologia</h1>
           <p class="atlas-lead">
@@ -136,6 +144,34 @@
                 índice GRAVY.</p>
             </div>
           </div>
+          </div><!-- /#atlas-ch-diseases -->
+
+          <div id="atlas-ch-dna" class="atlas-chapter" hidden>
+            <div class="atlas-kicker">Capítulo 1 · Estrutura do DNA &amp; Regra de Chargaff</div>
+            <h1>Antiparalelismo e Proporções de Bases</h1>
+            <p class="atlas-lead">Na dupla-hélice, Adenina pareia com Timina (2 pontes de H) e Guanina com Citosina (3 pontes de H). Ajuste %A abaixo para calcular todas as frações:</p>
+            <div class="inline-experiment-card">
+              <label>Porcentagem de Adenina (%A): <input type="range" id="chargaff-a" min="5" max="45" value="28"> <strong class="mono" id="chargaff-a-val">28%</strong></label>
+              <div id="chargaff-output" class="biochem-metrics"></div>
+            </div>
+          </div>
+
+          <div id="atlas-ch-rna" class="atlas-chapter" hidden>
+            <div class="atlas-kicker">Capítulo 2 · Transcrição &amp; Processamento do RNA</div>
+            <h1>Do Pré-RNAm ao RNAm Maduro</h1>
+            <p class="atlas-lead">Em eucariotos, o transcrito primário passa por cap 5', cauda poli-A e remoção de íntrons (splicing).</p>
+            <div class="inline-experiment-card">
+              <label class="wt-compare-toggle"><input type="checkbox" id="atlas-splicing-toggle" checked> <span>Aplicar Splicing (remover íntrons)</span></label>
+              <div id="atlas-splicing-view" class="mono" style="margin-top:10px; font-size:0.95rem;"></div>
+            </div>
+          </div>
+
+          <div id="atlas-ch-codons" class="atlas-chapter" hidden>
+            <div class="atlas-kicker">Capítulo 3 · Código Genético Degenerado</div>
+            <h1>Explorador Rápido de Códons</h1>
+            <p class="atlas-lead">61 códons codificam 20 aminoácidos e 3 sinalizam parada (UAA, UAG, UGA). Clique em um códon para testá-lo na Bancada:</p>
+            <div id="atlas-codon-quickgrid" class="classic-shortcuts"></div>
+          </div>
         </article>
 
         <aside class="atlas-sidebar">
@@ -167,6 +203,8 @@
               <button type="button" class="ref-item" data-lab="crispr">✂️ CRISPR-Cas9</button>
               <button type="button" class="ref-item" data-lab="mendel">🌱 Genética Mendeliana</button>
               <button type="button" class="ref-item" data-lab="popgen">📊 Populações (HW)</button>
+              <button type="button" class="ref-item" data-lab="pedigree">👨‍👩‍👧 Heredogramas SVG</button>
+              <button type="button" class="ref-item" data-lab="karyotype">🔬 Cariótipo (Denver)</button>
             </div>
           </div>
 
@@ -189,161 +227,157 @@
           </div>
 
           <div class="beta-card">
-            <div class="card-kicker">Outros Setores (Versão Clássica)</div>
-            <p class="muted-text">Heredogramas e Cariótipo ainda abrem na versão clássica:</p>
-            <div class="classic-shortcuts">
-              <a href="/#pedigree-lab" class="shortcut-pill">Heredogramas</a>
-              <a href="/#karyotype-lab" class="shortcut-pill">Cariótipo</a>
-            </div>
+            <div class="card-kicker">Atalho de Versão</div>
+            <p class="muted-text">Todos os setores principais já estão disponíveis nativamente aqui. Você pode alternar para a versão clássica no topo a qualquer momento.</p>
           </div>
         </aside>
 
         <!-- Painel Central: Sub-módulos da Bancada -->
         <div class="wb-center">
           <div id="lab-panel-molecular" class="lab-panel">
-          <div class="beta-card">
-            <div class="wb-header-row">
-              <div class="wb-title-group">
-                <h1 id="wb-seq-header" class="wb-title" title="Clique duas vezes para renomear">Nenhuma sequência
-                  inserida</h1>
-                <span class="mono wb-stats" id="wb-seq-stats">0 nt · 0 aa · GC 0%</span>
-              </div>
-            </div>
-
-            <div class="wb-actions-bar">
-              <div class="wb-actions">
-                <button type="button" class="base-insert-btn base-a" data-base="A">+ A</button>
-                <button type="button" class="base-insert-btn base-t" data-base="T">+ T</button>
-                <button type="button" class="base-insert-btn base-c" data-base="C">+ C</button>
-                <button type="button" class="base-insert-btn base-g" data-base="G">+ G</button>
-                <button type="button" class="beta-btn-secondary" id="wb-random-btn"
-                  title="Gerar sequência codificante aleatória">
-                  <i class="fas fa-random"></i> Aleatória
-                </button>
-                <button type="button" class="beta-btn-secondary" id="wb-snapshot-btn"
-                  title="Salvar estado atual em IndexedDB">
-                  <i class="fas fa-camera"></i> Snapshot
-                </button>
-              </div>
-              <div class="wb-compare-group" data-visible-layers="intermediate advanced">
-                <label class="wt-compare-toggle">
-                  <input type="checkbox" id="wb-compare-wt" checked>
-                  <span>Comparar com Wild-Type</span>
-                </label>
-                <button type="button" class="beta-btn-mini" id="wb-set-wt-btn"
-                  title="Definir sequência atual como referência Wild-Type">
-                  Definir como WT
-                </button>
-              </div>
-            </div>
-
-            <div class="wb-input-row">
-              <label for="wb-dna-input" class="sr-only">Sequência de DNA Molde (3' para 5')</label>
-              <input type="text" id="wb-dna-input" class="mono wb-dna-input" value=""
-                placeholder="Digite ou cole bases A, T, C, G (ou selecione uma referência ao lado)...">
-            </div>
-
-            <!-- Trilha Visual Unificada das Fitas (Tabulação + Scroll Sincronizado) -->
-            <div class="tracks-stack">
-              <div class="strand-panel">
-                <div class="strand-panel-title-row">
-                  <span class="strand-panel-title">DNA — FITA MOLDE <span
-                      data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></span>
-                  <span class="orf-frame-badge mono" id="wb-orf-banner" data-visible-layers="advanced" hidden></span>
-                </div>
-                <div class="duplex-box dna-duplex-box">
-                  <div class="strand-ends strand-ends-left mono">
-                    <span class="end-badge end-3">3'</span>
-                    <span class="end-badge end-5" data-visible-layers="intermediate advanced">5'</span>
-                  </div>
-                  <div class="strand-scroll" id="wb-scroll-dna">
-                    <div class="duplex-grid" id="wb-duplex-grid"></div>
-                  </div>
-                  <div class="strand-ends strand-ends-right mono">
-                    <span class="end-badge end-5">5'</span>
-                    <span class="end-badge end-3" data-visible-layers="intermediate advanced">3'</span>
-                  </div>
+            <div class="beta-card">
+              <div class="wb-header-row">
+                <div class="wb-title-group">
+                  <h1 id="wb-seq-header" class="wb-title" title="Clique duas vezes para renomear">Nenhuma sequência
+                    inserida</h1>
+                  <span class="mono wb-stats" id="wb-seq-stats">0 nt · 0 aa · GC 0%</span>
                 </div>
               </div>
 
-              <div class="strand-panel">
-                <div class="strand-panel-title-row">
-                  <span class="strand-panel-title" id="wb-rna-title">RNA MENSAGEIRO (5' → 3')</span>
-                  <span class="orf-frame-badge mono" id="wb-tx-dir-badge"
-                    data-visible-layers="intermediate advanced">Sentido: 5' → 3' (Direto)</span>
+              <div class="wb-actions-bar">
+                <div class="wb-actions">
+                  <button type="button" class="base-insert-btn base-a" data-base="A">+ A</button>
+                  <button type="button" class="base-insert-btn base-t" data-base="T">+ T</button>
+                  <button type="button" class="base-insert-btn base-c" data-base="C">+ C</button>
+                  <button type="button" class="base-insert-btn base-g" data-base="G">+ G</button>
+                  <button type="button" class="beta-btn-secondary" id="wb-random-btn"
+                    title="Gerar sequência codificante aleatória">
+                    <i class="fas fa-random"></i> Aleatória
+                  </button>
+                  <button type="button" class="beta-btn-secondary" id="wb-snapshot-btn"
+                    title="Salvar estado atual em IndexedDB">
+                    <i class="fas fa-camera"></i> Snapshot
+                  </button>
                 </div>
-                <div class="duplex-box mrna-box">
-                  <div class="strand-ends strand-ends-left mono">
-                    <span class="end-badge end-5" id="wb-rna-end-left">5'</span>
-                  </div>
-                  <div class="strand-scroll" id="wb-scroll-rna">
-                    <div class="mrna-grid" id="wb-track-rna"></div>
-                  </div>
-                  <div class="strand-ends strand-ends-right mono">
-                    <span class="end-badge end-3" id="wb-rna-end-right">3'</span>
-                  </div>
+                <div class="wb-compare-group" data-visible-layers="intermediate advanced">
+                  <label class="wt-compare-toggle">
+                    <input type="checkbox" id="wb-compare-wt" checked>
+                    <span>Comparar com Wild-Type</span>
+                  </label>
+                  <button type="button" class="beta-btn-mini" id="wb-set-wt-btn"
+                    title="Definir sequência atual como referência Wild-Type">
+                    Definir como WT
+                  </button>
                 </div>
               </div>
 
-              <div class="strand-panel" data-visible-layers="advanced">
-                <div class="strand-panel-title">ALINHAMENTO (WILD-TYPE × ATUAL)</div>
-                <div class="duplex-box diff-box">
-                  <div class="strand-ends strand-ends-left mono">
-                    <span class="end-badge end-diff">Δ</span>
+              <div class="wb-input-row">
+                <label for="wb-dna-input" class="sr-only">Sequência de DNA Molde (3' para 5')</label>
+                <input type="text" id="wb-dna-input" class="mono wb-dna-input" value=""
+                  placeholder="Digite ou cole bases A, T, C, G (ou selecione uma referência ao lado)...">
+              </div>
+
+              <!-- Trilha Visual Unificada das Fitas (Tabulação + Scroll Sincronizado) -->
+              <div class="tracks-stack">
+                <div class="strand-panel">
+                  <div class="strand-panel-title-row">
+                    <span class="strand-panel-title">DNA — FITA MOLDE <span
+                        data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></span>
+                    <span class="orf-frame-badge mono" id="wb-orf-banner" data-visible-layers="advanced" hidden></span>
                   </div>
-                  <div class="strand-scroll" id="wb-scroll-diff">
-                    <div class="mrna-grid diff-grid" id="wb-track-diff"></div>
+                  <div class="duplex-box dna-duplex-box">
+                    <div class="strand-ends strand-ends-left mono">
+                      <span class="end-badge end-3">3'</span>
+                      <span class="end-badge end-5" data-visible-layers="intermediate advanced">5'</span>
+                    </div>
+                    <div class="strand-scroll" id="wb-scroll-dna">
+                      <div class="duplex-grid" id="wb-duplex-grid"></div>
+                    </div>
+                    <div class="strand-ends strand-ends-right mono">
+                      <span class="end-badge end-5">5'</span>
+                      <span class="end-badge end-3" data-visible-layers="intermediate advanced">3'</span>
+                    </div>
                   </div>
-                  <div class="strand-ends strand-ends-right mono">
-                    <span class="end-badge end-diff">nt</span>
+                </div>
+
+                <div class="strand-panel">
+                  <div class="strand-panel-title-row">
+                    <span class="strand-panel-title" id="wb-rna-title">RNA MENSAGEIRO (5' → 3')</span>
+                    <span class="orf-frame-badge mono" id="wb-tx-dir-badge"
+                      data-visible-layers="intermediate advanced">Sentido: 5' → 3' (Direto)</span>
+                  </div>
+                  <div class="duplex-box mrna-box">
+                    <div class="strand-ends strand-ends-left mono">
+                      <span class="end-badge end-5" id="wb-rna-end-left">5'</span>
+                    </div>
+                    <div class="strand-scroll" id="wb-scroll-rna">
+                      <div class="mrna-grid" id="wb-track-rna"></div>
+                    </div>
+                    <div class="strand-ends strand-ends-right mono">
+                      <span class="end-badge end-3" id="wb-rna-end-right">3'</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="strand-panel" data-visible-layers="advanced">
+                  <div class="strand-panel-title">ALINHAMENTO (WILD-TYPE × ATUAL)</div>
+                  <div class="duplex-box diff-box">
+                    <div class="strand-ends strand-ends-left mono">
+                      <span class="end-badge end-diff">Δ</span>
+                    </div>
+                    <div class="strand-scroll" id="wb-scroll-diff">
+                      <div class="mrna-grid diff-grid" id="wb-track-diff"></div>
+                    </div>
+                    <div class="strand-ends strand-ends-right mono">
+                      <span class="end-badge end-diff">nt</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle (alinhados aos códons) -->
-          <div class="beta-card">
-            <div class="wb-section-head">
-              <div class="strand-panel-title">CADEIA POLIPEPTÍDICA SINTETIZADA</div>
-              <span class="mutation-badge" id="wb-mutation-badge">Aguardando sequência</span>
-            </div>
-            <div class="duplex-box protein-box">
-              <div class="strand-ends strand-ends-left mono">
-                <span class="end-badge end-diff">aa</span>
-              </div>
-              <div class="strand-scroll protein-scroll" id="wb-scroll-protein">
-                <div class="protein-grid" id="wb-protein-grid"></div>
-              </div>
-              <div class="strand-ends strand-ends-right mono">
-                <span class="end-badge end-diff" id="wb-protein-dir">N→C</span>
-              </div>
-            </div>
-
-            <div class="hydropathy-box" data-visible-layers="advanced">
+            <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle (alinhados aos códons) -->
+            <div class="beta-card">
               <div class="wb-section-head">
-                <div class="strand-panel-title">PERFIL DE HIDROPATIA (KYTE-DOOLITTLE)</div>
-                <div class="hydro-legend mono" id="wb-hydro-legend">
-                  <span class="legend-cur">── Atual</span>
-                  <span class="legend-wt" id="wb-hydro-legend-wt" hidden>┄◇┄ Wild-Type</span>
-                  <span class="muted-text" id="wb-gravy-badge">GRAVY: 0.00</span>
-                </div>
+                <div class="strand-panel-title">CADEIA POLIPEPTÍDICA SINTETIZADA</div>
+                <span class="mutation-badge" id="wb-mutation-badge">Aguardando sequência</span>
               </div>
-              <div class="duplex-box hydro-box">
+              <div class="duplex-box protein-box">
                 <div class="strand-ends strand-ends-left mono">
-                  <span class="end-badge end-diff">+4.5</span>
-                  <span class="end-badge end-diff">KD</span>
-                  <span class="end-badge end-diff">-4.5</span>
+                  <span class="end-badge end-diff">aa</span>
                 </div>
-                <div class="strand-scroll" id="wb-scroll-hydro">
-                  <div id="wb-hydropathy-chart" class="hydropathy-chart"></div>
+                <div class="strand-scroll protein-scroll" id="wb-scroll-protein">
+                  <div class="protein-grid" id="wb-protein-grid"></div>
                 </div>
                 <div class="strand-ends strand-ends-right mono">
-                  <span class="end-badge end-diff">Hφ</span>
+                  <span class="end-badge end-diff" id="wb-protein-dir">N→C</span>
+                </div>
+              </div>
+
+              <div class="hydropathy-box" data-visible-layers="advanced">
+                <div class="wb-section-head">
+                  <div class="strand-panel-title">PERFIL DE HIDROPATIA (KYTE-DOOLITTLE)</div>
+                  <div class="hydro-legend mono" id="wb-hydro-legend">
+                    <span class="legend-cur">── Atual</span>
+                    <span class="legend-wt" id="wb-hydro-legend-wt" hidden>┄◇┄ Wild-Type</span>
+                    <span class="muted-text" id="wb-gravy-badge">GRAVY: 0.00</span>
+                  </div>
+                </div>
+                <div class="duplex-box hydro-box">
+                  <div class="strand-ends strand-ends-left mono">
+                    <span class="end-badge end-diff">+4.5</span>
+                    <span class="end-badge end-diff">KD</span>
+                    <span class="end-badge end-diff">-4.5</span>
+                  </div>
+                  <div class="strand-scroll" id="wb-scroll-hydro">
+                    <div id="wb-hydropathy-chart" class="hydropathy-chart"></div>
+                  </div>
+                  <div class="strand-ends strand-ends-right mono">
+                    <span class="end-badge end-diff">Hφ</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           </div><!-- /#lab-panel-molecular -->
 
           <!-- SUB-MÓDULO: CRISPR-Cas9 -->
@@ -367,13 +401,15 @@
               </div>
               <div class="crispr-donor-row" data-visible-layers="intermediate advanced">
                 <input type="text" id="crispr-grna-filter" class="wb-dna-input mono" placeholder="Filtrar por sub-sequência do gRNA (opcional)..." data-visible-layers="advanced">
-                <input type="text" id="crispr-donor-input" class="wb-dna-input mono" placeholder="Template doador HDR (ex.: GACTCCTCTG)...">
+                <input type="text" id="crispr-donor-input" class="wb-dna-input mono"
+                  placeholder="Template doador HDR (ex.: GACTCCTCTG)...">
               </div>
               <div id="crispr-targets-list" class="orf-list"></div>
               <div id="crispr-result-box" class="crispr-result-box" hidden>
                 <div class="strand-panel-title">PRÉVIA DA EDIÇÃO (DIFF)</div>
                 <div id="crispr-diff-preview" class="mono crispr-diff-lines"></div>
-                <button type="button" class="beta-btn-primary" id="crispr-apply-btn">Aplicar Edição na Bancada Molecular</button>
+                <button type="button" class="beta-btn-primary" id="crispr-apply-btn">Aplicar Edição na Bancada
+                  Molecular</button>
               </div>
             </div>
           </div>
@@ -530,6 +566,68 @@
               </div>
             </div>
           </div>
+
+          <!-- SUB-MÓDULO: HEREDOGRAMAS SVG -->
+          <div id="lab-panel-pedigree" class="lab-panel" hidden>
+            <div class="beta-card">
+              <div class="wb-section-head">
+                <h2>Laboratório de Heredogramas (3 Gerações)</h2>
+                <button type="button" class="beta-btn-secondary" id="pedigree-export-btn"><i class="fas fa-download"></i> Exportar SVG</button>
+              </div>
+              <div class="mendel-controls">
+                <label>Padrão de Herança:
+                  <select id="pedigree-pattern-select">
+                    <option value="AD">Autossômica Dominante (AD)</option>
+                    <option value="AR" selected>Autossômica Recessiva (AR)</option>
+                    <option value="XR">Ligada ao X Recessiva (XR)</option>
+                    <option value="XD">Ligada ao X Dominante (XD)</option>
+                  </select>
+                </label>
+                <label class="wt-compare-toggle" data-visible-layers="advanced">
+                  <input type="checkbox" id="pedigree-blind-mode">
+                  <span>Modo Diagnóstico (ocultar genótipos)</span>
+                </label>
+              </div>
+              <div id="pedigree-svg-host" class="pedigree-svg-host"></div>
+              <p id="pedigree-desc" class="muted-text"></p>
+              <div id="pedigree-recurrence" class="mendel-summary" data-visible-layers="advanced"></div>
+            </div>
+          </div>
+
+          <!-- SUB-MÓDULO: CARIÓTIPO (DENVER + NÃO-DISJUNÇÃO) -->
+          <div id="lab-panel-karyotype" class="lab-panel" hidden>
+            <div class="beta-card">
+              <div class="wb-section-head">
+                <h2>Citogenética &amp; Cariótipo (Classificação de Denver)</h2>
+                <span class="badge mono" id="karyo-iscn">46, XY</span>
+              </div>
+              <div class="mendel-controls">
+                <label>Condição Clínica:
+                  <select id="karyo-select">
+                    <option value="normal_m">Normal Masculino (46, XY)</option>
+                    <option value="normal_f">Normal Feminino (46, XX)</option>
+                    <option value="down">Síndrome de Down (+21)</option>
+                    <option value="edwards">Síndrome de Edwards (+18)</option>
+                    <option value="patau">Síndrome de Patau (+13)</option>
+                    <option value="turner">Síndrome de Turner (45, X)</option>
+                    <option value="klinefelter">Síndrome de Klinefelter (47, XXY)</option>
+                  </select>
+                </label>
+              </div>
+              <div id="karyo-denver-grid" class="karyo-denver-grid"></div>
+              <p id="karyo-desc" class="muted-text" data-visible-layers="intermediate advanced"></p>
+              <div class="hydropathy-box" data-visible-layers="advanced">
+                <div class="wb-section-head">
+                  <div class="strand-panel-title">SIMULADOR DE NÃO-DISJUNÇÃO MEIÓTICA</div>
+                  <select id="karyo-meiosis-phase">
+                    <option value="meiosis1">Não-Disjunção na Meiose I</option>
+                    <option value="meiosis2">Não-Disjunção na Meiose II</option>
+                  </select>
+                </div>
+                <div id="karyo-meiosis-out" class="mendel-summary mono"></div>
+              </div>
+            </div>
+          </div>
         </div><!-- /.wb-center -->
 
         <!-- Painel Direito: Inspector Bioquímico & Snapshots -->
@@ -580,20 +678,26 @@
     <section class="beta-view" id="view-evaluation" hidden>
       <div class="eval-grid">
         <div class="beta-card">
-          <div class="card-kicker">Modo Investigação Clínica</div>
-          <h2>Caso Diagnóstico Interativo</h2>
-          <p class="muted-text" id="eval-case-prompt">
-            Um paciente apresenta anemia hemolítica. O sequenciamento do éxon 1 do gene HBB revelou o códon mutante GTG
-            no lugar de GAG.
-          </p>
-          <div class="eval-options" id="eval-options">
-            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Silenciosa (mesmo
-              aminoácido)</button>
-            <button type="button" class="eval-opt-btn" data-correct="true">Mutação Missense Não-Conservativa (Glu →
-              Val)</button>
-            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Nonsense (códon de parada
-              prematuro)</button>
+          <div class="card-kicker">Modo Desafio Multi-Categoria</div>
+          <div class="wb-section-head">
+            <h2>Quiz Científico Interativo</h2>
+            <span class="badge mono" id="quiz-score-badge">Acertos: 0 / 0</span>
           </div>
+          <div class="mendel-controls">
+            <label>Eixo Temático:
+              <select id="beta-quiz-cat">
+                <option value="all">Todas as Categorias</option>
+                <option value="molecular">Genética Molecular</option>
+                <option value="mendel">Genética Mendeliana</option>
+                <option value="pedigree">Heredogramas</option>
+                <option value="popgen">Genética Populacional</option>
+                <option value="karyotype">Cariótipo</option>
+              </select>
+            </label>
+            <button type="button" class="beta-btn-secondary" id="beta-quiz-next">Próxima Questão</button>
+          </div>
+          <p class="muted-text" id="eval-case-prompt"></p>
+          <div class="eval-options" id="eval-options"></div>
           <div id="eval-feedback" class="eval-feedback" hidden></div>
         </div>
 

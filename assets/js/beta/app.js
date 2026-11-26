@@ -6,6 +6,7 @@
 import { analyzeDna, fetchDiseases, generateRandomCodingDna } from './bio.js';
 import { addRecord, listRecords, getPref, setPref } from './store.js';
 import { findPamTargets, simulateCrisprRepair, computePunnett, computeDihybrid, computeEpistasis, computeAbo, computeHardyWeinberg, simulateDriftAndSelection } from './labs.js';
+import { PEDIGREE_PATTERNS, renderPedigreeSvg, KARYOTYPE_CONDITIONS, DENVER_GROUPS, simulateNondisjunction, QUIZ_BANK } from './labs_extra.js';
 
 const LAYER_GUIDES = {
   basic: 'Camada Básica: exibe o fluxo essencial DNA → RNAm → Proteína, ideal para introdução ao código genético.',
@@ -801,12 +802,12 @@ async function init() {
   await Promise.all([refreshWorkbench(), renderSnapshots(), renderNotebook()]);
   generateDocenteList();
 
-  // Sub-módulos da Bancada (Molecular, CRISPR, Mendel, PopGen)
+  // Sub-módulos da Bancada (Molecular, CRISPR, Mendel, PopGen, Heredogramas, Cariótipo)
   document.querySelectorAll('#beta-lab-switcher [data-lab]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.lab;
       document.querySelectorAll('#beta-lab-switcher [data-lab]').forEach(b => b.classList.toggle('active', b === btn));
-      ['molecular', 'crispr', 'mendel', 'popgen'].forEach((id) => {
+      ['molecular', 'crispr', 'mendel', 'popgen', 'pedigree', 'karyotype'].forEach((id) => {
         const panel = $(`lab-panel-${id}`);
         if (panel) panel.hidden = id !== target;
       });
@@ -1067,6 +1068,187 @@ async function init() {
   $('hw-input-mode')?.addEventListener('change', renderHw);
   renderHw();
   renderDrift();
+
+  // Heredogramas SVG (4 padrões + modo diagnóstico + exportação SVG)
+  const renderPedigree = () => {
+    const key = $('pedigree-pattern-select')?.value || 'AR';
+    const blind = Boolean($('pedigree-blind-mode')?.checked);
+    const layer = document.body.getAttribute('data-layer') || 'intermediate';
+    const host = $('pedigree-svg-host');
+    if (!host) return;
+    host.textContent = '';
+    host.appendChild(renderPedigreeSvg(key, {
+      showGenotypes: !blind && layer !== 'basic',
+      showCarriers: layer !== 'basic'
+    }));
+    const pat = PEDIGREE_PATTERNS[key];
+    if ($('pedigree-desc')) $('pedigree-desc').textContent = blind ? 'Modo diagnóstico ativo: identifique o padrão analisando os símbolos.' : `${pat.name}: ${pat.desc}`;
+    if ($('pedigree-recurrence')) $('pedigree-recurrence').textContent = `Risco de recorrência: ${pat.recurrence}`;
+  };
+  $('pedigree-pattern-select')?.addEventListener('change', renderPedigree);
+  $('pedigree-blind-mode')?.addEventListener('change', renderPedigree);
+  $('pedigree-export-btn')?.addEventListener('click', () => {
+    const svg = $('pedigree-svg-host')?.querySelector('svg');
+    if (!svg) return;
+    const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'heredograma-proteinsynthesis.svg';
+    a.click();
+  });
+  renderPedigree();
+
+  // Cariótipo (Classificação de Denver + Não-Disjunção)
+  const renderKaryo = () => {
+    const key = $('karyo-select')?.value || 'normal_m';
+    const cond = KARYOTYPE_CONDITIONS[key] || KARYOTYPE_CONDITIONS.normal_m;
+    if ($('karyo-iscn')) $('karyo-iscn').textContent = cond.iscn;
+    if ($('karyo-desc')) $('karyo-desc').textContent = cond.desc;
+    const grid = $('karyo-denver-grid');
+    if (!grid) return;
+    grid.textContent = '';
+    DENVER_GROUPS.forEach((grp) => {
+      grp.pairs.forEach((pair) => {
+        const count = cond.extra === pair ? 3 : 2;
+        const box = document.createElement('div');
+        box.className = 'karyo-pair';
+        const chroms = document.createElement('div');
+        chroms.className = 'karyo-chroms';
+        for (let i = 0; i < count; i++) {
+          const bar = document.createElement('span');
+          bar.className = `chrom-bar${count === 3 ? ' is-anomaly' : ''}`;
+          bar.style.height = `${grp.h}px`;
+          chroms.appendChild(bar);
+        }
+        const lbl = document.createElement('span');
+        lbl.className = 'mono';
+        lbl.textContent = `${pair} (${grp.group})`;
+        box.append(chroms, lbl);
+        grid.appendChild(box);
+      });
+    });
+    const sexBox = document.createElement('div');
+    sexBox.className = 'karyo-pair';
+    const sexChroms = document.createElement('div');
+    sexChroms.className = 'karyo-chroms';
+    cond.sex.forEach((s) => {
+      const bar = document.createElement('span');
+      bar.className = 'chrom-bar is-sex';
+      bar.style.height = s === 'X' ? '40px' : '20px';
+      sexChroms.appendChild(bar);
+    });
+    const sexLbl = document.createElement('span');
+    sexLbl.className = 'mono';
+    sexLbl.textContent = cond.sex.join('');
+    sexBox.append(sexChroms, sexLbl);
+    grid.appendChild(sexBox);
+  };
+  const renderMeiosis = () => {
+    const phase = $('karyo-meiosis-phase')?.value || 'meiosis1';
+    const sim = simulateNondisjunction(phase);
+    if ($('karyo-meiosis-out')) {
+      $('karyo-meiosis-out').textContent = `Gametas: ${sim.gametes.join(' | ')} → Fecundação (n): ${sim.zygotes}`;
+    }
+  };
+  $('karyo-select')?.addEventListener('change', renderKaryo);
+  $('karyo-meiosis-phase')?.addEventListener('change', renderMeiosis);
+  renderKaryo();
+  renderMeiosis();
+
+  // Atlas Vivo Multi-Capítulo (Chargaff, Splicing, Códons)
+  document.querySelectorAll('#atlas-chapter-tabs [data-atlas-ch]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ch = btn.dataset.atlasCh;
+      document.querySelectorAll('#atlas-chapter-tabs [data-atlas-ch]').forEach(b => b.classList.toggle('active', b === btn));
+      ['diseases', 'dna', 'rna', 'codons'].forEach(c => {
+        const el = $(`atlas-ch-${c}`);
+        if (el) el.hidden = c !== ch;
+      });
+    });
+  });
+  const updateChargaff = () => {
+    const a = Number($('chargaff-a')?.value || 28);
+    if ($('chargaff-a-val')) $('chargaff-a-val').textContent = `${a}%`;
+    const t = a;
+    const gc = (100 - 2 * a) / 2;
+    const out = $('chargaff-output');
+    if (!out) return;
+    out.textContent = '';
+    [['A', `${a}%`], ['T', `${t}%`], ['C', `${gc}%`], ['G', `${gc}%`]].forEach(([k, v]) => {
+      const tile = document.createElement('div');
+      tile.className = 'metric-tile';
+      tile.innerHTML = `<span>${k}</span><strong class="mono">${v}</strong>`;
+      out.appendChild(tile);
+    });
+  };
+  $('chargaff-a')?.addEventListener('input', updateChargaff);
+  updateChargaff();
+
+  const updateSplicing = () => {
+    const spliced = Boolean($('atlas-splicing-toggle')?.checked);
+    const view = $('atlas-splicing-view');
+    if (view) {
+      view.textContent = spliced
+        ? "5'-[Éxon 1: AUG GUG]-[Éxon 2: CAC CUG]-[Éxon 3: GAG UAA]-3' (RNAm maduro)"
+        : "5'-[Éxon 1: AUG GUG]--[Íntron: guaagu...cag]--[Éxon 2: CAC CUG]--[Íntron: guac...ag]--[Éxon 3: GAG UAA]-3'";
+    }
+  };
+  $('atlas-splicing-toggle')?.addEventListener('change', updateSplicing);
+  updateSplicing();
+
+  const codonGrid = $('atlas-codon-quickgrid');
+  if (codonGrid) {
+    [['AUG (Met · Início)', 'TAC'], ['UUU (Phe)', 'AAA'], ['GAG (Glu)', 'CTC'], ['GUG (Val)', 'CAC'], ['UAA (STOP)', 'ATT']].forEach(([lbl, dna]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'shortcut-pill';
+      b.textContent = lbl;
+      b.addEventListener('click', () => {
+        $('wb-dna-input').value = `TAC${dna === 'TAC' ? 'AAAGGG' : dna}`;
+        setMode('workbench');
+        document.querySelector('#beta-lab-switcher [data-lab="molecular"]')?.click();
+        refreshWorkbench();
+      });
+      codonGrid.appendChild(b);
+    });
+  }
+
+  // Modo Desafio Multi-Categoria (Quiz)
+  let quizIdx = 0;
+  let quizScore = 0;
+  let quizTotal = 0;
+  const renderQuiz = () => {
+    const cat = $('beta-quiz-cat')?.value || 'all';
+    const pool = cat === 'all' ? QUIZ_BANK : QUIZ_BANK.filter(q => q.cat === cat);
+    const item = pool[quizIdx % pool.length];
+    if (!item) return;
+    $('eval-case-prompt').textContent = item.q;
+    const optsHost = $('eval-options');
+    optsHost.textContent = '';
+    $('eval-feedback').hidden = true;
+    item.opts.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'eval-opt-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (optsHost.dataset.answered === '1') return;
+        optsHost.dataset.answered = '1';
+        quizTotal++;
+        const ok = i === item.ans;
+        if (ok) quizScore++;
+        btn.classList.add(ok ? 'is-right' : 'is-wrong');
+        $('quiz-score-badge').textContent = `Acertos: ${quizScore} / ${quizTotal}`;
+        $('eval-feedback').hidden = false;
+        $('eval-feedback').textContent = ok ? 'Resposta correta!' : `Incorreto. Resposta esperada: ${item.opts[item.ans]}.`;
+      });
+      optsHost.appendChild(btn);
+    });
+    optsHost.dataset.answered = '0';
+  };
+  $('beta-quiz-cat')?.addEventListener('change', () => { quizIdx = 0; renderQuiz(); });
+  $('beta-quiz-next')?.addEventListener('click', () => { quizIdx++; renderQuiz(); });
+  renderQuiz();
 }
 
 document.addEventListener('DOMContentLoaded', init);
