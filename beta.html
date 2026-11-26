@@ -152,9 +152,19 @@
          ═══════════════════════════════════════════════════════════════ -->
     <section class="beta-view active" id="view-workbench">
       <div class="workbench-grid">
-        <!-- Painel Esquerdo: Referências, Camadas & ORFs -->
+        <!-- Painel Esquerdo: Estúdio, Referências & ORFs -->
         <aside class="wb-rail">
           <div class="beta-card">
+            <div class="card-kicker">Módulos da Bancada</div>
+            <div class="lab-switcher" id="beta-lab-switcher">
+              <button type="button" class="ref-item active" data-lab="molecular">🧬 Síntese &amp; ORFs</button>
+              <button type="button" class="ref-item" data-lab="crispr">✂️ CRISPR-Cas9</button>
+              <button type="button" class="ref-item" data-lab="mendel">🌱 Genética Mendeliana</button>
+              <button type="button" class="ref-item" data-lab="popgen">📊 Populações (HW)</button>
+            </div>
+          </div>
+
+          <div class="beta-card" id="wb-ref-card">
             <div class="card-kicker">Sequências de Referência</div>
             <div class="ref-list" id="wb-ref-list"></div>
             <button type="button" class="beta-btn-secondary full-width" id="wb-open-fasta">
@@ -172,19 +182,18 @@
           </div>
 
           <div class="beta-card">
-            <div class="card-kicker">Laboratórios Clássicos Integrados</div>
-            <p class="muted-text">Acesse os simuladores completos mantendo o contexto:</p>
+            <div class="card-kicker">Outros Setores (Versão Clássica)</div>
+            <p class="muted-text">Heredogramas e Cariótipo ainda abrem na versão clássica:</p>
             <div class="classic-shortcuts">
-              <a href="/#mendel-lab" class="shortcut-pill">Genética Mendeliana</a>
               <a href="/#pedigree-lab" class="shortcut-pill">Heredogramas</a>
-              <a href="/#popgen-lab" class="shortcut-pill">Populações (HW)</a>
               <a href="/#karyotype-lab" class="shortcut-pill">Cariótipo</a>
             </div>
           </div>
         </aside>
 
-        <!-- Painel Central: Editor de Sequência, Fitas e Tradução -->
+        <!-- Painel Central: Sub-módulos da Bancada -->
         <div class="wb-center">
+          <div id="lab-panel-molecular" class="lab-panel">
           <div class="beta-card">
             <div class="wb-header-row">
               <div class="wb-title-group">
@@ -323,7 +332,96 @@
               </div>
             </div>
           </div>
-        </div>
+          </div><!-- /#lab-panel-molecular -->
+
+          <!-- SUB-MÓDULO: CRISPR-Cas9 -->
+          <div id="lab-panel-crispr" class="lab-panel" hidden>
+            <div class="beta-card">
+              <div class="wb-section-head">
+                <h2>Editor Genômico CRISPR-Cas9</h2>
+                <span class="badge mono">PAM: 5'-NGG-3'</span>
+              </div>
+              <p class="muted-text">Analisa a sequência ativa na Bancada Molecular para localizar sítios PAM e simular reparo por NHEJ ou HDR.</p>
+              <div class="crispr-controls">
+                <button type="button" class="beta-btn-primary" id="crispr-scan-btn"><i class="fas fa-crosshairs"></i> Buscar Sítios PAM na Sequência</button>
+                <div class="crispr-repair-mode" data-visible-layers="intermediate advanced">
+                  <label><input type="radio" name="crispr-mode" value="nhej" checked> NHEJ (Indel)</label>
+                  <label><input type="radio" name="crispr-mode" value="hdr"> HDR (Template)</label>
+                </div>
+              </div>
+              <div class="crispr-donor-row" data-visible-layers="intermediate advanced">
+                <input type="text" id="crispr-donor-input" class="wb-dna-input mono" placeholder="Template doador HDR (ex.: GACTCCTCTG)...">
+              </div>
+              <div id="crispr-targets-list" class="orf-list"></div>
+              <div id="crispr-result-box" class="crispr-result-box" hidden>
+                <div class="strand-panel-title">PRÉVIA DA EDIÇÃO</div>
+                <div id="crispr-diff-preview" class="mono"></div>
+                <button type="button" class="beta-btn-primary" id="crispr-apply-btn">Aplicar Edição na Bancada Molecular</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-MÓDULO: GENÉTICA MENDELIANA -->
+          <div id="lab-panel-mendel" class="lab-panel" hidden>
+            <div class="beta-card">
+              <div class="wb-section-head">
+                <h2>Laboratório de Genética Mendeliana</h2>
+                <span class="badge">Quadro de Punnett</span>
+              </div>
+              <div class="mendel-controls">
+                <label>Parental 1:
+                  <select id="mendel-p1">
+                    <option value="AA">AA (Homozigoto Dom.)</option>
+                    <option value="Aa" selected>Aa (Heterozigoto)</option>
+                    <option value="aa">aa (Homozigoto Rec.)</option>
+                  </select>
+                </label>
+                <label>Parental 2:
+                  <select id="mendel-p2">
+                    <option value="AA">AA (Homozigoto Dom.)</option>
+                    <option value="Aa" selected>Aa (Heterozigoto)</option>
+                    <option value="aa">aa (Homozigoto Rec.)</option>
+                  </select>
+                </label>
+                <label data-visible-layers="intermediate advanced">Dominância:
+                  <select id="mendel-dom">
+                    <option value="complete">Completa</option>
+                    <option value="incomplete">Incompleta</option>
+                    <option value="codominance">Codominância</option>
+                  </select>
+                </label>
+              </div>
+              <div id="mendel-punnett-grid" class="punnett-grid"></div>
+              <div id="mendel-summary" class="mendel-summary mono"></div>
+            </div>
+          </div>
+
+          <!-- SUB-MÓDULO: GENÉTICA POPULACIONAL (HARDY-WEINBERG + DERIVA) -->
+          <div id="lab-panel-popgen" class="lab-panel" hidden>
+            <div class="beta-card">
+              <div class="wb-section-head">
+                <h2>Equilíbrio de Hardy-Weinberg &amp; Deriva Genética</h2>
+                <span class="badge mono">p + q = 1</span>
+              </div>
+              <div class="popgen-controls">
+                <label>Frequência p(A): <input type="number" id="hw-p" min="0" max="1" step="0.05" value="0.6"></label>
+                <label data-visible-layers="intermediate advanced">N total: <input type="number" id="hw-n" min="20" max="5000" value="200"></label>
+                <label data-visible-layers="intermediate advanced">Obs AA: <input type="number" id="hw-aa-dom" min="0" value="70"></label>
+                <label data-visible-layers="intermediate advanced">Obs Aa: <input type="number" id="hw-aa-het" min="0" value="95"></label>
+                <label data-visible-layers="intermediate advanced">Obs aa: <input type="number" id="hw-aa-rec" min="0" value="35"></label>
+                <button type="button" class="beta-btn-primary" id="hw-calc-btn">Calcular</button>
+              </div>
+              <div id="hw-results" class="biochem-metrics"></div>
+              <div class="hydropathy-box" data-visible-layers="advanced">
+                <div class="wb-section-head">
+                  <div class="strand-panel-title">SIMULAÇÃO DE DERIVA GENÉTICA (50 GERAÇÕES)</div>
+                  <button type="button" class="beta-btn-secondary" id="hw-drift-btn">Nova Simulação Monte Carlo</button>
+                </div>
+                <div id="hw-drift-chart"></div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /.wb-center -->
 
         <!-- Painel Direito: Inspector Bioquímico & Snapshots -->
         <aside class="wb-inspector">

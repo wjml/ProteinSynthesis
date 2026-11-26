@@ -5,6 +5,7 @@
 
 import { analyzeDna, fetchDiseases, generateRandomCodingDna } from './bio.js';
 import { addRecord, listRecords, getPref, setPref } from './store.js';
+import { findPamTargets, simulateCrisprRepair, computePunnett, computeHardyWeinberg, simulateDrift } from './labs.js';
 
 const LAYER_GUIDES = {
   basic: 'Camada Básica: exibe o fluxo essencial DNA → RNAm → Proteína, ideal para introdução ao código genético.',
@@ -799,6 +800,130 @@ async function init() {
 
   await Promise.all([refreshWorkbench(), renderSnapshots(), renderNotebook()]);
   generateDocenteList();
+
+  // Sub-módulos da Bancada (Molecular, CRISPR, Mendel, PopGen)
+  document.querySelectorAll('#beta-lab-switcher [data-lab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.lab;
+      document.querySelectorAll('#beta-lab-switcher [data-lab]').forEach(b => b.classList.toggle('active', b === btn));
+      ['molecular', 'crispr', 'mendel', 'popgen'].forEach((id) => {
+        const panel = $(`lab-panel-${id}`);
+        if (panel) panel.hidden = id !== target;
+      });
+    });
+  });
+
+  // CRISPR-Cas9
+  let lastCrisprEdited = '';
+  if ($('crispr-scan-btn')) {
+    $('crispr-scan-btn').addEventListener('click', () => {
+      const dna = $('wb-dna-input').value;
+      const listEl = $('crispr-targets-list');
+      listEl.textContent = '';
+      const targets = findPamTargets(dna);
+      if (!targets.length) {
+        listEl.textContent = 'Nenhum sítio PAM (5\'-NGG-3\') encontrado com 20 nt a montante. Tente uma sequência maior ou carregue HBB.';
+        return;
+      }
+      targets.forEach((t, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `orf-item${idx === 0 ? ' active' : ''}`;
+        b.textContent = `PAM #${idx + 1} (nt ${t.index + 1}) · ${t.protospacer.slice(-8)}[${t.pam}] · GC ${t.gc}% · Score ${t.score}%`;
+        b.addEventListener('click', () => {
+          const mode = document.querySelector('input[name="crispr-mode"]:checked')?.value || 'nhej';
+          lastCrisprEdited = simulateCrisprRepair(dna, t.cutPos, mode, $('crispr-donor-input')?.value || '');
+          $('crispr-result-box').hidden = false;
+          $('crispr-diff-preview').textContent = `Original: ${dna}\nEditado:  ${lastCrisprEdited}`;
+        });
+        listEl.appendChild(b);
+      });
+    });
+  }
+  if ($('crispr-apply-btn')) {
+    $('crispr-apply-btn').addEventListener('click', () => {
+      if (!lastCrisprEdited) return;
+      $('wb-dna-input').value = lastCrisprEdited;
+      document.querySelector('#beta-lab-switcher [data-lab="molecular"]')?.click();
+      refreshWorkbench();
+    });
+  }
+
+  // Genética Mendeliana
+  const renderMendel = () => {
+    const p1 = $('mendel-p1')?.value || 'Aa';
+    const p2 = $('mendel-p2')?.value || 'Aa';
+    const dom = $('mendel-dom')?.value || 'complete';
+    const { g1, g2, cells, counts } = computePunnett(p1, p2);
+    const grid = $('mendel-punnett-grid');
+    if (!grid) return;
+    grid.textContent = '';
+    ['×', g2[0], g2[1], g1[0], cells[0], cells[1], g1[1], cells[2], cells[3]].forEach((txt, i) => {
+      const c = document.createElement('div');
+      c.className = `punnett-cell${i < 3 || i === 3 || i === 6 ? ' punnett-head' : ''}`;
+      c.textContent = txt;
+      grid.appendChild(c);
+    });
+    const genoStr = Object.entries(counts).map(([k, v]) => `${k}: ${(v / 4) * 100}%`).join(' | ');
+    const domCount = (counts.AA || 0) + (counts.Aa || 0);
+    const phenoStr = dom === 'complete'
+      ? `Fenótipos: ${(domCount / 4) * 100}% Dominante | ${((counts.aa || 0) / 4) * 100}% Recessivo`
+      : `Fenótipos (${dom}): ${genoStr}`;
+    $('mendel-summary').textContent = `Genótipos → ${genoStr} · ${phenoStr}`;
+  };
+  ['mendel-p1', 'mendel-p2', 'mendel-dom'].forEach(id => $(id)?.addEventListener('change', renderMendel));
+  renderMendel();
+
+  // Genética Populacional (Hardy-Weinberg + Deriva)
+  const renderHw = () => {
+    const p = Number($('hw-p')?.value || 0.6);
+    const n = Number($('hw-n')?.value || 200);
+    const obsAA = Number($('hw-aa-dom')?.value || 70);
+    const obsAa = Number($('hw-aa-het')?.value || 95);
+    const obsaa = Number($('hw-aa-rec')?.value || 35);
+    const res = computeHardyWeinberg(p, n, obsAA, obsAa, obsaa);
+    const box = $('hw-results');
+    if (!box) return;
+    box.textContent = '';
+    [
+      ['Alelo p / q', `${res.p} / ${res.q}`],
+      ['p² / 2pq / q²', `${res.p2} / ${res.pq2} / ${res.q2}`],
+      ['Esperado (N)', `${res.expAA} / ${res.expAa} / ${res.expaa}`],
+      ['Teste χ²', `${res.chi2} (${res.inEquilibrium ? 'Em equilíbrio' : 'Desvio sig.'})`]
+    ].forEach(([k, v]) => {
+      const tile = document.createElement('div');
+      tile.className = 'metric-tile';
+      const s = document.createElement('span');
+      s.textContent = k;
+      const st = document.createElement('strong');
+      st.className = 'mono';
+      st.textContent = v;
+      tile.append(s, st);
+      box.appendChild(tile);
+    });
+  };
+  const renderDrift = () => {
+    const p0 = Number($('hw-p')?.value || 0.6);
+    const n = Number($('hw-n')?.value || 200);
+    const series = simulateDrift(p0, n, 50);
+    const host = $('hw-drift-chart');
+    if (!host) return;
+    host.textContent = '';
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 600 150');
+    const poly = document.createElementNS(svgNS, 'polyline');
+    poly.setAttribute('fill', 'none');
+    poly.setAttribute('stroke', 'var(--accent)');
+    poly.setAttribute('stroke-width', '2.5');
+    poly.setAttribute('points', series.map((v, i) => `${(i / 50) * 580 + 10},${140 - v * 130}`).join(' '));
+    svg.appendChild(poly);
+    host.appendChild(svg);
+  };
+  $('hw-calc-btn')?.addEventListener('click', () => { renderHw(); renderDrift(); });
+  $('hw-drift-btn')?.addEventListener('click', renderDrift);
+  renderHw();
+  renderDrift();
 }
 
 document.addEventListener('DOMContentLoaded', init);
