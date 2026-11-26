@@ -246,9 +246,19 @@
                 </div>
               </div>
 
-              <div class="track-row" data-visible-layers="advanced">
-                <span class="track-label">Alinhamento <small>(WT × Atual)</small></span>
-                <div class="track-diff mono" id="wb-track-diff"></div>
+              <div class="strand-panel" data-visible-layers="advanced">
+                <div class="strand-panel-title">ALINHAMENTO (WILD-TYPE × ATUAL)</div>
+                <div class="duplex-box diff-box">
+                  <div class="strand-ends strand-ends-left mono">
+                    <span class="end-badge end-diff">Δ</span>
+                  </div>
+                  <div class="strand-scroll" id="wb-scroll-diff">
+                    <div class="mrna-grid diff-grid" id="wb-track-diff"></div>
+                  </div>
+                  <div class="strand-ends strand-ends-right mono">
+                    <span class="end-badge end-diff">nt</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

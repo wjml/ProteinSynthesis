@@ -197,11 +197,15 @@ async function refreshWorkbench() {
   if (compareWt && wild) {
     const maxLen = Math.max(wild.dna.length, cur.dna.length);
     for (let i = 0; i < maxLen; i++) {
+      const col = document.createElement('div');
+      const isCodonEnd = (i + 1) % 3 === 0 && i < maxLen - 1;
+      col.className = `bp-col${isCodonEnd ? ' codon-end' : ''}`;
       const span = document.createElement('span');
       const same = wild.dna[i] === cur.dna[i];
       span.className = `nt-chip ${same ? '' : 'nt-mut'}`;
       span.textContent = same ? '·' : (cur.dna[i] || '-');
-      diffEl.appendChild(span);
+      col.appendChild(span);
+      diffEl.appendChild(col);
     }
   } else {
     diffEl.textContent = 'Comparação com Wild-Type desativada.';
@@ -380,8 +384,8 @@ async function init() {
   $('wb-dna-input').addEventListener('input', refreshWorkbench);
   $('wb-compare-wt').addEventListener('change', refreshWorkbench);
 
-  // Scroll horizontal sincronizado entre DNA, RNAm e Proteína
-  const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-protein')].filter(Boolean);
+  // Scroll horizontal sincronizado entre DNA, RNAm, Alinhamento e Proteína
+  const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-diff'), $('wb-scroll-protein')].filter(Boolean);
   let syncingScroll = false;
   scrollEls.forEach((src) => {
     src.addEventListener('scroll', () => {

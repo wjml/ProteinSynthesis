@@ -19,11 +19,11 @@
   --accent-soft: #f0fdfa;
   --accent-border: #99f6e4;
 
-  --base-a: #1878cd;
-  --base-t: #b85d00;
-  --base-c: #37833a;
-  --base-g: #e32c27;
-  --base-u: #8e24aa;
+  --base-a: #2563eb;
+  --base-t: #c27803;
+  --base-c: #15803d;
+  --base-g: #dc2626;
+  --base-u: #7e22ce;
 
   --danger: #dc2626;
   --danger-soft: #fef2f2;
@@ -43,11 +43,11 @@ body.dark-theme {
   --accent-soft: rgba(88, 166, 255, 0.14);
   --accent-border: rgba(88, 166, 255, 0.35);
 
-  --base-a: #58a6ff;
-  --base-t: #e3b341;
-  --base-c: #3fb950;
-  --base-g: #f85149;
-  --base-u: #bc8cff;
+  --base-a: #2f6feb;
+  --base-t: #b07d1e;
+  --base-c: #238636;
+  --base-g: #cf433c;
+  --base-u: #8957e5;
 
   --danger: #f85149;
   --danger-soft: rgba(248, 81, 73, 0.14);
@@ -334,22 +334,44 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 8px 10px;
+  align-items: center;
+  width: 38px;
+  padding: 8px 6px;
   background: var(--surface-alt);
   border-right: 1px solid var(--border);
-  flex: 0 0 auto;
-  font-size: 0.78rem;
+  flex: 0 0 38px;
+  font-size: 0.74rem;
   font-weight: 700;
 }
 .strand-ends-right { border-right: none; border-left: 1px solid var(--border); }
 .end-3 { color: var(--base-c); }
 .end-5 { color: var(--base-a); }
+.end-diff { color: var(--muted); }
 
 .strand-scroll, .protein-scroll {
   flex: 1;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 10px 14px;
+  padding: 8px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+.strand-scroll::-webkit-scrollbar,
+.protein-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+.strand-scroll::-webkit-scrollbar-track,
+.protein-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.strand-scroll::-webkit-scrollbar-thumb,
+.protein-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+}
+.strand-scroll::-webkit-scrollbar-thumb:hover,
+.protein-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.52);
 }
 
 /* Fita de grupo fosfato & ligações fosfodiéster (superior no molde, inferior na complementar/RNAm) */
@@ -366,9 +388,9 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2px;
   background: var(--muted);
-  opacity: 0.55;
+  opacity: 0.45;
   border-radius: 2px;
 }
 body:not([data-layer="basic"]) .duplex-grid::after {
@@ -377,45 +399,46 @@ body:not([data-layer="basic"]) .duplex-grid::after {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2px;
   background: var(--muted);
-  opacity: 0.55;
+  opacity: 0.45;
   border-radius: 2px;
 }
-.mrna-grid::after {
+.mrna-grid:not(.diff-grid)::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2px;
   background: var(--muted);
-  opacity: 0.55;
+  opacity: 0.45;
   border-radius: 2px;
 }
 
-/* Coluna de par de bases (largura fixa para tabulação exata) */
+/* Coluna de par de bases (largura fixa 26px para tabulação exata) */
 .bp-col {
-  width: 32px;
-  margin-right: 4px;
+  width: 26px;
+  margin-right: 3px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 32px;
+  flex: 0 0 26px;
 }
-.bp-col.codon-end { margin-right: 14px; }
+.bp-col.codon-end { margin-right: 11px; }
 
-/* Formas purinas / pirimidinas com encaixe */
+/* Formas purinas / pirimidinas com encaixe suave e maior razão letra/forma */
 .nt-shape {
-  width: 32px;
-  height: 36px;
+  width: 26px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 0.88rem;
-  color: #ffffff;
+  font-size: 0.8rem;
+  line-height: 1;
+  color: #f8fafc;
   position: relative;
   user-select: none;
 }
@@ -427,72 +450,59 @@ body:not([data-layer="basic"]) .duplex-grid::after {
 .nt-shape.bg-U { background: var(--base-u); }
 
 /* Topo (DNA Molde 3'->5'): encaixe apontando para baixo */
-.nt-top.nt-C { clip-path: polygon(0 0, 100% 0, 100% 76%, 50% 100%, 0 76%); padding-bottom: 5px; }
-.nt-top.nt-G { clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); padding-bottom: 5px; }
-.nt-top.nt-A { border-radius: 3px 3px 16px 16px; padding-bottom: 3px; }
+.nt-top.nt-C { clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%); padding-bottom: 3px; }
+.nt-top.nt-G { clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); padding-bottom: 3px; }
+.nt-top.nt-A { border-radius: 3px 3px 13px 13px; padding-bottom: 2px; }
 .nt-top.nt-T {
-  border-radius: 3px 3px 2px 2px;
-  padding-bottom: 5px;
-  -webkit-mask-image: radial-gradient(circle 10px at 50% 106%, transparent 9px, black 9.5px);
-  mask-image: radial-gradient(circle 10px at 50% 106%, transparent 9px, black 9.5px);
+  border-radius: 3px 3px 4px 4px;
+  padding-bottom: 4px;
+  -webkit-mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 100%, transparent 8.5px, black 9.5px);
+  mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 100%, transparent 8.5px, black 9.5px);
 }
 
 /* Base inferior (DNA Complementar / RNAm): encaixe apontando para cima */
-.nt-bottom.nt-C { clip-path: polygon(0 24%, 50% 0, 100% 24%, 100% 100%, 0 100%); padding-top: 5px; }
-.nt-bottom.nt-G { clip-path: polygon(0 0, 50% 24%, 100% 0, 100% 100%, 0 100%); padding-top: 5px; }
-.nt-bottom.nt-A { border-radius: 16px 16px 3px 3px; padding-top: 3px; }
+.nt-bottom.nt-C { clip-path: polygon(0 22%, 50% 0, 100% 22%, 100% 100%, 0 100%); padding-top: 3px; }
+.nt-bottom.nt-G { clip-path: polygon(0 0, 50% 22%, 100% 0, 100% 100%, 0 100%); padding-top: 3px; }
+.nt-bottom.nt-A { border-radius: 13px 13px 3px 3px; padding-top: 2px; }
 .nt-bottom.nt-T,
 .nt-bottom.nt-U {
-  border-radius: 2px 2px 3px 3px;
-  padding-top: 5px;
-  -webkit-mask-image: radial-gradient(circle 10px at 50% -6%, transparent 9px, black 9.5px);
-  mask-image: radial-gradient(circle 10px at 50% -6%, transparent 9px, black 9.5px);
+  border-radius: 4px 4px 3px 3px;
+  padding-top: 4px;
+  -webkit-mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 0%, transparent 8.5px, black 9.5px);
+  mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 0%, transparent 8.5px, black 9.5px);
 }
 
-.nt-shape.nt-mut { filter: brightness(1.18); box-shadow: inset 0 0 0 2px #ffffff; }
+.nt-shape.nt-mut { box-shadow: inset 0 0 0 1.5px #ffffff; filter: saturate(1.25); }
 
 /* Pontes de hidrogênio (2 para A=T, 3 para G≡C) */
 .hbond-dots {
-  height: 14px;
+  height: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2.5px;
 }
 .hbond-dots span {
-  width: 3px;
-  height: 3px;
+  width: 2.5px;
+  height: 2.5px;
   border-radius: 50%;
   background: var(--muted);
-  opacity: 0.7;
+  opacity: 0.65;
 }
-
-.track-row {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.track-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
-.track-label small { display: block; font-weight: 400; }
-.track-diff { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; align-items: center; }
 
 .nt-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 26px;
-  flex: 0 0 32px;
-  border-radius: 6px;
+  width: 26px;
+  height: 22px;
+  flex: 0 0 26px;
+  border-radius: 5px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--muted);
 }
 .nt-chip.nt-mut { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
 
@@ -508,21 +518,22 @@ body:not([data-layer="basic"]) .duplex-grid::after {
 }
 .mutation-badge.is-mut { background: var(--danger-soft); color: var(--danger); }
 
-/* Tabulação exata: 1 códon = 3 bases (32*3 + 4*2 = 104px) + 14px gap */
+/* Tabulação exata: 1 códon = 3 bases (26*3 + 3*2 = 84px) + 11px gap */
+.protein-scroll { padding: 4px 14px 8px; }
 .protein-grid {
   display: inline-flex;
   flex-wrap: nowrap;
-  gap: 14px;
+  gap: 11px;
   min-width: max-content;
 }
 .aa-card {
-  width: 104px;
-  flex: 0 0 104px;
+  width: 84px;
+  flex: 0 0 84px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-top: 3px solid var(--accent);
-  border-radius: 9px;
-  padding: 10px 6px;
+  border-radius: 8px;
+  padding: 8px 4px;
   text-align: center;
 }
 .aa-card.aa-mut { border-color: var(--danger); background: var(--danger-soft); }
