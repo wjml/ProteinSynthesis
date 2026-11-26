@@ -1,11 +1,13 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { analyzeSequence, DISEASE_CATALOG } from './src/api/bioinformatics.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.use(express.json({ limit: '256kb' }));
 
 const port = process.env.PORT || 8080;
 
@@ -23,7 +25,7 @@ app.use((req, res, next) => {
 const SENSITIVE_PATTERNS = ['server.js', 'package.json', 'package-lock.json', '.gitignore', 'auditoria.md', 'AUDITORIA-PROTEIN-SYNTHESIS.md', 'prompts-redesign-protein-synthesis.md'];
 app.use(function (req, res, next) {
   const reqPath = req.path.replace(/^\//, '');
-  if (SENSITIVE_PATTERNS.includes(reqPath) || reqPath.startsWith('audit/') || reqPath.startsWith('.git/') || reqPath.startsWith('node_modules/')) {
+  if (SENSITIVE_PATTERNS.includes(reqPath) || reqPath.startsWith('audit/') || reqPath.startsWith('src/') || reqPath.startsWith('.git/') || reqPath.startsWith('node_modules/')) {
     return res.status(404).end();
   }
   next();
@@ -35,6 +37,31 @@ app.get('/', function (req, res) {
 
 app.get('/index.html', function (req, res) {
    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Modo Beta — nova geração modular e em camadas de visualização
+app.get(['/beta', '/beta.html'], function (req, res) {
+   res.sendFile(path.join(__dirname, 'beta.html'));
+});
+
+// API REST v1 — motor bioinformático e catálogo científico
+app.get('/api/v1/health', function (req, res) {
+  res.json({ ok: true, version: '2.0.0-beta', engine: 'bioinformatics-v1' });
+});
+
+app.get('/api/v1/catalog/diseases', function (req, res) {
+  res.json({ items: DISEASE_CATALOG });
+});
+
+app.post('/api/v1/analyze', function (req, res) {
+  const sequence = req.body && typeof req.body.sequence === 'string' ? req.body.sequence : '';
+  if (!sequence.trim()) {
+    return res.status(400).json({ error: 'Sequência vazia ou inválida.' });
+  }
+  if (sequence.length > 15000) {
+    return res.status(413).json({ error: 'Sequência excede o limite de 15.000 caracteres.' });
+  }
+  return res.json(analyzeSequence(sequence));
 });
 
 // Serve arquivos estáticos (html, css, js, imagens) APÓS rotas e bloqueio
