@@ -247,16 +247,19 @@
               </div>
 
               <div class="strand-panel">
-                <div class="strand-panel-title">RNA MENSAGEIRO (5' → 3')</div>
+                <div class="strand-panel-title-row">
+                  <span class="strand-panel-title" id="wb-rna-title">RNA MENSAGEIRO (5' → 3')</span>
+                  <span class="orf-frame-badge mono" id="wb-tx-dir-badge" data-visible-layers="intermediate advanced">Sentido: 5' → 3' (Direto)</span>
+                </div>
                 <div class="duplex-box mrna-box">
                   <div class="strand-ends strand-ends-left mono">
-                    <span class="end-badge end-5">5'</span>
+                    <span class="end-badge end-5" id="wb-rna-end-left">5'</span>
                   </div>
                   <div class="strand-scroll" id="wb-scroll-rna">
                     <div class="mrna-grid" id="wb-track-rna"></div>
                   </div>
                   <div class="strand-ends strand-ends-right mono">
-                    <span class="end-badge end-3">3'</span>
+                    <span class="end-badge end-3" id="wb-rna-end-right">3'</span>
                   </div>
                 </div>
               </div>
@@ -292,7 +295,7 @@
                 <div class="protein-grid" id="wb-protein-grid"></div>
               </div>
               <div class="strand-ends strand-ends-right mono">
-                <span class="end-badge end-diff">N→C</span>
+                <span class="end-badge end-diff" id="wb-protein-dir">N→C</span>
               </div>
             </div>
 

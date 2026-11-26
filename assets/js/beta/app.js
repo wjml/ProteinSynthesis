@@ -89,7 +89,7 @@ function isCodonBoundary(i, len, orfMeta) {
   const offset = orfMeta.offset || 0;
   if (orfMeta.isReverse) {
     const revIdx = len - 1 - i;
-    return revIdx >= offset && (revIdx - offset + 1) % 3 === 0;
+    return revIdx >= offset && (revIdx - offset) % 3 === 0;
   }
   return i >= offset && (i - offset + 1) % 3 === 0;
 }
@@ -128,20 +128,42 @@ function renderDuplexDna(container, dna, compDna, compareSeq = '', orfMeta = nul
   }
 }
 
-function renderMrnaTrack(container, mrna, orfMeta = null, stopCodons = new Set(['UAA', 'UAG', 'UGA'])) {
+function renderMrnaTrack(container, dna, compDna, mrna, orfMeta = null, stopCodons = new Set(['UAA', 'UAG', 'UGA'])) {
   container.textContent = '';
+  const isRev = Boolean(orfMeta && orfMeta.isReverse);
+  const compToRna = { A: 'U', T: 'A', C: 'G', G: 'C' };
+  const displaySeq = isRev ? compDna.split('').map(b => compToRna[b] || '').join('') : mrna;
   const hasOrf = orfMeta && orfMeta.hasOrf;
   const offset = orfMeta ? (orfMeta.offset || 0) : 0;
-  for (let i = 0; i < mrna.length; i++) {
+
+  for (let i = 0; i < displaySeq.length; i++) {
     const col = document.createElement('div');
-    const isCodonEnd = isCodonBoundary(i, mrna.length, orfMeta);
+    const isCodonEnd = isCodonBoundary(i, displaySeq.length, orfMeta);
     const outOfOrf = hasOrf && (i < orfMeta.fwdStart || i >= orfMeta.fwdEnd);
-    const framePos = (i - offset);
-    const codonStart = framePos >= 0 ? i - (framePos % 3) : -1;
-    const triplet = codonStart >= 0 && codonStart + 2 < mrna.length ? mrna.slice(codonStart, codonStart + 3) : '';
-    const isStop = (!orfMeta || !orfMeta.isReverse) && stopCodons.has(triplet) && !outOfOrf;
+
+    let isStop = false;
+    if (!outOfOrf) {
+      if (!isRev) {
+        const framePos = i - offset;
+        const codonStart = framePos >= 0 ? i - (framePos % 3) : -1;
+        const triplet = codonStart >= 0 && codonStart + 2 < displaySeq.length ? displaySeq.slice(codonStart, codonStart + 3) : '';
+        isStop = stopCodons.has(triplet);
+      } else {
+        const revIdx = displaySeq.length - 1 - i;
+        const framePos = revIdx - offset;
+        if (framePos >= 0) {
+          const revTripletEnd = displaySeq.length - 1 - (revIdx - (framePos % 3));
+          const start = revTripletEnd - 2;
+          if (start >= 0 && revTripletEnd < displaySeq.length) {
+            const triplet = displaySeq.slice(start, revTripletEnd + 1).split('').reverse().join('');
+            isStop = stopCodons.has(triplet);
+          }
+        }
+      }
+    }
+
     col.className = `bp-col has-phosphate-bottom${isCodonEnd ? ' codon-end' : ''}${outOfOrf ? ' out-of-orf' : ''}${isStop ? ' is-stop-col' : ''}`;
-    col.appendChild(makeBaseShape(mrna[i], 'nt-bottom', false));
+    col.appendChild(makeBaseShape(displaySeq[i], 'nt-bottom', false));
     container.appendChild(col);
   }
 }
@@ -370,8 +392,19 @@ async function refreshWorkbench() {
       orfBanner.hidden = true;
     }
   }
+  const isRev = Boolean(orfMeta && orfMeta.isReverse);
+  if ($('wb-rna-title')) {
+    $('wb-rna-title').textContent = isRev ? "RNA MENSAGEIRO — TRANSCRIÇÃO REVERSA (3' ← 5')" : "RNA MENSAGEIRO (5' → 3')";
+  }
+  if ($('wb-tx-dir-badge')) {
+    $('wb-tx-dir-badge').textContent = isRev ? "Transcrição: ← 5' → 3' (Fita Complementar)" : "Transcrição: 5' → 3' → (Fita Molde)";
+  }
+  if ($('wb-rna-end-left')) $('wb-rna-end-left').textContent = isRev ? "3'" : "5'";
+  if ($('wb-rna-end-right')) $('wb-rna-end-right').textContent = isRev ? "5'" : "3'";
+  if ($('wb-protein-dir')) $('wb-protein-dir').textContent = isRev ? 'C←N' : 'N→C';
+
   renderDuplexDna($('wb-duplex-grid'), cur.dna, cur.complementDna, cmpDna, orfMeta);
-  renderMrnaTrack($('wb-track-rna'), cur.mrna, orfMeta);
+  renderMrnaTrack($('wb-track-rna'), cur.dna, cur.complementDna, cur.mrna, orfMeta);
 
   const diffEl = $('wb-track-diff');
   diffEl.textContent = '';
