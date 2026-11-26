@@ -58,20 +58,51 @@ function applyTheme(isDark) {
   setPref('proteinSynthesis.theme', isDark ? 'dark' : 'light');
 }
 
-function renderBaseTrack(container, seq, compareSeq = '') {
+function makeBaseShape(base, posClass, isMut = false) {
+  const el = document.createElement('span');
+  el.className = `nt-shape ${posClass} nt-${base} bg-${base}${isMut ? ' nt-mut' : ''}`;
+  el.textContent = base;
+  return el;
+}
+
+function renderDuplexDna(container, dna, compDna, compareSeq = '') {
   container.textContent = '';
-  for (let i = 0; i < seq.length; i++) {
-    if (i > 0 && i % 3 === 0) {
-      const sep = document.createElement('span');
-      sep.className = 'codon-sep';
-      container.appendChild(sep);
+  for (let i = 0; i < dna.length; i++) {
+    const col = document.createElement('div');
+    const isCodonEnd = (i + 1) % 3 === 0 && i < dna.length - 1;
+    col.className = `bp-col${isCodonEnd ? ' codon-end' : ''}`;
+
+    const bTop = dna[i];
+    const bBot = compDna[i] || '';
+    const isDiff = Boolean(compareSeq && compareSeq[i] && compareSeq[i] !== bTop);
+
+    col.appendChild(makeBaseShape(bTop, 'nt-top', isDiff));
+
+    const hb = document.createElement('div');
+    hb.className = 'hbond-dots';
+    hb.setAttribute('data-visible-layers', 'intermediate advanced');
+    const bondCount = (bTop === 'G' || bTop === 'C') ? 3 : 2;
+    for (let d = 0; d < bondCount; d++) {
+      hb.appendChild(document.createElement('span'));
     }
-    const chip = document.createElement('span');
-    const b = seq[i];
-    const isDiff = compareSeq && compareSeq[i] && compareSeq[i] !== b;
-    chip.className = `nt-chip nt-${b}${isDiff ? ' nt-mut' : ''}`;
-    chip.textContent = b;
-    container.appendChild(chip);
+    col.appendChild(hb);
+
+    const botShape = makeBaseShape(bBot, 'nt-bottom', isDiff);
+    botShape.setAttribute('data-visible-layers', 'intermediate advanced');
+    col.appendChild(botShape);
+
+    container.appendChild(col);
+  }
+}
+
+function renderMrnaTrack(container, mrna) {
+  container.textContent = '';
+  for (let i = 0; i < mrna.length; i++) {
+    const col = document.createElement('div');
+    const isCodonEnd = (i + 1) % 3 === 0 && i < mrna.length - 1;
+    col.className = `bp-col${isCodonEnd ? ' codon-end' : ''}`;
+    col.appendChild(makeBaseShape(mrna[i], 'nt-bottom', false));
+    container.appendChild(col);
   }
 }
 
@@ -158,9 +189,8 @@ async function refreshWorkbench() {
   $('wb-seq-stats').textContent = `${cur.lengthNt} nt · ${cur.biochemistry.lengthAa} aa · GC ${cur.gcPercent}%`;
 
   const cmpDna = compareWt ? state.wildDna : '';
-  renderBaseTrack($('wb-track-dna'), cur.dna, cmpDna);
-  renderBaseTrack($('wb-track-comp'), cur.complementDna);
-  renderBaseTrack($('wb-track-rna'), cur.mrna);
+  renderDuplexDna($('wb-duplex-grid'), cur.dna, cur.complementDna, cmpDna);
+  renderMrnaTrack($('wb-track-rna'), cur.mrna);
 
   const diffEl = $('wb-track-diff');
   diffEl.textContent = '';
@@ -349,6 +379,21 @@ async function init() {
 
   $('wb-dna-input').addEventListener('input', refreshWorkbench);
   $('wb-compare-wt').addEventListener('change', refreshWorkbench);
+
+  // Scroll horizontal sincronizado entre DNA, RNAm e Proteína
+  const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-protein')].filter(Boolean);
+  let syncingScroll = false;
+  scrollEls.forEach((src) => {
+    src.addEventListener('scroll', () => {
+      if (syncingScroll) return;
+      syncingScroll = true;
+      const left = src.scrollLeft;
+      scrollEls.forEach((dst) => {
+        if (dst !== src) dst.scrollLeft = left;
+      });
+      syncingScroll = false;
+    });
+  });
   document.querySelectorAll('.base-insert-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       $('wb-dna-input').value += btn.dataset.base;

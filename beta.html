@@ -212,21 +212,38 @@
               </label>
             </div>
 
-            <!-- Trilha Visual das Fitas -->
+            <!-- Trilha Visual Unificada das Fitas (Tabulação + Scroll Sincronizado) -->
             <div class="tracks-stack">
-              <div class="track-row">
-                <span class="track-label">DNA Molde <small>(3'→5')</small></span>
-                <div class="track-bases mono" id="wb-track-dna"></div>
+              <div class="strand-panel">
+                <div class="strand-panel-title">DNA — FITA MOLDE <span data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></div>
+                <div class="duplex-box">
+                  <div class="strand-ends strand-ends-left mono">
+                    <span class="end-badge end-3">3'</span>
+                    <span class="end-badge end-5" data-visible-layers="intermediate advanced">5'</span>
+                  </div>
+                  <div class="strand-scroll" id="wb-scroll-dna">
+                    <div class="duplex-grid" id="wb-duplex-grid"></div>
+                  </div>
+                  <div class="strand-ends strand-ends-right mono">
+                    <span class="end-badge end-5">5'</span>
+                    <span class="end-badge end-3" data-visible-layers="intermediate advanced">3'</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="track-row" data-visible-layers="intermediate advanced">
-                <span class="track-label">DNA Comp. <small>(5'→3')</small></span>
-                <div class="track-bases mono" id="wb-track-comp"></div>
-              </div>
-
-              <div class="track-row">
-                <span class="track-label">RNAm <small>(5'→3')</small></span>
-                <div class="track-bases mono" id="wb-track-rna"></div>
+              <div class="strand-panel">
+                <div class="strand-panel-title">RNA MENSAGEIRO (5' → 3')</div>
+                <div class="duplex-box mrna-box">
+                  <div class="strand-ends strand-ends-left mono">
+                    <span class="end-badge end-5">5'</span>
+                  </div>
+                  <div class="strand-scroll" id="wb-scroll-rna">
+                    <div class="mrna-grid" id="wb-track-rna"></div>
+                  </div>
+                  <div class="strand-ends strand-ends-right mono">
+                    <span class="end-badge end-3">3'</span>
+                  </div>
+                </div>
               </div>
 
               <div class="track-row" data-visible-layers="advanced">
@@ -242,7 +259,9 @@
               <h2>Cadeia Polipeptídica Sintetizada</h2>
               <span class="mutation-badge" id="wb-mutation-badge">Referência (Wild-Type)</span>
             </div>
-            <div class="protein-grid" id="wb-protein-grid"></div>
+            <div class="protein-scroll" id="wb-scroll-protein">
+              <div class="protein-grid" id="wb-protein-grid"></div>
+            </div>
 
             <div class="hydropathy-box" data-visible-layers="advanced">
               <div class="wb-section-head">

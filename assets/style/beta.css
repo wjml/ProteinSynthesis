@@ -311,7 +311,162 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
 }
 .wt-compare-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted); cursor: pointer; }
 
-.tracks-stack { display: flex; flex-direction: column; gap: 10px; }
+.tracks-stack { display: flex; flex-direction: column; gap: 12px; }
+.strand-panel { display: flex; flex-direction: column; gap: 6px; }
+.strand-panel-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.duplex-box {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.strand-ends {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface-alt);
+  border-right: 1px solid var(--border);
+  flex: 0 0 auto;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.strand-ends-right { border-right: none; border-left: 1px solid var(--border); }
+.end-3 { color: var(--base-c); }
+.end-5 { color: var(--base-a); }
+
+.strand-scroll, .protein-scroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 14px;
+}
+
+/* Fita de grupo fosfato & ligações fosfodiéster (superior no molde, inferior na complementar/RNAm) */
+.duplex-grid, .mrna-grid {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  position: relative;
+  min-width: max-content;
+}
+.duplex-grid::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--muted);
+  opacity: 0.55;
+  border-radius: 2px;
+}
+body:not([data-layer="basic"]) .duplex-grid::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--muted);
+  opacity: 0.55;
+  border-radius: 2px;
+}
+.mrna-grid::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--muted);
+  opacity: 0.55;
+  border-radius: 2px;
+}
+
+/* Coluna de par de bases (largura fixa para tabulação exata) */
+.bp-col {
+  width: 32px;
+  margin-right: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 32px;
+}
+.bp-col.codon-end { margin-right: 14px; }
+
+/* Formas purinas / pirimidinas com encaixe */
+.nt-shape {
+  width: 32px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #ffffff;
+  position: relative;
+  user-select: none;
+}
+
+.nt-shape.bg-A { background: var(--base-a); }
+.nt-shape.bg-T { background: var(--base-t); }
+.nt-shape.bg-C { background: var(--base-c); }
+.nt-shape.bg-G { background: var(--base-g); }
+.nt-shape.bg-U { background: var(--base-u); }
+
+/* Topo (DNA Molde 3'->5'): encaixe apontando para baixo */
+.nt-top.nt-C { clip-path: polygon(0 0, 100% 0, 100% 76%, 50% 100%, 0 76%); padding-bottom: 5px; }
+.nt-top.nt-G { clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); padding-bottom: 5px; }
+.nt-top.nt-A { border-radius: 3px 3px 16px 16px; padding-bottom: 3px; }
+.nt-top.nt-T {
+  border-radius: 3px 3px 2px 2px;
+  padding-bottom: 5px;
+  -webkit-mask-image: radial-gradient(circle 10px at 50% 106%, transparent 9px, black 9.5px);
+  mask-image: radial-gradient(circle 10px at 50% 106%, transparent 9px, black 9.5px);
+}
+
+/* Base inferior (DNA Complementar / RNAm): encaixe apontando para cima */
+.nt-bottom.nt-C { clip-path: polygon(0 24%, 50% 0, 100% 24%, 100% 100%, 0 100%); padding-top: 5px; }
+.nt-bottom.nt-G { clip-path: polygon(0 0, 50% 24%, 100% 0, 100% 100%, 0 100%); padding-top: 5px; }
+.nt-bottom.nt-A { border-radius: 16px 16px 3px 3px; padding-top: 3px; }
+.nt-bottom.nt-T,
+.nt-bottom.nt-U {
+  border-radius: 2px 2px 3px 3px;
+  padding-top: 5px;
+  -webkit-mask-image: radial-gradient(circle 10px at 50% -6%, transparent 9px, black 9.5px);
+  mask-image: radial-gradient(circle 10px at 50% -6%, transparent 9px, black 9.5px);
+}
+
+.nt-shape.nt-mut { filter: brightness(1.18); box-shadow: inset 0 0 0 2px #ffffff; }
+
+/* Pontes de hidrogênio (2 para A=T, 3 para G≡C) */
+.hbond-dots {
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.hbond-dots span {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.7;
+}
+
 .track-row {
   display: grid;
   grid-template-columns: 120px 1fr;
@@ -324,27 +479,22 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
 }
 .track-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
 .track-label small { display: block; font-weight: 400; }
-.track-bases, .track-diff { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.track-diff { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; align-items: center; }
 
 .nt-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 28px;
+  width: 32px;
+  height: 26px;
+  flex: 0 0 32px;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   border: 1px solid var(--border);
   background: var(--surface);
 }
-.nt-A { color: var(--base-a); }
-.nt-T { color: var(--base-t); }
-.nt-C { color: var(--base-c); }
-.nt-G { color: var(--base-g); }
-.nt-U { color: var(--base-u); }
-.nt-mut { outline: 2px solid var(--danger); background: var(--danger-soft); }
-.codon-sep { width: 8px; display: inline-block; }
+.nt-chip.nt-mut { border-color: var(--danger); background: var(--danger-soft); color: var(--danger); }
 
 .wb-section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px; flex-wrap: wrap; }
 .wb-section-head h2, .wb-section-head h3 { margin: 0; font-size: 1.05rem; }
@@ -358,17 +508,21 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
 }
 .mutation-badge.is-mut { background: var(--danger-soft); color: var(--danger); }
 
+/* Tabulação exata: 1 códon = 3 bases (32*3 + 4*2 = 104px) + 14px gap */
 .protein-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-  gap: 10px;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 14px;
+  min-width: max-content;
 }
 .aa-card {
+  width: 104px;
+  flex: 0 0 104px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-top: 3px solid var(--accent);
   border-radius: 9px;
-  padding: 10px;
+  padding: 10px 6px;
   text-align: center;
 }
 .aa-card.aa-mut { border-color: var(--danger); background: var(--danger-soft); }
