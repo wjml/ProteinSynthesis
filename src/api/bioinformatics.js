@@ -155,7 +155,7 @@ export function findSixFrameOrfs(dna) {
   const revRna = transcribeTemplate(revDna);
   const frames = [];
 
-  const scan = (rna, strandLabel, sign) => {
+  const scan = (rna, strandLabel, sign, isReverse) => {
     for (let offset = 0; offset < 3; offset++) {
       let bestOrf = null;
       for (let i = offset; i + 2 < rna.length; i += 3) {
@@ -164,22 +164,36 @@ export function findSixFrameOrfs(dna) {
           const hasStop = codons.some(c => c.abbr === 'STOP');
           const lengthAa = protein.length;
           if (!bestOrf || lengthAa > bestOrf.lengthAa) {
-            bestOrf = { startNt: i + 1, lengthAa, hasStop, preview: protein.map(p => p.aa).join('') };
+            const ntLen = lengthAa * 3 + (hasStop ? 3 : 0);
+            const fwdStart = isReverse ? Math.max(0, dna.length - (i + ntLen)) : i;
+            const fwdEnd = isReverse ? dna.length - i : i + ntLen;
+            bestOrf = {
+              startNt: i + 1,
+              fwdStart,
+              fwdEnd,
+              lengthAa,
+              hasStop,
+              mrna: rna.slice(i, i + ntLen),
+              protein,
+              preview: protein.map(p => p.aa).join('')
+            };
           }
           break;
         }
       }
       frames.push({
         frame: `${sign}${offset + 1}`,
+        offset,
+        isReverse,
         strand: strandLabel,
         hasOrf: Boolean(bestOrf),
-        ...(bestOrf || { startNt: null, lengthAa: 0, hasStop: false, preview: '' })
+        ...(bestOrf || { startNt: null, fwdStart: 0, fwdEnd: 0, lengthAa: 0, hasStop: false, mrna: '', protein: [], preview: '' })
       });
     }
   };
 
-  scan(fwdRna, "Fita Molde (3'→5')", '+');
-  scan(revRna, "Fita Reversa", '-');
+  scan(fwdRna, "Fita Molde (3'→5')", '+', false);
+  scan(revRna, "Fita Reversa (5'→3' ←)", '-', true);
   return frames;
 }
 

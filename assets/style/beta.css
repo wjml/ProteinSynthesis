@@ -282,7 +282,12 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
 .shortcut-pill:hover { border-color: var(--accent); color: var(--accent); }
 
 .wb-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-.wb-title { font-size: 1.2rem; margin: 0; }
+.wb-title { font-size: 1.2rem; margin: 0; cursor: text; border-bottom: 1px dashed transparent; display: inline-block; }
+.wb-title:hover { border-bottom-color: var(--muted); }
+.wb-title-input { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 700; background: var(--bg); color: var(--fg); border: 1px solid var(--accent); border-radius: 6px; padding: 2px 8px; width: 320px; max-width: 100%; }
+.strand-panel-title-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.orf-frame-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+.aa-mut-detail { font-size: 0.7rem; font-weight: 600; color: var(--danger); margin-top: 3px; }
 .wb-stats { font-size: 0.82rem; color: var(--accent); font-weight: 600; }
 .wb-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 
@@ -553,7 +558,7 @@ body:not([data-layer="basic"]) .bp-col.has-phosphate-bottom::after,
 .nt-shape.nt-mut { filter: brightness(1.08); }
 .hydro-legend { display: flex; align-items: center; gap: 12px; font-size: 0.76rem; }
 .legend-cur { color: var(--accent); font-weight: 700; }
-.legend-wt { color: var(--muted); font-weight: 600; }
+.legend-wt { color: var(--base-t); font-weight: 700; }
 
 /* Pontes de hidrogênio (2 para A=T, 3 para G≡C) */
 .hbond-dots {

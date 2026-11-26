@@ -116,6 +116,42 @@ function analyzeLocal(rawInput) {
   const mwDa = Number((protein.reduce((a, r) => a + r.mw, 0) - (protein.length > 1 ? (protein.length - 1) * 18.015 : 0)).toFixed(2));
   const gravy = protein.length ? Number((protein.reduce((a, r) => a + r.kd, 0) / protein.length).toFixed(2)) : 0;
 
+  const revComp = complementDna.split('').reverse().join('');
+  const revMrna = revComp.split('').map(b => rnaMap[b] || '').join('');
+  const orfs = [];
+  const scanOrfs = (seqRna, strandLabel, sign, isReverse) => {
+    for (let offset = 0; offset < 3; offset++) {
+      let best = null;
+      for (let i = offset; i + 2 < seqRna.length; i += 3) {
+        if (seqRna.slice(i, i + 3) === 'AUG') {
+          const p = [];
+          let hasStop = false;
+          for (let j = i; j + 2 < seqRna.length; j += 3) {
+            const info = CODONS[seqRna.slice(j, j + 3)];
+            if (!info) continue;
+            if (info.abbr === 'STOP') { hasStop = true; break; }
+            p.push({ codon: seqRna.slice(j, j + 3), ...info, position: p.length + 1 });
+          }
+          const ntLen = p.length * 3 + (hasStop ? 3 : 0);
+          const fwdStart = isReverse ? Math.max(0, dna.length - (i + ntLen)) : i;
+          const fwdEnd = isReverse ? dna.length - i : i + ntLen;
+          best = { startNt: i + 1, fwdStart, fwdEnd, lengthAa: p.length, hasStop, mrna: seqRna.slice(i, i + ntLen), protein: p, preview: p.map(x => x.aa).join('') };
+          break;
+        }
+      }
+      orfs.push({
+        frame: `${sign}${offset + 1}`,
+        offset,
+        isReverse,
+        strand: strandLabel,
+        hasOrf: Boolean(best),
+        ...(best || { startNt: null, fwdStart: 0, fwdEnd: 0, lengthAa: 0, hasStop: false, mrna: '', protein: [], preview: '' })
+      });
+    }
+  };
+  scanOrfs(mrna, "Fita Molde (3'→5')", '+', false);
+  scanOrfs(revMrna, "Fita Reversa (5'→3' ←)", '-', true);
+
   return {
     header: 'Análise Local (Offline)',
     dna,
@@ -133,9 +169,7 @@ function analyzeLocal(rawInput) {
       gravy,
       hydropathyProfile: protein.map(r => ({ pos: r.position, abbr: r.abbr, kd: r.kd }))
     },
-    orfs: [
-      { frame: '+1', strand: "Fita Molde (3'→5')", hasOrf: mrna.includes('AUG'), startNt: 1, lengthAa: protein.length }
-    ]
+    orfs
   };
 }
 
