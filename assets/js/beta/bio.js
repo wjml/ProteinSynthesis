@@ -16,17 +16,17 @@ export const FALLBACK_DISEASES = [
     id: 'thalassemia',
     gene: 'HBB',
     title: 'Beta-Talassemia (Stop Prematuro)',
-    variant: 'c.118C>T (p.Gln39*)',
-    wildDna: 'TACGTGCACCTGACTCCTGAG',
-    mutDna: 'TACGTGCACCTGACTATTAG'
+    variant: 'c.16G>T (p.Gly6*)',
+    wildDna: 'TACCACGTGGACTGAGGACTCCTC',
+    mutDna: 'TACCACGTGGACTGAATCCTCCTC'
   },
   {
     id: 'cftr',
     gene: 'CFTR',
     title: 'Fibrose Cística (ΔF508)',
     variant: 'c.1521_1523delCTT',
-    wildDna: 'TACAAAGAAAATATCATT',
-    mutDna: 'TACAAAGAAAATATT'
+    wildDna: 'TACTAGTAGAAACCACAA',
+    mutDna: 'TACTAGTAGCCACAA'
   }
 ];
 

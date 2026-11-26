@@ -15,7 +15,7 @@ const LAYER_GUIDES = {
 const state = {
   diseases: [],
   activeRef: null,
-  wildDna: 'TACGTGCACCTGACTCCTCTGGAG',
+  wildDna: '',
   currentAnalysis: null,
   wildAnalysis: null
 };
@@ -201,8 +201,33 @@ function classifyMutation(wild, cur) {
 
 async function refreshWorkbench() {
   const input = $('wb-dna-input');
-  const compareWt = $('wb-compare-wt')?.checked;
+  const compareWt = $('wb-compare-wt')?.checked && Boolean(state.wildDna);
   const raw = input.value;
+  const cleaned = raw.toUpperCase().replace(/[^ATCGU]/g, '');
+
+  if (!cleaned) {
+    state.currentAnalysis = null;
+    state.wildAnalysis = null;
+    $('wb-seq-header').textContent = 'Nenhuma sequência inserida';
+    $('wb-seq-stats').textContent = '0 nt · 0 aa · GC 0%';
+    $('wb-duplex-grid').innerHTML = '<span class="empty-track-msg">Digite bases A, T, C, G acima ou escolha uma sequência de referência ao lado.</span>';
+    $('wb-track-rna').innerHTML = '<span class="empty-track-msg">Aguardando sequência de DNA molde…</span>';
+    $('wb-track-diff').innerHTML = '<span class="empty-track-msg">—</span>';
+    $('wb-protein-grid').innerHTML = '<span class="empty-track-msg">Nenhum aminoácido traduzido.</span>';
+    $('wb-hydropathy-chart').textContent = 'Insira ao menos 1 códon traduzível para visualizar o perfil.';
+    $('wb-orf-list').textContent = '';
+    const orfPrev = $('wb-orf-preview');
+    if (orfPrev) orfPrev.hidden = true;
+    const badge = $('wb-mutation-badge');
+    badge.textContent = 'Aguardando sequência';
+    badge.classList.remove('is-mut');
+    ['ins-length', 'ins-gc', 'ins-mw', 'ins-pi', 'ins-charge', 'ins-gravy'].forEach((id) => {
+      const el = $(id);
+      if (el) el.textContent = '—';
+    });
+    return;
+  }
+
   const [cur, wild] = await Promise.all([
     analyzeDna(raw),
     compareWt ? analyzeDna(state.wildDna) : Promise.resolve(null)
@@ -254,11 +279,18 @@ async function refreshWorkbench() {
     abbr.textContent = `${aa.position} · ${aa.abbr}`;
     const name = document.createElement('div');
     name.className = 'aa-card-name';
-    name.textContent = changed ? `${wAa.abbr} → ${aa.name}` : aa.name;
+    name.textContent = aa.name;
+    card.append(abbr, name);
+    if (changed) {
+      const diffNote = document.createElement('div');
+      diffNote.className = 'aa-mut-diff mono';
+      diffNote.textContent = `WT: ${wAa.abbr} → ${aa.abbr}`;
+      card.appendChild(diffNote);
+    }
     const type = document.createElement('span');
     type.className = 'aa-card-type';
     type.textContent = aa.type;
-    card.append(abbr, name, type);
+    card.appendChild(type);
     pGrid.appendChild(card);
   });
 
@@ -273,16 +305,29 @@ async function refreshWorkbench() {
   renderHydropathyChart(cur.biochemistry.hydropathyProfile);
 
   const orfList = $('wb-orf-list');
+  const orfPrev = $('wb-orf-preview');
   orfList.textContent = '';
-  (cur.orfs || []).forEach((orf) => {
-    const row = document.createElement('div');
-    row.className = 'orf-item';
+  if (orfPrev) orfPrev.hidden = true;
+  (cur.orfs || []).forEach((orf, idx) => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = `orf-item${orf.hasOrf && idx === 0 ? ' active' : ''}`;
     const left = document.createElement('span');
-    left.textContent = `${orf.frame} (${orf.strand})`;
+    left.textContent = `${orf.frame} · ${orf.strand}`;
     const right = document.createElement('span');
     right.className = 'mono';
-    right.textContent = orf.hasOrf ? `${orf.lengthAa} aa` : '—';
+    right.textContent = orf.hasOrf ? `${orf.lengthAa} aa (nt ${orf.startNt})` : 'Sem AUG';
     row.append(left, right);
+    row.addEventListener('click', () => {
+      orfList.querySelectorAll('.orf-item').forEach(el => el.classList.remove('active'));
+      row.classList.add('active');
+      if (orfPrev) {
+        orfPrev.hidden = false;
+        orfPrev.textContent = orf.hasOrf
+          ? `Quadro ${orf.frame}: início nt ${orf.startNt} | ${orf.lengthAa} aa | ${orf.hasStop ? 'Stop encontrado' : 'ORF aberto'} | Peptídeo: ${orf.preview}`
+          : `Quadro ${orf.frame}: nenhum códon de iniciação (AUG) encontrado nesta leitura.`;
+      }
+    });
     orfList.appendChild(row);
   });
 }
@@ -386,10 +431,10 @@ async function init() {
 
   state.diseases = await fetchDiseases();
   const refList = $('wb-ref-list');
-  state.diseases.forEach((d, idx) => {
+  state.diseases.forEach((d) => {
     const btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = `ref-item${idx === 0 ? ' active' : ''}`;
+    btn.className = 'ref-item';
     btn.textContent = `${d.gene} · ${d.title}`;
     btn.addEventListener('click', () => {
       refList.querySelectorAll('.ref-item').forEach(el => el.classList.remove('active'));
@@ -397,24 +442,25 @@ async function init() {
       state.activeRef = d;
       state.wildDna = d.wildDna;
       $('wb-dna-input').value = d.mutDna;
+      if ($('wb-compare-wt')) $('wb-compare-wt').checked = true;
       refreshWorkbench();
     });
     refList.appendChild(btn);
   });
-  if (state.diseases[0]) {
-    state.activeRef = state.diseases[0];
-    state.wildDna = state.diseases[0].wildDna;
-    $('wb-dna-input').value = state.diseases[0].mutDna;
-  }
 
   $('wb-dna-input').addEventListener('input', refreshWorkbench);
   $('wb-compare-wt').addEventListener('change', refreshWorkbench);
 
-  // Scroll horizontal sincronizado entre DNA, RNAm, Alinhamento, Proteína e Hidropatia
+  // Scroll horizontal sincronizado com barra visível apenas no último campo rolado/em foco
   const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-diff'), $('wb-scroll-protein'), $('wb-scroll-hydro')].filter(Boolean);
   let syncingScroll = false;
+  const setActiveScroller = (activeEl) => {
+    scrollEls.forEach(el => el.classList.toggle('scroll-active', el === activeEl));
+  };
   scrollEls.forEach((src) => {
+    src.addEventListener('mouseenter', () => setActiveScroller(src));
     src.addEventListener('scroll', () => {
+      setActiveScroller(src);
       if (syncingScroll) return;
       syncingScroll = true;
       const left = src.scrollLeft;

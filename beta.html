@@ -164,7 +164,11 @@
 
           <div class="beta-card" data-visible-layers="advanced">
             <div class="card-kicker">Quadros de Leitura (6 ORFs)</div>
+            <p class="muted-text orf-help">
+              ORF (<em>Open Reading Frame</em>): trecho contínuo entre códon de início (<strong>AUG</strong>) e parada (<strong>UAA/UAG/UGA</strong>). Clique para inspecionar:
+            </p>
             <div id="wb-orf-list" class="orf-list"></div>
+            <div id="wb-orf-preview" class="orf-preview mono" hidden></div>
           </div>
 
           <div class="beta-card">
@@ -204,8 +208,8 @@
             <div class="wb-input-row">
               <label for="wb-dna-input" class="sr-only">Sequência de DNA Molde (3' para 5')</label>
               <input type="text" id="wb-dna-input" class="mono wb-dna-input"
-                value="TACCACGTGGACTGAGGACACCTC"
-                placeholder="Digite ou cole bases A, T, C, G (ex.: TACAAAGGGTTT)...">
+                value=""
+                placeholder="Digite ou cole bases A, T, C, G (ou selecione uma referência ao lado)...">
               <label class="wt-compare-toggle" data-visible-layers="intermediate advanced">
                 <input type="checkbox" id="wb-compare-wt" checked>
                 <span>Comparar com Wild-Type</span>
@@ -266,8 +270,8 @@
           <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle (alinhados aos códons) -->
           <div class="beta-card">
             <div class="wb-section-head">
-              <h2>Cadeia Polipeptídica Sintetizada</h2>
-              <span class="mutation-badge" id="wb-mutation-badge">Referência (Wild-Type)</span>
+              <div class="strand-panel-title">CADEIA POLIPEPTÍDICA SINTETIZADA</div>
+              <span class="mutation-badge" id="wb-mutation-badge">Aguardando sequência</span>
             </div>
             <div class="duplex-box protein-box">
               <div class="strand-ends strand-ends-left mono">
@@ -283,7 +287,7 @@
 
             <div class="hydropathy-box" data-visible-layers="advanced">
               <div class="wb-section-head">
-                <h3>Perfil de Hidropatia (Kyte-Doolittle)</h3>
+                <div class="strand-panel-title">PERFIL DE HIDROPATIA (KYTE-DOOLITTLE)</div>
                 <span class="mono muted-text" id="wb-gravy-badge">GRAVY: 0.00</span>
               </div>
               <div class="duplex-box hydro-box">

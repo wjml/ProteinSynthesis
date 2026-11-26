@@ -86,11 +86,11 @@ export const DISEASE_CATALOG = [
     id: 'thalassemia',
     gene: 'HBB',
     title: 'Beta-Talassemia (Stop Prematuro)',
-    variant: 'c.118C>T (p.Gln39*)',
+    variant: 'c.16G>T (p.Gly6*)',
     inheritance: 'Autossômica Recessiva',
-    wildDna: 'TACGTGCACCTGACTCCTGAG',
-    mutDna: 'TACGTGCACCTGACTATTAG',
-    summary: 'Mutação nonsense converte um códon codificante em códon de parada prematuro (UAA/UAG), truncando a síntese da cadeia beta-globina.'
+    wildDna: 'TACCACGTGGACTGAGGACTCCTC',
+    mutDna: 'TACCACGTGGACTGAATCCTCCTC',
+    summary: 'Mutação nonsense converte um códon codificante em códon de parada prematuro (UAG), truncando a síntese da cadeia beta-globina.'
   },
   {
     id: 'cftr',
@@ -98,9 +98,9 @@ export const DISEASE_CATALOG = [
     title: 'Fibrose Cística (ΔF508)',
     variant: 'c.1521_1523delCTT (p.Phe508del)',
     inheritance: 'Autossômica Recessiva',
-    wildDna: 'TACAAAGAAAATATCATT',
-    mutDna: 'TACAAAGAAAATATT',
-    summary: 'Deleção in-frame de 3 nucleotídeos remove a Fenilalanina na posição 508 do canal de cloreto CFTR, prejudicando seu dobramento no retículo endoplasmático.'
+    wildDna: 'TACTAGTAGAAACCACAA',
+    mutDna: 'TACTAGTAGCCACAA',
+    summary: 'Deleção in-frame de 3 nucleotídeos remove a Fenilalanina (UUU) na posição 508 do canal de cloreto CFTR.'
   }
 ];
 

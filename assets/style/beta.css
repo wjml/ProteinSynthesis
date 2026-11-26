@@ -262,7 +262,11 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
   align-items: center;
   gap: 6px;
 }
-.ref-item.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.ref-item.active, .orf-item.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.orf-help { font-size: 0.78rem; margin-bottom: 8px; }
+.orf-preview { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); font-size: 0.75rem; line-height: 1.5; word-break: break-word; }
+.empty-track-msg { font-size: 0.82rem; color: var(--muted); padding: 6px 2px; }
+.aa-mut-diff { display: inline-block; margin-top: 4px; font-size: 0.68rem; font-weight: 700; color: var(--danger); }
 
 .classic-shortcuts { display: flex; flex-wrap: wrap; gap: 6px; }
 .shortcut-pill {
@@ -353,34 +357,52 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
   overflow-x: auto;
   overflow-y: hidden;
   padding: 8px 14px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  scrollbar-width: none;
 }
 .strand-scroll::-webkit-scrollbar,
 .protein-scroll::-webkit-scrollbar {
+  height: 0;
+}
+.strand-scroll.scroll-active,
+.protein-scroll.scroll-active {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
+}
+.strand-scroll.scroll-active::-webkit-scrollbar,
+.protein-scroll.scroll-active::-webkit-scrollbar {
   height: 5px;
 }
-.strand-scroll::-webkit-scrollbar-track,
-.protein-scroll::-webkit-scrollbar-track {
+.strand-scroll.scroll-active::-webkit-scrollbar-track,
+.protein-scroll.scroll-active::-webkit-scrollbar-track {
   background: transparent;
 }
-.strand-scroll::-webkit-scrollbar-thumb,
-.protein-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.28);
+.strand-scroll.scroll-active::-webkit-scrollbar-thumb,
+.protein-scroll.scroll-active::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.42);
   border-radius: 999px;
 }
-.strand-scroll::-webkit-scrollbar-thumb:hover,
-.protein-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.52);
-}
 
-/* Fita de grupo fosfato & ligações fosfodiéster (superior no molde, inferior na complementar/RNAm) */
-.duplex-grid, .mrna-grid {
+/* Fita de grupo fosfato & ligações fosfodiéster (esferas de fosfato + haste fosfodiéster) */
+.duplex-grid {
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: stretch;
   position: relative;
   min-width: max-content;
+  padding-top: 10px;
+}
+body:not([data-layer="basic"]) .duplex-grid {
+  padding-bottom: 10px;
+}
+.mrna-grid {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  position: relative;
+  min-width: max-content;
+}
+.mrna-grid:not(.diff-grid) {
+  padding-bottom: 10px;
 }
 .duplex-grid::before {
   content: "";
@@ -388,10 +410,11 @@ body.dark-theme .beta-btn-primary { color: #0d1117; }
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--muted);
-  opacity: 0.45;
-  border-radius: 2px;
+  height: 8px;
+  background:
+    radial-gradient(circle, var(--accent) 3px, transparent 3.6px) 13px 50% / 29px 8px repeat-x,
+    linear-gradient(var(--muted), var(--muted)) 0 50% / 100% 3.5px no-repeat;
+  opacity: 0.78;
 }
 body:not([data-layer="basic"]) .duplex-grid::after {
   content: "";
@@ -399,10 +422,11 @@ body:not([data-layer="basic"]) .duplex-grid::after {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--muted);
-  opacity: 0.45;
-  border-radius: 2px;
+  height: 8px;
+  background:
+    radial-gradient(circle, var(--accent) 3px, transparent 3.6px) 13px 50% / 29px 8px repeat-x,
+    linear-gradient(var(--muted), var(--muted)) 0 50% / 100% 3.5px no-repeat;
+  opacity: 0.78;
 }
 .mrna-grid:not(.diff-grid)::after {
   content: "";
@@ -410,10 +434,11 @@ body:not([data-layer="basic"]) .duplex-grid::after {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: var(--muted);
-  opacity: 0.45;
-  border-radius: 2px;
+  height: 8px;
+  background:
+    radial-gradient(circle, var(--accent) 3px, transparent 3.6px) 13px 50% / 29px 8px repeat-x,
+    linear-gradient(var(--muted), var(--muted)) 0 50% / 100% 3.5px no-repeat;
+  opacity: 0.78;
 }
 
 /* Coluna de par de bases (largura fixa 26px para tabulação exata) */
@@ -427,16 +452,16 @@ body:not([data-layer="basic"]) .duplex-grid::after {
 }
 .bp-col.codon-end { margin-right: 11px; }
 
-/* Formas purinas / pirimidinas com encaixe suave e maior razão letra/forma */
+/* Formas purinas / pirimidinas com encaixe simétrico e maior razão letra/forma */
 .nt-shape {
   width: 26px;
-  height: 28px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   line-height: 1;
   color: #f8fafc;
   position: relative;
@@ -450,26 +475,26 @@ body:not([data-layer="basic"]) .duplex-grid::after {
 .nt-shape.bg-U { background: var(--base-u); }
 
 /* Topo (DNA Molde 3'->5'): encaixe apontando para baixo */
-.nt-top.nt-C { clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%); padding-bottom: 3px; }
-.nt-top.nt-G { clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); padding-bottom: 3px; }
-.nt-top.nt-A { border-radius: 3px 3px 13px 13px; padding-bottom: 2px; }
+.nt-top.nt-C { clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%); padding-bottom: 4px; }
+.nt-top.nt-G { clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); padding-bottom: 4px; }
+.nt-top.nt-A { border-radius: 3px 3px 13px 13px; padding-bottom: 3px; }
 .nt-top.nt-T {
   border-radius: 3px 3px 4px 4px;
-  padding-bottom: 4px;
-  -webkit-mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 100%, transparent 8.5px, black 9.5px);
-  mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 100%, transparent 8.5px, black 9.5px);
+  padding-bottom: 6px;
+  -webkit-mask-image: radial-gradient(ellipse 13px 10.5px at 50% 100%, transparent 12.2px, black 13px);
+  mask-image: radial-gradient(ellipse 13px 10.5px at 50% 100%, transparent 12.2px, black 13px);
 }
 
 /* Base inferior (DNA Complementar / RNAm): encaixe apontando para cima */
-.nt-bottom.nt-C { clip-path: polygon(0 22%, 50% 0, 100% 22%, 100% 100%, 0 100%); padding-top: 3px; }
-.nt-bottom.nt-G { clip-path: polygon(0 0, 50% 22%, 100% 0, 100% 100%, 0 100%); padding-top: 3px; }
-.nt-bottom.nt-A { border-radius: 13px 13px 3px 3px; padding-top: 2px; }
+.nt-bottom.nt-C { clip-path: polygon(0 22%, 50% 0, 100% 22%, 100% 100%, 0 100%); padding-top: 4px; }
+.nt-bottom.nt-G { clip-path: polygon(0 0, 50% 22%, 100% 0, 100% 100%, 0 100%); padding-top: 4px; }
+.nt-bottom.nt-A { border-radius: 13px 13px 3px 3px; padding-top: 3px; }
 .nt-bottom.nt-T,
 .nt-bottom.nt-U {
   border-radius: 4px 4px 3px 3px;
-  padding-top: 4px;
-  -webkit-mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 0%, transparent 8.5px, black 9.5px);
-  mask-image: radial-gradient(ellipse 9.5px 7.5px at 50% 0%, transparent 8.5px, black 9.5px);
+  padding-top: 6px;
+  -webkit-mask-image: radial-gradient(ellipse 13px 10.5px at 50% 0%, transparent 12.2px, black 13px);
+  mask-image: radial-gradient(ellipse 13px 10.5px at 50% 0%, transparent 12.2px, black 13px);
 }
 
 .nt-shape.nt-mut { box-shadow: inset 0 0 0 1.5px #ffffff; filter: saturate(1.25); }
