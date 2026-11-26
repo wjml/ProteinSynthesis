@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -25,7 +26,7 @@
     <meta name="twitter:image" content="assets/images/Logo.svg">
 
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/images/icon-beta.png" type="image">
+    <link rel="icon" href="assets/images/icon-beta.png" type="image/png">
 
     <!-- Preconnect + link direto no HTML em vez de @import no CSS: o navegador
          descobre e começa a resolver DNS/TLS para fonts.gstatic.com em paralelo
@@ -47,104 +48,106 @@
 
 <body>
     <a href="#visible-page" class="skip-link">Pular para o conteúdo</a>
-    <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
     <div class="main">
-        <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-expanded="false"
-            aria-controls="app-sidebar-nav" aria-label="Abrir menu de navegação">
-            <i class="fas fa-bars"></i>
-        </button>
+        <header aria-label="Menu móvel">
+            <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-expanded="false"
+                aria-controls="app-sidebar-nav" aria-label="Abrir menu de navegação">
+                <i class="fas fa-bars"></i>
+            </button>
+        </header>
         <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
-        <nav id="app-sidebar-nav">
+        <nav id="app-sidebar-nav" aria-label="Menu de navegação principal">
             <div id="logo">
                 <img src="assets/images/Logo.svg" alt="Logo Protein Synthesis">
             </div>
-            <ul class="sidebar">
-                <li class="button collapsible-toggle" id="classical-genetics-toggle"
+            <div class="sidebar">
+                <div class="button collapsible-toggle" id="classical-genetics-toggle"
                     data-collapsible="classical-genetics-collapsible" role="button" tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-sitemap"></i>Genética Clássica</span>
                     </div>
-                </li>
-                <ul class="collapsible" id="classical-genetics-collapsible">
-                    <li class="button" id="mendel-theory" role="button" tabindex="0">
+                </div>
+                <div class="collapsible" id="classical-genetics-collapsible">
+                    <div class="button" id="mendel-theory" role="button" tabindex="0">
                         <i class="fas fa-seedling"></i> Genética Mendeliana
-                    </li>
-                    <li class="button" id="pedigree-theory" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="pedigree-theory" role="button" tabindex="0">
                         <i class="fas fa-users"></i> Heredogramas
-                    </li>
-                    <li class="button" id="popgen-theory" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="popgen-theory" role="button" tabindex="0">
                         <i class="fas fa-chart-pie"></i> Genética Populacional
-                    </li>
-                    <li class="button" id="karyotype-theory" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="karyotype-theory" role="button" tabindex="0">
                         <i class="fas fa-th"></i> Cariótipo
-                    </li>
-                </ul>
+                    </div>
+                </div>
 
-                <li class="button collapsible-toggle" id="molecular-genetics-toggle"
+                <div class="button collapsible-toggle" id="molecular-genetics-toggle"
                     data-collapsible="molecular-genetics-collapsible" role="button" tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-atom"></i>Genética Molecular</span>
                     </div>
-                </li>
-                <ul class="collapsible" id="molecular-genetics-collapsible">
-                    <li class="button" id="dna" role="button" tabindex="0">
+                </div>
+                <div class="collapsible" id="molecular-genetics-collapsible">
+                    <div class="button" id="dna" role="button" tabindex="0">
                         <i class="fas fa-dna"></i> DNA
-                    </li>
-                    <li class="button" id="rna" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="rna" role="button" tabindex="0">
                         <i class="fas fa-code-branch"></i> RNA
-                    </li>
-                    <li class="button" id="aminoacids" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="aminoacids" role="button" tabindex="0">
                         <i class="fas fa-cubes"></i> Proteínas
-                    </li>
-                    <li class="button" id="diseases" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="diseases" role="button" tabindex="0">
                         <i class="fas fa-universal-access"></i> Doenças Genéticas
-                    </li>
-                </ul>
+                    </div>
+                </div>
 
-                <li class="button collapsible-toggle" id="lab-toggle" data-collapsible="lab-collapsible" role="button"
+                <div class="button collapsible-toggle" id="lab-toggle" data-collapsible="lab-collapsible" role="button"
                     tabindex="0">
                     <div class="menu-label-group">
                         <span class="main-label"><i class="fas fa-flask"></i>Simuladores</span>
                         <span class="sub-label">Laboratório Virtual</span>
                     </div>
-                </li>
-                <ul class="collapsible" id="lab-collapsible">
-                    <li class="button" id="app" role="button" tabindex="0">
+                </div>
+                <div class="collapsible" id="lab-collapsible">
+                    <div class="button" id="app" role="button" tabindex="0">
                         <i class="fas fa-vial"></i> Genética Molecular
-                    </li>
-                    <li class="button" id="mendel-lab" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="mendel-lab" role="button" tabindex="0">
                         <i class="fas fa-dna"></i> Genética Mendeliana
-                    </li>
-                    <li class="button" id="pedigree-lab" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="pedigree-lab" role="button" tabindex="0">
                         <i class="fas fa-users"></i> Heredogramas
-                    </li>
-                    <li class="button" id="popgen-lab" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="popgen-lab" role="button" tabindex="0">
                         <i class="fas fa-chart-pie"></i> Genética Populacional
-                    </li>
-                    <li class="button" id="karyotype-lab" role="button" tabindex="0">
+                    </div>
+                    <div class="button" id="karyotype-lab" role="button" tabindex="0">
                         <i class="fas fa-th"></i> Cariótipo
-                    </li>
-                </ul>
+                    </div>
+                </div>
 
-                <li class="button" id="quiz" role="button" tabindex="0">
+                <div class="button" id="quiz" role="button" tabindex="0">
                     <i class="fas fa-trophy"></i> Modo Desafio
-                </li>
-                <li class="header-title" id="about">
+                </div>
+                <div class="header-title" id="about">
                     <span>Sobre o Aplicativo</span>
-                </li>
-                <li class="button" id="app-info" role="button" tabindex="0">
+                </div>
+                <div class="button" id="app-info" role="button" tabindex="0">
                     <i class="fas fa-info-circle"></i> Sobre &amp; Tutorial
-                </li>
-                <li class="button" id="feedback" role="button" tabindex="0">
+                </div>
+                <div class="button" id="feedback" role="button" tabindex="0">
                     <i class="fas fa-envelope"></i> Feedback
-                </li>
-                <li class="sidebar-toggle" id="theme-toggle" role="button" tabindex="0" aria-pressed="false">
+                </div>
+                <div class="sidebar-toggle" id="theme-toggle" role="button" tabindex="0" aria-pressed="false">
                     <i class="fas fa-moon" id="theme-toggle-icon"></i> <span id="theme-toggle-label">Modo Escuro</span>
-                </li>
-                <li class="empty"></li>
-            </ul>
+                </div>
+                <div class="empty"></div>
+            </div>
         </nav>
-        <div id="visible-page" tabindex="-1">
+        <main id="visible-page" tabindex="-1">
+            <h1 class="visually-hidden">Protein Synthesis — Simulador de Genética</h1>
             <!-- ═══ SPLASH / PÁGINA INICIAL ═══════════════════════════════════════════
                  Primeira coisa que quem abre o link vê — antes disso, o app caía direto
                  na página de DNA sem nenhum contexto sobre o que é o simulador. É uma
@@ -2295,7 +2298,7 @@
                 <h2 class="exercise-print-title">Gabarito — Síntese de Proteínas</h2>
                 <ol id="exercise-answerkey-list" class="exercise-print-list"></ol>
             </div>
-        </div>
+        </main>
     </div>
 
     <footer>

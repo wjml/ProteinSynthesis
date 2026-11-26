@@ -15,7 +15,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' https://fonts.googleapis.com https://use.fontawesome.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://use.fontawesome.com; img-src 'self' data: blob:; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' 'unsafe-eval'; connect-src 'self';");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; style-src 'self' https://fonts.googleapis.com https://use.fontawesome.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com https://use.fontawesome.com; img-src 'self' data: blob:; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://formspree.io;");
   next();
 });
 

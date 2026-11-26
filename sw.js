@@ -1,4 +1,4 @@
-const CACHE_NAME = 'protein-synthesis-v3';
+const CACHE_NAME = 'protein-synthesis-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -17,7 +17,27 @@ const ASSETS = [
   './assets/js/mendel.js',
   './assets/js/simulator.js',
   './assets/images/Logo.svg',
-  './assets/images/icon-beta.png'
+  './assets/images/icon-beta.png',
+  './assets/images/aminoacids/ALA.png',
+  './assets/images/aminoacids/ARG.png',
+  './assets/images/aminoacids/ASN.png',
+  './assets/images/aminoacids/ASP.png',
+  './assets/images/aminoacids/CYS.png',
+  './assets/images/aminoacids/GLN.png',
+  './assets/images/aminoacids/GLU.png',
+  './assets/images/aminoacids/GLY.png',
+  './assets/images/aminoacids/HIS.png',
+  './assets/images/aminoacids/ILE.png',
+  './assets/images/aminoacids/LEU.png',
+  './assets/images/aminoacids/LYS.png',
+  './assets/images/aminoacids/MET.png',
+  './assets/images/aminoacids/PHE.png',
+  './assets/images/aminoacids/PRO.png',
+  './assets/images/aminoacids/SER.png',
+  './assets/images/aminoacids/THR.png',
+  './assets/images/aminoacids/TRP.png',
+  './assets/images/aminoacids/TYR.png',
+  './assets/images/aminoacids/VAL.png'
 ];
 
 self.addEventListener('install', function (event) {
@@ -56,7 +76,7 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-  if (!event.request.url.startsWith(self.location.origin)) {
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
   event.respondWith(
