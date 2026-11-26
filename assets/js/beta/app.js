@@ -75,6 +75,14 @@ function getActiveOrfMeta(analysis, frame) {
   return analysis.orfs.find(o => o.frame === frame) || null;
 }
 
+function computePrefixPx(startIdx, len, orfMeta) {
+  let px = 0;
+  for (let i = 0; i < startIdx; i++) {
+    px += isCodonBoundary(i, len, orfMeta) ? 37 : 29;
+  }
+  return px;
+}
+
 function isCodonBoundary(i, len, orfMeta) {
   if (i >= len - 1) return false;
   if (!orfMeta) return (i + 1) % 3 === 0;
@@ -133,20 +141,26 @@ function renderMrnaTrack(container, mrna, orfMeta = null) {
   }
 }
 
-function renderHydropathyChart(profile, wildProfile = null) {
+function renderHydropathyChart(profile, wildProfile = null, options = {}) {
+  const { leadPx = 0, isReverse = false, isSameAsWt = false } = options;
   const host = $('wb-hydropathy-chart');
   const wtLegend = $('wb-hydro-legend-wt');
-  if (wtLegend) wtLegend.hidden = !(wildProfile && wildProfile.length);
+  if (wtLegend) {
+    wtLegend.hidden = !(wildProfile && wildProfile.length);
+    wtLegend.textContent = isSameAsWt ? '┄◇┄ Wild-Type (idêntico)' : '┄◇┄ Wild-Type';
+  }
   if (!host) return;
   host.textContent = '';
   if (!profile || profile.length === 0) {
     host.textContent = 'Insira ao menos 1 códon traduzível para visualizar o perfil.';
     return;
   }
+  const orderedProfile = isReverse ? [...profile].reverse() : profile;
+  const orderedWild = wildProfile ? (isReverse ? [...wildProfile].reverse() : wildProfile) : null;
   const colW = 84;
   const gap = 11;
-  const maxLen = Math.max(profile.length, wildProfile ? wildProfile.length : 0);
-  const totalW = maxLen * colW + Math.max(0, maxLen - 1) * gap;
+  const maxLen = Math.max(orderedProfile.length, orderedWild ? orderedWild.length : 0);
+  const totalW = leadPx + maxLen * colW + Math.max(0, maxLen - 1) * gap;
   const H = 130;
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
@@ -165,14 +179,13 @@ function renderHydropathyChart(profile, wildProfile = null) {
   svg.appendChild(zeroLine);
 
   const toPts = (arr) => arr.map((p, idx) => ({
-    x: idx * (colW + gap) + colW / 2,
+    x: leadPx + idx * (colW + gap) + colW / 2,
     y: H / 2 - (p.kd / 4.5) * (H / 2 - 20),
     ...p
   }));
 
-  const pts = toPts(profile);
+  const pts = toPts(orderedProfile);
 
-  // Guias verticais alinhadas ao centro de cada códon/aminoácido
   pts.forEach((p) => {
     const guide = document.createElementNS(svgNS, 'line');
     guide.setAttribute('x1', p.x.toFixed(1));
@@ -192,10 +205,8 @@ function renderHydropathyChart(profile, wildProfile = null) {
   poly.setAttribute('points', pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
   svg.appendChild(poly);
 
-  // Linha tracejada + marcadores Wild-Type limitados à extensão comparável (ou proteína WT completa)
-  if (wildProfile && wildProfile.length) {
-    const wSlice = wildProfile.slice(0, Math.max(profile.length, wildProfile.length));
-    const wPts = toPts(wSlice).map(p => ({ ...p, y: p.y + 1.5 }));
+  if (orderedWild && orderedWild.length) {
+    const wPts = toPts(orderedWild).map(p => ({ ...p, y: p.y + 1.8 }));
     const wPoly = document.createElementNS(svgNS, 'polyline');
     wPoly.setAttribute('fill', 'none');
     wPoly.setAttribute('stroke', 'var(--base-t)');
@@ -216,8 +227,7 @@ function renderHydropathyChart(profile, wildProfile = null) {
       m.appendChild(title);
       svg.appendChild(m);
 
-      // Se a proteína atual terminou antes (stop prematuro / deleção), rotular valor WT excedente
-      if (idx >= profile.length) {
+      if (idx >= orderedProfile.length) {
         const wLbl = document.createElementNS(svgNS, 'text');
         wLbl.setAttribute('x', p.x.toFixed(1));
         wLbl.setAttribute('y', (p.kd >= 0 ? p.y - 8 : p.y + 14).toFixed(1));
@@ -357,9 +367,10 @@ async function refreshWorkbench() {
   const pGrid = $('wb-protein-grid');
   pGrid.textContent = '';
   const activeProtein = (orfMeta && orfMeta.hasOrf) ? orfMeta.protein : (orfMeta && !orfMeta.hasOrf ? [] : cur.protein);
-  const leadPx = (orfMeta && orfMeta.hasOrf) ? orfMeta.fwdStart * 29 : 0;
+  const leadPx = (orfMeta && orfMeta.hasOrf) ? computePrefixPx(orfMeta.fwdStart, cur.dna.length, orfMeta) : 0;
   pGrid.style.paddingLeft = `${leadPx}px`;
-  pGrid.style.flexDirection = (orfMeta && orfMeta.isReverse) ? 'row-reverse' : 'row';
+  pGrid.style.flexDirection = 'row';
+  const orderedProtein = (orfMeta && orfMeta.isReverse) ? [...activeProtein].reverse() : activeProtein;
 
   if (orfMeta && !orfMeta.hasOrf) {
     const msg = document.createElement('span');
@@ -367,7 +378,8 @@ async function refreshWorkbench() {
     msg.textContent = `Nenhum códon de iniciação (AUG) encontrado no quadro ${orfMeta.frame}.`;
     pGrid.appendChild(msg);
   } else {
-    activeProtein.forEach((aa, idx) => {
+    orderedProtein.forEach((aa) => {
+      const idx = aa.position - 1;
       const wAa = wild && wild.protein[idx];
       const isPrimaryFrame = !orfMeta || orfMeta.frame === '+1';
       const changed = compareWt && isPrimaryFrame && wAa && wAa.abbr !== aa.abbr;
@@ -407,7 +419,8 @@ async function refreshWorkbench() {
     : cur.biochemistry.hydropathyProfile;
   renderHydropathyChart(
     activeHydro,
-    compareWt && (!orfMeta || orfMeta.frame === '+1') && wild ? wild.biochemistry.hydropathyProfile : null
+    compareWt && (!orfMeta || orfMeta.frame === '+1') && wild ? wild.biochemistry.hydropathyProfile : null,
+    { leadPx, isReverse: Boolean(orfMeta && orfMeta.isReverse), isSameAsWt: Boolean(wild && wild.dna === cur.dna) }
   );
 
   const orfList = $('wb-orf-list');
@@ -417,9 +430,15 @@ async function refreshWorkbench() {
   if (orfPrev) {
     if (selectedOrfObj) {
       orfPrev.hidden = false;
-      orfPrev.textContent = selectedOrfObj.hasOrf
-        ? `Quadro ${selectedOrfObj.frame} (${selectedOrfObj.isReverse ? 'Reverso ←' : 'Direto →'}): início nt ${selectedOrfObj.startNt} | ${selectedOrfObj.lengthAa} aa | ${selectedOrfObj.hasStop ? 'Stop encontrado' : 'ORF aberto'} | Peptídeo: ${selectedOrfObj.preview}`
-        : `Quadro ${selectedOrfObj.frame}: nenhum códon de iniciação (AUG) encontrado nesta leitura.`;
+      const shiftNote = selectedOrfObj.offset > 0
+        ? `Deslocamento de quadro (+${selectedOrfObj.offset} nt): altera o agrupamento das trincas (frameshift de leitura).`
+        : 'Quadro alinhado ao início da fita (sem deslocamento).';
+      if (selectedOrfObj.hasOrf) {
+        const ntCount = selectedOrfObj.fwdEnd - selectedOrfObj.fwdStart;
+        orfPrev.textContent = `Quadro ${selectedOrfObj.frame} (${selectedOrfObj.isReverse ? 'Reverso ← 5\'→3\'' : 'Direto → 5\'→3\''}) · Início–Fim: nt ${selectedOrfObj.fwdStart + 1}–${selectedOrfObj.fwdEnd} · ${selectedOrfObj.lengthAa} aa (${ntCount} nt) · ${shiftNote} · Peptídeo: ${selectedOrfObj.preview}`;
+      } else {
+        orfPrev.textContent = `Quadro ${selectedOrfObj.frame}: nenhum códon de iniciação (AUG) encontrado. ${shiftNote}`;
+      }
     } else {
       orfPrev.hidden = true;
     }
@@ -432,7 +451,12 @@ async function refreshWorkbench() {
     left.textContent = `${orf.frame} · ${orf.strand}`;
     const right = document.createElement('span');
     right.className = 'mono';
-    right.textContent = orf.hasOrf ? `${orf.lengthAa} aa (nt ${orf.startNt})` : 'Sem AUG';
+    if (orf.hasOrf) {
+      const ntCount = orf.fwdEnd - orf.fwdStart;
+      right.textContent = `${orf.lengthAa} aa / ${ntCount} nt (${orf.fwdStart + 1}–${orf.fwdEnd})`;
+    } else {
+      right.textContent = 'Sem AUG';
+    }
     row.append(left, right);
     row.addEventListener('click', () => {
       state.selectedOrfFrame = (state.selectedOrfFrame === orf.frame) ? null : orf.frame;
