@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ProteinSynthesis Beta 2.0 — Bancada Bioinformática, Atlas Vivo e Camadas Progressivas de Visualização.">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/images/icon-beta.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+    integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+  <link rel="stylesheet" href="/assets/style/beta.css">
+  <title>ProteinSynthesis Beta 2.0 | Bancada &amp; Atlas Genético</title>
+</head>
+
+<body data-layer="intermediate">
+  <a href="#beta-main" class="skip-link">Pular para o conteúdo principal</a>
+
+  <header class="beta-topbar">
+    <div class="beta-brand-group">
+      <img src="/assets/images/icon-beta.png" alt="" class="beta-brand-icon" width="28" height="28">
+      <div>
+        <span class="beta-brand-title">ProteinSynthesis</span>
+        <span class="beta-badge">BETA 2.0</span>
+      </div>
+    </div>
+
+    <nav class="beta-modes" aria-label="Modos cognitivos">
+      <button type="button" class="beta-mode-btn" data-mode="atlas" aria-pressed="false">
+        <i class="fas fa-book-open"></i> 1 · Atlas Vivo
+      </button>
+      <button type="button" class="beta-mode-btn active" data-mode="workbench" aria-pressed="true">
+        <i class="fas fa-microscope"></i> 2 · Bancada &amp; Estúdio
+      </button>
+      <button type="button" class="beta-mode-btn" data-mode="evaluation" aria-pressed="false">
+        <i class="fas fa-graduation-cap"></i> 3 · Avaliação &amp; Docente
+      </button>
+    </nav>
+
+    <div class="beta-topbar-actions">
+      <div class="layer-switcher" role="group" aria-label="Camada de visualização científica">
+        <span class="layer-label">Camada:</span>
+        <button type="button" class="layer-btn" data-layer-target="basic" aria-pressed="false">Básica</button>
+        <button type="button" class="layer-btn active" data-layer-target="intermediate" aria-pressed="true">Intermediária</button>
+        <button type="button" class="layer-btn" data-layer-target="advanced" aria-pressed="false">Avançada</button>
+      </div>
+
+      <button type="button" class="beta-icon-btn" id="beta-theme-toggle" aria-pressed="false" title="Alternar tema claro/escuro">
+        <i class="fas fa-moon" id="beta-theme-icon"></i>
+        <span id="beta-theme-label">Escuro</span>
+      </button>
+
+      <a href="/" class="beta-classic-link" id="beta-to-classic" title="Voltar para a versão clássica">
+        <i class="fas fa-arrow-left"></i> Versão Clássica
+      </a>
+    </div>
+  </header>
+
+  <main id="beta-main" class="beta-main" tabindex="-1">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         MODO 1: ATLAS VIVO (Teoria Interativa Inline + Caderno)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="beta-view" id="view-atlas" hidden>
+      <div class="atlas-grid">
+        <article class="atlas-article">
+          <div class="atlas-kicker">Capítulo Interativo · Patologia Molecular</div>
+          <h1>Doença Falciforme: quando uma única base altera toda a fisiologia</h1>
+          <p class="atlas-lead">
+            Diferente de textos estáticos, este artigo embute experimentos vivos em três camadas de profundidade.
+            Altere a camada no topo para revelar detalhes de polaridade, leitura de ribossomo e impacto hidrofóbico.
+          </p>
+
+          <div class="inline-experiment-card">
+            <div class="inline-exp-header">
+              <div>
+                <strong><i class="fas fa-vial"></i> Experimento Embutido · Códon 6 do Gene <em>HBB</em></strong>
+                <span class="layer-chip" data-visible-layers="intermediate advanced">Transversão c.20A&gt;T</span>
+              </div>
+              <div class="inline-toggle-group" role="group" aria-label="Selecionar alelo HBB">
+                <button type="button" class="inline-allele-btn active" data-allele="wt">GAG (Normal · HbA)</button>
+                <button type="button" class="inline-allele-btn" data-allele="mut">GTG (Mutante · HbS)</button>
+              </div>
+            </div>
+
+            <div class="inline-exp-body">
+              <div class="inline-metric">
+                <span class="metric-caption">DNA Molde → RNAm</span>
+                <div class="mono inline-codon" id="atlas-inline-codon">3'-CTC-5' → 5'-GAG-3'</div>
+              </div>
+              <div class="inline-metric">
+                <span class="metric-caption">Aminoácido Traduzido</span>
+                <div class="inline-aa" id="atlas-inline-aa">Ácido Glutâmico (Glu · Polar Ácido)</div>
+              </div>
+              <div class="inline-metric" data-visible-layers="intermediate advanced">
+                <span class="metric-caption">Fenótipo Eritrocitário</span>
+                <div class="inline-pheno" id="atlas-inline-pheno">Hemácia bicôncava flexível (Normal)</div>
+              </div>
+            </div>
+
+            <div class="inline-advanced-note" data-visible-layers="advanced">
+              <strong>Nível Avançado (Kyte-Doolittle &amp; Estrutura):</strong>
+              <span id="atlas-inline-adv">
+                Glu possui índice de hidropatia -3.5 (hidrofílico), mantendo a superfície da β-globina solúvel.
+              </span>
+            </div>
+
+            <div class="inline-exp-footer">
+              <button type="button" class="beta-btn-secondary" id="atlas-send-to-bench">
+                <i class="fas fa-external-link-alt"></i> Abrir sequência completa na Bancada
+              </button>
+            </div>
+          </div>
+
+          <div class="atlas-concepts-grid">
+            <div class="concept-card">
+              <h3>Camada Básica: Fluxo DNA → Proteína</h3>
+              <p>A RNA polimerase lê a fita molde 3'→5' e sintetiza RNAm 5'→3', agrupado em trincas (códons).</p>
+            </div>
+            <div class="concept-card" data-visible-layers="intermediate advanced">
+              <h3>Camada Intermediária: Splicing &amp; Anticódons</h3>
+              <p>Em eucariotos, íntrons são removidos antes da tradução, onde o tRNA pareia anticódons complementares ao RNAm.</p>
+            </div>
+            <div class="concept-card" data-visible-layers="advanced">
+              <h3>Camada Avançada: Propriedades Físico-Químicas</h3>
+              <p>O dobramento proteico depende da distribuição de carga líquida (pH 7.4), ponto isoelétrico (pI) e índice GRAVY.</p>
+            </div>
+          </div>
+        </article>
+
+        <aside class="atlas-sidebar">
+          <div class="beta-card">
+            <h3><i class="fas fa-book"></i> Caderno do Aluno (IndexedDB)</h3>
+            <p class="muted-text">Suas anotações ficam salvas localmente no navegador mesmo offline.</p>
+            <textarea id="notebook-input" class="beta-textarea" rows="5"
+              placeholder="Registre hipóteses, observações sobre mutações ou anotações de aula..."></textarea>
+            <button type="button" class="beta-btn-primary" id="notebook-save-btn">
+              <i class="fas fa-save"></i> Salvar Nota
+            </button>
+            <ul id="notebook-list" class="notebook-list"></ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         MODO 2: BANCADA & ESTÚDIO (Workbench + 3 Camadas + Snapshots)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="beta-view active" id="view-workbench">
+      <div class="workbench-grid">
+        <!-- Painel Esquerdo: Referências, Camadas & ORFs -->
+        <aside class="wb-rail">
+          <div class="beta-card">
+            <div class="card-kicker">Sequências de Referência</div>
+            <div class="ref-list" id="wb-ref-list"></div>
+            <button type="button" class="beta-btn-secondary full-width" id="wb-open-fasta">
+              <i class="fas fa-file-import"></i> Importar FASTA / Texto
+            </button>
+          </div>
+
+          <div class="beta-card" data-visible-layers="advanced">
+            <div class="card-kicker">Quadros de Leitura (6 ORFs)</div>
+            <div id="wb-orf-list" class="orf-list"></div>
+          </div>
+
+          <div class="beta-card">
+            <div class="card-kicker">Laboratórios Clássicos Integrados</div>
+            <p class="muted-text">Acesse os simuladores completos mantendo o contexto:</p>
+            <div class="classic-shortcuts">
+              <a href="/#mendel-lab" class="shortcut-pill">Genética Mendeliana</a>
+              <a href="/#pedigree-lab" class="shortcut-pill">Heredogramas</a>
+              <a href="/#popgen-lab" class="shortcut-pill">Populações (HW)</a>
+              <a href="/#karyotype-lab" class="shortcut-pill">Cariótipo</a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Painel Central: Editor de Sequência, Fitas e Tradução -->
+        <div class="wb-center">
+          <div class="beta-card">
+            <div class="wb-toolbar">
+              <div class="wb-title-group">
+                <h1 id="wb-seq-header" class="wb-title">Sequência Ativa</h1>
+                <span class="mono wb-stats" id="wb-seq-stats">0 nt · 0 aa · GC 0%</span>
+              </div>
+              <div class="wb-actions">
+                <button type="button" class="base-insert-btn base-a" data-base="A">+ A</button>
+                <button type="button" class="base-insert-btn base-t" data-base="T">+ T</button>
+                <button type="button" class="base-insert-btn base-c" data-base="C">+ C</button>
+                <button type="button" class="base-insert-btn base-g" data-base="G">+ G</button>
+                <button type="button" class="beta-btn-secondary" id="wb-random-btn" title="Gerar sequência codificante aleatória">
+                  <i class="fas fa-random"></i> Aleatória
+                </button>
+                <button type="button" class="beta-btn-secondary" id="wb-snapshot-btn" title="Salvar estado atual em IndexedDB">
+                  <i class="fas fa-camera"></i> Snapshot
+                </button>
+              </div>
+            </div>
+
+            <div class="wb-input-row">
+              <label for="wb-dna-input" class="sr-only">Sequência de DNA Molde (3' para 5')</label>
+              <input type="text" id="wb-dna-input" class="mono wb-dna-input"
+                value="TACCACGTGGACTGAGGACACCTC"
+                placeholder="Digite ou cole bases A, T, C, G (ex.: TACAAAGGGTTT)...">
+              <label class="wt-compare-toggle" data-visible-layers="intermediate advanced">
+                <input type="checkbox" id="wb-compare-wt" checked>
+                <span>Comparar com Wild-Type</span>
+              </label>
+            </div>
+
+            <!-- Trilha Visual das Fitas -->
+            <div class="tracks-stack">
+              <div class="track-row">
+                <span class="track-label">DNA Molde <small>(3'→5')</small></span>
+                <div class="track-bases mono" id="wb-track-dna"></div>
+              </div>
+
+              <div class="track-row" data-visible-layers="intermediate advanced">
+                <span class="track-label">DNA Comp. <small>(5'→3')</small></span>
+                <div class="track-bases mono" id="wb-track-comp"></div>
+              </div>
+
+              <div class="track-row">
+                <span class="track-label">RNAm <small>(5'→3')</small></span>
+                <div class="track-bases mono" id="wb-track-rna"></div>
+              </div>
+
+              <div class="track-row" data-visible-layers="advanced">
+                <span class="track-label">Alinhamento <small>(WT × Atual)</small></span>
+                <div class="track-diff mono" id="wb-track-diff"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cadeia Polipeptídica + Gráfico Kyte-Doolittle -->
+          <div class="beta-card">
+            <div class="wb-section-head">
+              <h2>Cadeia Polipeptídica Sintetizada</h2>
+              <span class="mutation-badge" id="wb-mutation-badge">Referência (Wild-Type)</span>
+            </div>
+            <div class="protein-grid" id="wb-protein-grid"></div>
+
+            <div class="hydropathy-box" data-visible-layers="advanced">
+              <div class="wb-section-head">
+                <h3>Perfil de Hidropatia (Kyte-Doolittle)</h3>
+                <span class="mono muted-text" id="wb-gravy-badge">GRAVY: 0.00</span>
+              </div>
+              <div id="wb-hydropathy-chart" class="hydropathy-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel Direito: Inspector Bioquímico & Snapshots -->
+        <aside class="wb-inspector">
+          <div class="beta-card">
+            <div class="card-kicker">Inspector da Camada Atual</div>
+            <p class="layer-guide-text" id="wb-layer-guide"></p>
+
+            <div class="biochem-metrics" data-visible-layers="intermediate advanced">
+              <div class="metric-tile">
+                <span>Resíduos</span>
+                <strong class="mono" id="ins-length">0 aa</strong>
+              </div>
+              <div class="metric-tile">
+                <span>Conteúdo GC</span>
+                <strong class="mono" id="ins-gc">0%</strong>
+              </div>
+              <div class="metric-tile" data-visible-layers="advanced">
+                <span>Massa Mol.</span>
+                <strong class="mono" id="ins-mw">0 kDa</strong>
+              </div>
+              <div class="metric-tile" data-visible-layers="advanced">
+                <span>pI Estimado</span>
+                <strong class="mono" id="ins-pi">0.00</strong>
+              </div>
+              <div class="metric-tile" data-visible-layers="advanced">
+                <span>Carga (pH 7.4)</span>
+                <strong class="mono" id="ins-charge">0.00</strong>
+              </div>
+              <div class="metric-tile" data-visible-layers="advanced">
+                <span>GRAVY</span>
+                <strong class="mono" id="ins-gravy">0.00</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="beta-card">
+            <div class="card-kicker">Snapshots (IndexedDB)</div>
+            <div id="wb-snapshots-list" class="snapshots-list"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         MODO 3: AVALIAÇÃO & DOCENTE (Casos Clínicos + Gerador A4)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="beta-view" id="view-evaluation" hidden>
+      <div class="eval-grid">
+        <div class="beta-card">
+          <div class="card-kicker">Modo Investigação Clínica</div>
+          <h2>Caso Diagnóstico Interativo</h2>
+          <p class="muted-text" id="eval-case-prompt">
+            Um paciente apresenta anemia hemolítica. O sequenciamento do éxon 1 do gene HBB revelou o códon mutante GTG no lugar de GAG.
+          </p>
+          <div class="eval-options" id="eval-options">
+            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Silenciosa (mesmo aminoácido)</button>
+            <button type="button" class="eval-opt-btn" data-correct="true">Mutação Missense Não-Conservativa (Glu → Val)</button>
+            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Nonsense (códon de parada prematuro)</button>
+          </div>
+          <div id="eval-feedback" class="eval-feedback" hidden></div>
+        </div>
+
+        <div class="beta-card">
+          <div class="card-kicker">Uso Docente · Lista &amp; Relatório Científico</div>
+          <h2>Gerador de Exercícios A4 &amp; Relatório</h2>
+          <div class="docente-controls">
+            <label>Questões:
+              <input type="number" id="docente-count" min="1" max="10" value="3">
+            </label>
+            <button type="button" class="beta-btn-primary" id="docente-generate-btn">
+              <i class="fas fa-magic"></i> Gerar Lista
+            </button>
+            <button type="button" class="beta-btn-secondary" id="docente-print-btn">
+              <i class="fas fa-print"></i> Imprimir A4
+            </button>
+            <button type="button" class="beta-btn-secondary" id="docente-export-md">
+              <i class="fas fa-file-alt"></i> Exportar Relatório (.md)
+            </button>
+          </div>
+          <div id="docente-preview" class="docente-preview"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal FASTA -->
+  <dialog id="fasta-dialog" class="beta-dialog">
+    <form method="dialog" class="dialog-form">
+      <h3>Importar Sequência FASTA ou Texto</h3>
+      <textarea id="fasta-textarea" class="beta-textarea mono" rows="6"
+        placeholder=">HBB_fragment&#10;TACGTGCACCTGACTCCTCTGGAG"></textarea>
+      <div class="dialog-actions">
+        <button type="submit" value="cancel" class="beta-btn-secondary">Cancelar</button>
+        <button type="button" id="fasta-confirm-btn" class="beta-btn-primary">Analisar via API</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/assets/js/beta/app.js"></script>
+</body>
+
+</html>

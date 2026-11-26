@@ -1,7 +1,12 @@
-const CACHE_NAME = 'protein-synthesis-v4';
+const CACHE_NAME = 'protein-synthesis-v5';
 const ASSETS = [
   './',
   './index.html',
+  './beta',
+  './assets/style/beta.css',
+  './assets/js/beta/store.js',
+  './assets/js/beta/bio.js',
+  './assets/js/beta/app.js',
   './manifest.json',
   './assets/style/fixed-elements.css',
   './assets/style/pages.css',
@@ -76,7 +81,7 @@ self.addEventListener('activate', function (event) {
 });
 
 self.addEventListener('fetch', function (event) {
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin) || event.request.url.includes('/api/')) {
     return;
   }
   event.respondWith(

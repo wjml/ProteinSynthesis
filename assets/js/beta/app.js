@@ -1,0 +1,426 @@
+/**
+ * assets/js/beta/app.js
+ * Controlador principal do Modo Beta 2.0 (3 Modos Cognitivos + 3 Camadas de Visualização).
+ */
+
+import { analyzeDna, fetchDiseases, generateRandomCodingDna } from './bio.js';
+import { addRecord, listRecords, getPref, setPref } from './store.js';
+
+const LAYER_GUIDES = {
+  basic: 'Camada Básica: exibe o fluxo essencial DNA → RNAm → Proteína, ideal para introdução ao código genético.',
+  intermediate: 'Camada Intermediária: adiciona fita complementar antiparalela (5\'→3\'), classes bioquímicas dos aminoácidos e comparação com Wild-Type.',
+  advanced: 'Camada Avançada: ativa os 6 quadros de leitura (ORFs), alinhamento nt-a-nt, massa molecular (kDa), pI estimado, carga em pH 7.4 e gráfico de hidropatia Kyte-Doolittle.'
+};
+
+const state = {
+  diseases: [],
+  activeRef: null,
+  wildDna: 'TACGTGCACCTGACTCCTCTGGAG',
+  currentAnalysis: null,
+  wildAnalysis: null
+};
+
+const $ = (id) => document.getElementById(id);
+
+function setLayer(layer) {
+  document.body.setAttribute('data-layer', layer);
+  setPref('proteinSynthesis.betaLayer', layer);
+  document.querySelectorAll('.layer-btn').forEach((btn) => {
+    const active = btn.dataset.layerTarget === layer;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+  const guide = $('wb-layer-guide');
+  if (guide) guide.textContent = LAYER_GUIDES[layer] || LAYER_GUIDES.intermediate;
+}
+
+function setMode(mode) {
+  setPref('proteinSynthesis.betaMode', mode);
+  document.querySelectorAll('.beta-mode-btn').forEach((btn) => {
+    const active = btn.dataset.mode === mode;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+  ['atlas', 'workbench', 'evaluation'].forEach((m) => {
+    const el = $(`view-${m}`);
+    if (el) el.hidden = m !== mode;
+  });
+}
+
+function applyTheme(isDark) {
+  document.body.classList.toggle('dark-theme', isDark);
+  const btn = $('beta-theme-toggle');
+  const icon = $('beta-theme-icon');
+  const label = $('beta-theme-label');
+  if (btn) btn.setAttribute('aria-pressed', String(isDark));
+  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+  if (label) label.textContent = isDark ? 'Claro' : 'Escuro';
+  setPref('proteinSynthesis.theme', isDark ? 'dark' : 'light');
+}
+
+function renderBaseTrack(container, seq, compareSeq = '') {
+  container.textContent = '';
+  for (let i = 0; i < seq.length; i++) {
+    if (i > 0 && i % 3 === 0) {
+      const sep = document.createElement('span');
+      sep.className = 'codon-sep';
+      container.appendChild(sep);
+    }
+    const chip = document.createElement('span');
+    const b = seq[i];
+    const isDiff = compareSeq && compareSeq[i] && compareSeq[i] !== b;
+    chip.className = `nt-chip nt-${b}${isDiff ? ' nt-mut' : ''}`;
+    chip.textContent = b;
+    container.appendChild(chip);
+  }
+}
+
+function renderHydropathyChart(profile) {
+  const host = $('wb-hydropathy-chart');
+  if (!host) return;
+  host.textContent = '';
+  if (!profile || profile.length === 0) {
+    host.textContent = 'Insira ao menos 1 códon traduzível para visualizar o perfil.';
+    return;
+  }
+  const W = 640;
+  const H = 140;
+  const pad = 22;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const zeroLine = document.createElementNS(svgNS, 'line');
+  zeroLine.setAttribute('x1', pad);
+  zeroLine.setAttribute('x2', W - pad);
+  zeroLine.setAttribute('y1', H / 2);
+  zeroLine.setAttribute('y2', H / 2);
+  zeroLine.setAttribute('stroke', 'currentColor');
+  zeroLine.setAttribute('stroke-opacity', '0.25');
+  zeroLine.setAttribute('stroke-dasharray', '4 4');
+  svg.appendChild(zeroLine);
+
+  const pts = profile.map((p, idx) => {
+    const x = profile.length === 1 ? W / 2 : pad + (idx / (profile.length - 1)) * (W - pad * 2);
+    const y = H / 2 - (p.kd / 4.5) * (H / 2 - 16);
+    return { x, y, ...p };
+  });
+
+  const poly = document.createElementNS(svgNS, 'polyline');
+  poly.setAttribute('fill', 'none');
+  poly.setAttribute('stroke', 'var(--accent)');
+  poly.setAttribute('stroke-width', '2.5');
+  poly.setAttribute('points', pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+  svg.appendChild(poly);
+
+  pts.forEach((p) => {
+    const c = document.createElementNS(svgNS, 'circle');
+    c.setAttribute('cx', p.x.toFixed(1));
+    c.setAttribute('cy', p.y.toFixed(1));
+    c.setAttribute('r', '4');
+    c.setAttribute('fill', p.kd >= 0 ? 'var(--danger)' : 'var(--accent)');
+    const title = document.createElementNS(svgNS, 'title');
+    title.textContent = `${p.pos} · ${p.abbr}: ${p.kd}`;
+    c.appendChild(title);
+    svg.appendChild(c);
+  });
+
+  host.appendChild(svg);
+}
+
+function classifyMutation(wild, cur) {
+  if (!wild || !cur || wild.dna === cur.dna) {
+    return { label: 'Referência (Wild-Type)', isMut: false };
+  }
+  if (wild.dna.length !== cur.dna.length) {
+    return { label: 'Frameshift / Indel', isMut: true };
+  }
+  const wAa = wild.protein.map(p => p.abbr).join('-');
+  const cAa = cur.protein.map(p => p.abbr).join('-');
+  if (wAa === cAa) return { label: 'Mutação Silenciosa', isMut: false };
+  if (cur.protein.length < wild.protein.length) return { label: 'Mutação Nonsense (Stop Prematuro)', isMut: true };
+  return { label: 'Mutação Missense', isMut: true };
+}
+
+async function refreshWorkbench() {
+  const input = $('wb-dna-input');
+  const compareWt = $('wb-compare-wt')?.checked;
+  const raw = input.value;
+  const [cur, wild] = await Promise.all([
+    analyzeDna(raw),
+    compareWt ? analyzeDna(state.wildDna) : Promise.resolve(null)
+  ]);
+
+  state.currentAnalysis = cur;
+  state.wildAnalysis = wild;
+
+  $('wb-seq-header').textContent = state.activeRef ? `${state.activeRef.gene} — ${state.activeRef.title}` : cur.header;
+  $('wb-seq-stats').textContent = `${cur.lengthNt} nt · ${cur.biochemistry.lengthAa} aa · GC ${cur.gcPercent}%`;
+
+  const cmpDna = compareWt ? state.wildDna : '';
+  renderBaseTrack($('wb-track-dna'), cur.dna, cmpDna);
+  renderBaseTrack($('wb-track-comp'), cur.complementDna);
+  renderBaseTrack($('wb-track-rna'), cur.mrna);
+
+  const diffEl = $('wb-track-diff');
+  diffEl.textContent = '';
+  if (compareWt && wild) {
+    const maxLen = Math.max(wild.dna.length, cur.dna.length);
+    for (let i = 0; i < maxLen; i++) {
+      const span = document.createElement('span');
+      const same = wild.dna[i] === cur.dna[i];
+      span.className = `nt-chip ${same ? '' : 'nt-mut'}`;
+      span.textContent = same ? '·' : (cur.dna[i] || '-');
+      diffEl.appendChild(span);
+    }
+  } else {
+    diffEl.textContent = 'Comparação com Wild-Type desativada.';
+  }
+
+  const mut = classifyMutation(wild, cur);
+  const badge = $('wb-mutation-badge');
+  badge.textContent = mut.label;
+  badge.classList.toggle('is-mut', mut.isMut);
+
+  const pGrid = $('wb-protein-grid');
+  pGrid.textContent = '';
+  cur.protein.forEach((aa, idx) => {
+    const wAa = wild && wild.protein[idx];
+    const changed = compareWt && wAa && wAa.abbr !== aa.abbr;
+    const card = document.createElement('div');
+    card.className = `aa-card${changed ? ' aa-mut' : ''}`;
+    const abbr = document.createElement('div');
+    abbr.className = 'aa-card-abbr mono';
+    abbr.textContent = `${aa.position} · ${aa.abbr}`;
+    const name = document.createElement('div');
+    name.className = 'aa-card-name';
+    name.textContent = changed ? `${wAa.abbr} → ${aa.name}` : aa.name;
+    const type = document.createElement('span');
+    type.className = 'aa-card-type';
+    type.textContent = aa.type;
+    card.append(abbr, name, type);
+    pGrid.appendChild(card);
+  });
+
+  $('ins-length').textContent = `${cur.biochemistry.lengthAa} aa`;
+  $('ins-gc').textContent = `${cur.gcPercent}%`;
+  $('ins-mw').textContent = `${cur.biochemistry.mwKda} kDa`;
+  $('ins-pi').textContent = String(cur.biochemistry.pI);
+  $('ins-charge').textContent = `${cur.biochemistry.netCharge74 >= 0 ? '+' : ''}${cur.biochemistry.netCharge74}`;
+  $('ins-gravy').textContent = String(cur.biochemistry.gravy);
+  $('wb-gravy-badge').textContent = `GRAVY: ${cur.biochemistry.gravy}`;
+
+  renderHydropathyChart(cur.biochemistry.hydropathyProfile);
+
+  const orfList = $('wb-orf-list');
+  orfList.textContent = '';
+  (cur.orfs || []).forEach((orf) => {
+    const row = document.createElement('div');
+    row.className = 'orf-item';
+    const left = document.createElement('span');
+    left.textContent = `${orf.frame} (${orf.strand})`;
+    const right = document.createElement('span');
+    right.className = 'mono';
+    right.textContent = orf.hasOrf ? `${orf.lengthAa} aa` : '—';
+    row.append(left, right);
+    orfList.appendChild(row);
+  });
+}
+
+async function renderSnapshots() {
+  const list = await listRecords('snapshots');
+  const host = $('wb-snapshots-list');
+  host.textContent = '';
+  if (!list.length) {
+    host.textContent = 'Nenhum snapshot salvo ainda.';
+    return;
+  }
+  list.slice(0, 6).forEach((snap) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'snapshot-item';
+    const label = document.createElement('span');
+    label.textContent = snap.label || 'Snapshot';
+    const seq = document.createElement('span');
+    seq.className = 'mono';
+    seq.textContent = `${snap.dna.slice(0, 9)}…`;
+    btn.append(label, seq);
+    btn.addEventListener('click', () => {
+      $('wb-dna-input').value = snap.dna;
+      refreshWorkbench();
+    });
+    host.appendChild(btn);
+  });
+}
+
+async function renderNotebook() {
+  const notes = await listRecords('notebook');
+  const ul = $('notebook-list');
+  ul.textContent = '';
+  notes.slice(0, 6).forEach((n) => {
+    const li = document.createElement('li');
+    li.textContent = n.text;
+    ul.appendChild(li);
+  });
+}
+
+function generateDocenteList() {
+  const count = Math.max(1, Math.min(10, Number($('docente-count').value) || 3));
+  const preview = $('docente-preview');
+  preview.textContent = '';
+  const title = document.createElement('h3');
+  title.textContent = `Lista de Exercícios — Síntese de Proteínas (${count} questões)`;
+  preview.appendChild(title);
+
+  const ol = document.createElement('ol');
+  const keyOl = document.createElement('ol');
+  for (let i = 0; i < count; i++) {
+    const dna = generateRandomCodingDna(5);
+    const li = document.createElement('li');
+    li.textContent = `Transcreva e traduza a fita molde (3'→5'): ${dna}`;
+    ol.appendChild(li);
+
+    const kLi = document.createElement('li');
+    kLi.className = 'mono';
+    kLi.textContent = `DNA ${dna} (${dna.length / 3} códons)`;
+    keyOl.appendChild(kLi);
+  }
+  const keyTitle = document.createElement('h4');
+  keyTitle.textContent = 'Gabarito Docente';
+  preview.append(ol, keyTitle, keyOl);
+}
+
+function exportMarkdownReport() {
+  const cur = state.currentAnalysis;
+  if (!cur) return;
+  const md = [
+    `# Relatório Molecular — ${cur.header}`,
+    `- **DNA Molde (3'→5'):** \`${cur.dna}\``,
+    `- **RNAm (5'→3'):** \`${cur.mrna}\``,
+    `- **Comprimento:** ${cur.lengthNt} nt | ${cur.biochemistry.lengthAa} aa | **GC:** ${cur.gcPercent}%`,
+    `- **Massa Molecular:** ${cur.biochemistry.mwKda} kDa | **pI:** ${cur.biochemistry.pI} | **GRAVY:** ${cur.biochemistry.gravy}`,
+    `- **Proteína:** ${cur.protein.map(p => p.abbr).join('-')}`
+  ].join('\n');
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'relatorio-proteinsynthesis.md';
+  a.click();
+}
+
+async function init() {
+  applyTheme(getPref('proteinSynthesis.theme', 'light') === 'dark');
+  setLayer(getPref('proteinSynthesis.betaLayer', 'intermediate'));
+  setMode(getPref('proteinSynthesis.betaMode', 'workbench'));
+
+  document.querySelectorAll('.layer-btn').forEach((btn) => {
+    btn.addEventListener('click', () => setLayer(btn.dataset.layerTarget));
+  });
+  document.querySelectorAll('.beta-mode-btn').forEach((btn) => {
+    btn.addEventListener('click', () => setMode(btn.dataset.mode));
+  });
+  $('beta-theme-toggle').addEventListener('click', () => {
+    applyTheme(!document.body.classList.contains('dark-theme'));
+  });
+  $('beta-to-classic').addEventListener('click', () => setPref('proteinSynthesis.uiMode', 'classic'));
+
+  state.diseases = await fetchDiseases();
+  const refList = $('wb-ref-list');
+  state.diseases.forEach((d, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `ref-item${idx === 0 ? ' active' : ''}`;
+    btn.textContent = `${d.gene} · ${d.title}`;
+    btn.addEventListener('click', () => {
+      refList.querySelectorAll('.ref-item').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeRef = d;
+      state.wildDna = d.wildDna;
+      $('wb-dna-input').value = d.mutDna;
+      refreshWorkbench();
+    });
+    refList.appendChild(btn);
+  });
+  if (state.diseases[0]) {
+    state.activeRef = state.diseases[0];
+    state.wildDna = state.diseases[0].wildDna;
+    $('wb-dna-input').value = state.diseases[0].mutDna;
+  }
+
+  $('wb-dna-input').addEventListener('input', refreshWorkbench);
+  $('wb-compare-wt').addEventListener('change', refreshWorkbench);
+  document.querySelectorAll('.base-insert-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      $('wb-dna-input').value += btn.dataset.base;
+      refreshWorkbench();
+    });
+  });
+  $('wb-random-btn').addEventListener('click', () => {
+    const dna = generateRandomCodingDna(6);
+    state.activeRef = null;
+    state.wildDna = dna;
+    $('wb-dna-input').value = dna;
+    refreshWorkbench();
+  });
+  $('wb-snapshot-btn').addEventListener('click', async () => {
+    await addRecord('snapshots', { label: state.activeRef ? state.activeRef.gene : 'Custom', dna: $('wb-dna-input').value });
+    renderSnapshots();
+  });
+
+  // FASTA Modal
+  const dialog = $('fasta-dialog');
+  $('wb-open-fasta').addEventListener('click', () => dialog.showModal());
+  $('fasta-confirm-btn').addEventListener('click', async () => {
+    const res = await analyzeDna($('fasta-textarea').value);
+    state.activeRef = null;
+    state.wildDna = res.dna;
+    $('wb-dna-input').value = res.dna;
+    dialog.close();
+    refreshWorkbench();
+  });
+
+  // Atlas Inline Experiment
+  document.querySelectorAll('.inline-allele-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.inline-allele-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const isMut = btn.dataset.allele === 'mut';
+      $('atlas-inline-codon').textContent = isMut ? "3'-CAC-5' → 5'-GUG-3'" : "3'-CTC-5' → 5'-GAG-3'";
+      $('atlas-inline-aa').textContent = isMut ? 'Valina (Val · Apolar Hidrofóbico)' : 'Ácido Glutâmico (Glu · Polar Ácido)';
+      $('atlas-inline-pheno').textContent = isMut ? 'Polimerização em desoxi-Hb (Foice)' : 'Hemácia bicôncava flexível (Normal)';
+      $('atlas-inline-adv').textContent = isMut
+        ? 'Val possui índice de hidropatia +4.2 (hidrofóbico), criando ponto de adesão entre tetrâmeros.'
+        : 'Glu possui índice de hidropatia -3.5 (hidrofílico), mantendo a superfície da β-globina solúvel.';
+    });
+  });
+  $('atlas-send-to-bench').addEventListener('click', () => setMode('workbench'));
+
+  $('notebook-save-btn').addEventListener('click', async () => {
+    const text = $('notebook-input').value.trim();
+    if (!text) return;
+    await addRecord('notebook', { text });
+    $('notebook-input').value = '';
+    renderNotebook();
+  });
+
+  // Avaliação & Docente
+  document.querySelectorAll('.eval-opt-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const ok = btn.dataset.correct === 'true';
+      btn.classList.add(ok ? 'is-right' : 'is-wrong');
+      const fb = $('eval-feedback');
+      fb.hidden = false;
+      fb.textContent = ok
+        ? 'Correto! GAG → GUG troca Ácido Glutâmico (polar ácido) por Valina (apolar), caracterizando missense não-conservativa.'
+        : 'Incorreto. Observe que houve troca de aminoácido com mudança de classe química (ácido → apolar).';
+    });
+  });
+  $('docente-generate-btn').addEventListener('click', generateDocenteList);
+  $('docente-print-btn').addEventListener('click', () => window.print());
+  $('docente-export-md').addEventListener('click', exportMarkdownReport);
+
+  await Promise.all([refreshWorkbench(), renderSnapshots(), renderNotebook()]);
+  generateDocenteList();
+}
+
+document.addEventListener('DOMContentLoaded', init);

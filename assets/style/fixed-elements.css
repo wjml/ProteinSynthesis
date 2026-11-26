@@ -869,6 +869,29 @@ nav #logo img {
 	color: white;
 }
 
+/* Alternador do Modo Beta na barra lateral */
+.beta-switch-btn {
+	text-decoration: none;
+	margin-top: auto;
+	margin-bottom: 0;
+}
+
+.beta-switch-btn+.sidebar-toggle {
+	margin-top: 0;
+}
+
+.beta-nav-badge {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 2px 7px;
+	border-radius: 999px;
+	font-size: 0.68rem;
+	font-weight: 700;
+	background: var(--colorDetailsText);
+	color: #ffffff;
+	vertical-align: middle;
+}
+
 /* Alternador de tema no rodapé da barra lateral (antes: alternador do Modo Professor) */
 .sidebar-toggle {
 	margin-top: auto;

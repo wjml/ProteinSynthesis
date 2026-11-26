@@ -172,6 +172,13 @@
    * Professor, removido). Preferência salva em localStorage; na ausência
    * de uma escolha explícita, respeita prefers-color-scheme do sistema.
    */
+  const betaModeBtn = document.getElementById('beta-mode-btn');
+  if (betaModeBtn) {
+    betaModeBtn.addEventListener('click', function () {
+      try { localStorage.setItem('proteinSynthesis.uiMode', 'beta'); } catch (e) {}
+    });
+  }
+
   const THEME_STORAGE_KEY = 'proteinSynthesis.theme';
   const themeToggle = document.getElementById('theme-toggle');
   const themeToggleIcon = document.getElementById('theme-toggle-icon');
