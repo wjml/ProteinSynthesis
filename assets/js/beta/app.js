@@ -5,7 +5,7 @@
 
 import { analyzeDna, fetchDiseases, generateRandomCodingDna } from './bio.js';
 import { addRecord, listRecords, getPref, setPref } from './store.js';
-import { findPamTargets, simulateCrisprRepair, computePunnett, computeHardyWeinberg, simulateDrift } from './labs.js';
+import { findPamTargets, simulateCrisprRepair, computePunnett, computeDihybrid, computeEpistasis, computeAbo, computeHardyWeinberg, simulateDriftAndSelection } from './labs.js';
 
 const LAYER_GUIDES = {
   basic: 'Camada Básica: exibe o fluxo essencial DNA → RNAm → Proteína, ideal para introdução ao código genético.',
@@ -818,23 +818,28 @@ async function init() {
   if ($('crispr-scan-btn')) {
     $('crispr-scan-btn').addEventListener('click', () => {
       const dna = $('wb-dna-input').value;
+      const includeNag = Boolean($('crispr-include-nag')?.checked);
+      const grnaFilter = $('crispr-grna-filter')?.value || '';
       const listEl = $('crispr-targets-list');
       listEl.textContent = '';
-      const targets = findPamTargets(dna);
+      const targets = findPamTargets(dna, { includeNag, grnaFilter });
       if (!targets.length) {
-        listEl.textContent = 'Nenhum sítio PAM (5\'-NGG-3\') encontrado com 20 nt a montante. Tente uma sequência maior ou carregue HBB.';
+        listEl.textContent = 'Nenhum sítio PAM encontrado com os filtros atuais (exige ≥20 nt a montante).';
         return;
       }
       targets.forEach((t, idx) => {
         const b = document.createElement('button');
         b.type = 'button';
         b.className = `orf-item${idx === 0 ? ' active' : ''}`;
-        b.textContent = `PAM #${idx + 1} (nt ${t.index + 1}) · ${t.protospacer.slice(-8)}[${t.pam}] · GC ${t.gc}% · Score ${t.score}%`;
+        const warn = t.hasPolyT ? ' · ⚠ Poly-T' : '';
+        b.textContent = `${t.pamType} #${idx + 1} (nt ${t.index + 1}) · ${t.protospacer.slice(-8)}[${t.pam}] · GC ${t.gc}% (Seed ${t.seedGc}%)${warn} · Score ${t.score}%`;
         b.addEventListener('click', () => {
+          listEl.querySelectorAll('.orf-item').forEach(el => el.classList.remove('active'));
+          b.classList.add('active');
           const mode = document.querySelector('input[name="crispr-mode"]:checked')?.value || 'nhej';
           lastCrisprEdited = simulateCrisprRepair(dna, t.cutPos, mode, $('crispr-donor-input')?.value || '');
           $('crispr-result-box').hidden = false;
-          $('crispr-diff-preview').textContent = `Original: ${dna}\nEditado:  ${lastCrisprEdited}`;
+          $('crispr-diff-preview').textContent = `- Original (${dna.length} nt): ${dna}\n+ Editado  (${lastCrisprEdited.length} nt): ${lastCrisprEdited}`;
         });
         listEl.appendChild(b);
       });
@@ -849,7 +854,18 @@ async function init() {
     });
   }
 
-  // Genética Mendeliana
+  // Genética Mendeliana (Monoíbrido, Diíbrido, ABO, Epistasia)
+  document.querySelectorAll('#mendel-mode-tabs [data-mendel-tab]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.mendelTab;
+      document.querySelectorAll('#mendel-mode-tabs [data-mendel-tab]').forEach(b => b.classList.toggle('active', b === btn));
+      ['mono', 'di', 'abo', 'epistasis'].forEach(t => {
+        const p = $(`mendel-sub-${t}`);
+        if (p) p.hidden = t !== tab;
+      });
+    });
+  });
+
   const renderMendel = () => {
     const p1 = $('mendel-p1')?.value || 'Aa';
     const p2 = $('mendel-p2')?.value || 'Aa';
@@ -874,13 +890,105 @@ async function init() {
   ['mendel-p1', 'mendel-p2', 'mendel-dom'].forEach(id => $(id)?.addEventListener('change', renderMendel));
   renderMendel();
 
-  // Genética Populacional (Hardy-Weinberg + Deriva)
+  const renderDihybrid = () => {
+    const p1 = $('mendel-di-p1')?.value || 'AaBb';
+    const p2 = $('mendel-di-p2')?.value || 'AaBb';
+    const { g1, g2, cells, phenoCounts } = computeDihybrid(p1, p2);
+    const grid = $('mendel-di-grid');
+    if (!grid) return;
+    grid.textContent = '';
+    const hdr = ['×', ...g2];
+    hdr.forEach(h => {
+      const c = document.createElement('div');
+      c.className = 'punnett-cell punnett-head';
+      c.textContent = h;
+      grid.appendChild(c);
+    });
+    g1.forEach((gam, r) => {
+      const rh = document.createElement('div');
+      rh.className = 'punnett-cell punnett-head';
+      rh.textContent = gam;
+      grid.appendChild(rh);
+      for (let col = 0; col < 4; col++) {
+        const c = document.createElement('div');
+        c.className = 'punnett-cell';
+        c.textContent = cells[r * 4 + col];
+        grid.appendChild(c);
+      }
+    });
+    $('mendel-di-summary').textContent = Object.entries(phenoCounts).map(([k, v]) => `${k}: ${v}/16 (${((v / 16) * 100).toFixed(1)}%)`).join(' | ');
+  };
+  ['mendel-di-p1', 'mendel-di-p2'].forEach(id => $(id)?.addEventListener('change', renderDihybrid));
+  renderDihybrid();
+
+  const renderAbo = () => {
+    const p1 = $('abo-p1')?.value || 'IAi';
+    const p2 = $('abo-p2')?.value || 'IBi';
+    const { g1, g2, cells, phenos } = computeAbo(p1, p2);
+    const grid = $('abo-grid');
+    if (!grid) return;
+    grid.textContent = '';
+    ['×', g2[0], g2[1], g1[0], cells[0], cells[1], g1[1], cells[2], cells[3]].forEach((item, i) => {
+      const c = document.createElement('div');
+      c.className = `punnett-cell${i < 3 || i === 3 || i === 6 ? ' punnett-head' : ''}`;
+      if (typeof item === 'string') {
+        c.textContent = item;
+      } else {
+        c.textContent = item.geno;
+        const sm = document.createElement('small');
+        sm.textContent = `Tipo ${item.ph}`;
+        c.appendChild(sm);
+      }
+      grid.appendChild(c);
+    });
+    $('abo-summary').textContent = Object.entries(phenos).map(([k, v]) => `Tipo ${k}: ${(v / 4) * 100}%`).join(' | ');
+  };
+  ['abo-p1', 'abo-p2'].forEach(id => $(id)?.addEventListener('change', renderAbo));
+  renderAbo();
+
+  const renderEpistasis = () => {
+    const key = $('epistasis-select')?.value || 'recessive';
+    const res = computeEpistasis(key);
+    $('epistasis-desc').textContent = res.scenario.desc;
+    const grid = $('epistasis-grid');
+    if (!grid) return;
+    grid.textContent = '';
+    ['×', ...res.g2].forEach(h => {
+      const c = document.createElement('div');
+      c.className = 'punnett-cell punnett-head';
+      c.textContent = h;
+      grid.appendChild(c);
+    });
+    res.g1.forEach((gam, r) => {
+      const rh = document.createElement('div');
+      rh.className = 'punnett-cell punnett-head';
+      rh.textContent = gam;
+      grid.appendChild(rh);
+      for (let col = 0; col < 4; col++) {
+        const cellObj = res.labeledCells[r * 4 + col];
+        const c = document.createElement('div');
+        c.className = 'punnett-cell';
+        c.textContent = cellObj.geno;
+        const sm = document.createElement('small');
+        sm.textContent = cellObj.label;
+        c.appendChild(sm);
+        grid.appendChild(c);
+      }
+    });
+    $('epistasis-summary').textContent = Object.entries(res.phenos).map(([k, v]) => `${k}: ${v}/16`).join(' | ');
+  };
+  $('epistasis-select')?.addEventListener('change', renderEpistasis);
+  renderEpistasis();
+
+  // Genética Populacional (Hardy-Weinberg por p ou q², barras Obs vs Esp, Deriva + Seleção)
   const renderHw = () => {
-    const p = Number($('hw-p')?.value || 0.6);
-    const n = Number($('hw-n')?.value || 200);
+    const mode = $('hw-input-mode')?.value || 'p';
     const obsAA = Number($('hw-aa-dom')?.value || 70);
     const obsAa = Number($('hw-aa-het')?.value || 95);
     const obsaa = Number($('hw-aa-rec')?.value || 35);
+    const n = mode === 'q2' ? Math.max(1, obsAA + obsAa + obsaa) : Number($('hw-n')?.value || 200);
+    const p = mode === 'q2' ? Math.max(0, 1 - Math.sqrt(Math.max(0, obsaa / n))) : Number($('hw-p')?.value || 0.6);
+    if ($('hw-p') && mode === 'q2') $('hw-p').value = p.toFixed(3);
     const res = computeHardyWeinberg(p, n, obsAA, obsAa, obsaa);
     const box = $('hw-results');
     if (!box) return;
@@ -889,7 +997,7 @@ async function init() {
       ['Alelo p / q', `${res.p} / ${res.q}`],
       ['p² / 2pq / q²', `${res.p2} / ${res.pq2} / ${res.q2}`],
       ['Esperado (N)', `${res.expAA} / ${res.expAa} / ${res.expaa}`],
-      ['Teste χ²', `${res.chi2} (${res.inEquilibrium ? 'Em equilíbrio' : 'Desvio sig.'})`]
+      ['Teste χ² (gl=1)', `${res.chi2} (${res.inEquilibrium ? 'Em equilíbrio' : 'Desvio sig.'})`]
     ].forEach(([k, v]) => {
       const tile = document.createElement('div');
       tile.className = 'metric-tile';
@@ -901,27 +1009,62 @@ async function init() {
       tile.append(s, st);
       box.appendChild(tile);
     });
+
+    const barsHost = $('hw-bar-chart');
+    if (barsHost) {
+      barsHost.textContent = '';
+      const maxVal = Math.max(obsAA, obsAa, obsaa, res.expAA, res.expAa, res.expaa, 1);
+      [['AA', obsAA, res.expAA], ['Aa', obsAa, res.expAa], ['aa', obsaa, res.expaa]].forEach(([lbl, obs, exp]) => {
+        const row = document.createElement('div');
+        row.className = 'hw-bar-row mono';
+        const l = document.createElement('span');
+        l.textContent = lbl;
+        const bars = document.createElement('div');
+        bars.className = 'hw-bars';
+        const b1 = document.createElement('div');
+        b1.className = 'hw-bar-obs';
+        b1.style.width = `${(obs / maxVal) * 100}%`;
+        const b2 = document.createElement('div');
+        b2.className = 'hw-bar-exp';
+        b2.style.width = `${(exp / maxVal) * 100}%`;
+        bars.append(b1, b2);
+        const vals = document.createElement('span');
+        vals.textContent = `Obs ${obs} / Esp ${exp}`;
+        row.append(l, bars, vals);
+        barsHost.appendChild(row);
+      });
+    }
   };
   const renderDrift = () => {
     const p0 = Number($('hw-p')?.value || 0.6);
     const n = Number($('hw-n')?.value || 200);
-    const series = simulateDrift(p0, n, 50);
+    const fitness = {
+      wAA: Number($('hw-w-aa')?.value || 1),
+      wAa: Number($('hw-w-ab')?.value || 1.15),
+      waa: Number($('hw-w-bb')?.value || 0.6)
+    };
+    const runs = simulateDriftAndSelection(p0, n, 50, fitness, 5);
     const host = $('hw-drift-chart');
     if (!host) return;
     host.textContent = '';
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
     svg.setAttribute('viewBox', '0 0 600 150');
-    const poly = document.createElementNS(svgNS, 'polyline');
-    poly.setAttribute('fill', 'none');
-    poly.setAttribute('stroke', 'var(--accent)');
-    poly.setAttribute('stroke-width', '2.5');
-    poly.setAttribute('points', series.map((v, i) => `${(i / 50) * 580 + 10},${140 - v * 130}`).join(' '));
-    svg.appendChild(poly);
+    const colors = ['var(--accent)', 'var(--base-t)', 'var(--base-c)', 'var(--base-u)', 'var(--danger)'];
+    runs.forEach((series, idx) => {
+      const poly = document.createElementNS(svgNS, 'polyline');
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', colors[idx % colors.length]);
+      poly.setAttribute('stroke-width', idx === 0 ? '2.5' : '1.5');
+      poly.setAttribute('stroke-opacity', idx === 0 ? '1' : '0.65');
+      poly.setAttribute('points', series.map((v, i) => `${(i / 50) * 580 + 10},${140 - v * 130}`).join(' '));
+      svg.appendChild(poly);
+    });
     host.appendChild(svg);
   };
   $('hw-calc-btn')?.addEventListener('click', () => { renderHw(); renderDrift(); });
   $('hw-drift-btn')?.addEventListener('click', renderDrift);
+  $('hw-input-mode')?.addEventListener('change', renderHw);
   renderHw();
   renderDrift();
 }

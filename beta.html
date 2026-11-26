@@ -4,13 +4,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ProteinSynthesis Beta 2.0 — Bancada Bioinformática, Atlas Vivo e Camadas Progressivas de Visualização.">
+  <meta name="description"
+    content="ProteinSynthesis Beta 2.0 — Bancada Bioinformática, Atlas Vivo e Camadas Progressivas de Visualização.">
   <meta name="theme-color" content="#0d1117">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/assets/images/icon-beta.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
     integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
   <link rel="stylesheet" href="/assets/style/beta.css">
@@ -45,11 +47,13 @@
       <div class="layer-switcher" role="group" aria-label="Camada de visualização científica">
         <span class="layer-label">Camada:</span>
         <button type="button" class="layer-btn" data-layer-target="basic" aria-pressed="false">Básica</button>
-        <button type="button" class="layer-btn active" data-layer-target="intermediate" aria-pressed="true">Intermediária</button>
+        <button type="button" class="layer-btn active" data-layer-target="intermediate"
+          aria-pressed="true">Intermediária</button>
         <button type="button" class="layer-btn" data-layer-target="advanced" aria-pressed="false">Avançada</button>
       </div>
 
-      <button type="button" class="beta-icon-btn" id="beta-theme-toggle" aria-pressed="false" title="Alternar tema claro/escuro">
+      <button type="button" class="beta-icon-btn" id="beta-theme-toggle" aria-pressed="false"
+        title="Alternar tema claro/escuro">
         <i class="fas fa-moon" id="beta-theme-icon"></i>
         <span id="beta-theme-label">Escuro</span>
       </button>
@@ -123,11 +127,13 @@
             </div>
             <div class="concept-card" data-visible-layers="intermediate advanced">
               <h3>Camada Intermediária: Splicing &amp; Anticódons</h3>
-              <p>Em eucariotos, íntrons são removidos antes da tradução, onde o tRNA pareia anticódons complementares ao RNAm.</p>
+              <p>Em eucariotos, íntrons são removidos antes da tradução, onde o tRNA pareia anticódons complementares ao
+                RNAm.</p>
             </div>
             <div class="concept-card" data-visible-layers="advanced">
               <h3>Camada Avançada: Propriedades Físico-Químicas</h3>
-              <p>O dobramento proteico depende da distribuição de carga líquida (pH 7.4), ponto isoelétrico (pI) e índice GRAVY.</p>
+              <p>O dobramento proteico depende da distribuição de carga líquida (pH 7.4), ponto isoelétrico (pI) e
+                índice GRAVY.</p>
             </div>
           </div>
         </article>
@@ -175,7 +181,8 @@
           <div class="beta-card" data-visible-layers="advanced">
             <div class="card-kicker">Quadros de Leitura (6 ORFs)</div>
             <p class="muted-text orf-help">
-              ORF (<em>Open Reading Frame</em>): trecho contínuo entre códon de início (<strong>AUG</strong>) e parada (<strong>UAA/UAG/UGA</strong>). Clique para inspecionar:
+              ORF (<em>Open Reading Frame</em>): trecho contínuo entre códon de início (<strong>AUG</strong>) e parada
+              (<strong>UAA/UAG/UGA</strong>). Clique para inspecionar:
             </p>
             <div id="wb-orf-list" class="orf-list"></div>
             <div id="wb-orf-preview" class="orf-preview mono" hidden></div>
@@ -197,7 +204,8 @@
           <div class="beta-card">
             <div class="wb-header-row">
               <div class="wb-title-group">
-                <h1 id="wb-seq-header" class="wb-title" title="Clique duas vezes para renomear">Nenhuma sequência inserida</h1>
+                <h1 id="wb-seq-header" class="wb-title" title="Clique duas vezes para renomear">Nenhuma sequência
+                  inserida</h1>
                 <span class="mono wb-stats" id="wb-seq-stats">0 nt · 0 aa · GC 0%</span>
               </div>
             </div>
@@ -208,10 +216,12 @@
                 <button type="button" class="base-insert-btn base-t" data-base="T">+ T</button>
                 <button type="button" class="base-insert-btn base-c" data-base="C">+ C</button>
                 <button type="button" class="base-insert-btn base-g" data-base="G">+ G</button>
-                <button type="button" class="beta-btn-secondary" id="wb-random-btn" title="Gerar sequência codificante aleatória">
+                <button type="button" class="beta-btn-secondary" id="wb-random-btn"
+                  title="Gerar sequência codificante aleatória">
                   <i class="fas fa-random"></i> Aleatória
                 </button>
-                <button type="button" class="beta-btn-secondary" id="wb-snapshot-btn" title="Salvar estado atual em IndexedDB">
+                <button type="button" class="beta-btn-secondary" id="wb-snapshot-btn"
+                  title="Salvar estado atual em IndexedDB">
                   <i class="fas fa-camera"></i> Snapshot
                 </button>
               </div>
@@ -220,7 +230,8 @@
                   <input type="checkbox" id="wb-compare-wt" checked>
                   <span>Comparar com Wild-Type</span>
                 </label>
-                <button type="button" class="beta-btn-mini" id="wb-set-wt-btn" title="Definir sequência atual como referência Wild-Type">
+                <button type="button" class="beta-btn-mini" id="wb-set-wt-btn"
+                  title="Definir sequência atual como referência Wild-Type">
                   Definir como WT
                 </button>
               </div>
@@ -228,8 +239,7 @@
 
             <div class="wb-input-row">
               <label for="wb-dna-input" class="sr-only">Sequência de DNA Molde (3' para 5')</label>
-              <input type="text" id="wb-dna-input" class="mono wb-dna-input"
-                value=""
+              <input type="text" id="wb-dna-input" class="mono wb-dna-input" value=""
                 placeholder="Digite ou cole bases A, T, C, G (ou selecione uma referência ao lado)...">
             </div>
 
@@ -237,7 +247,8 @@
             <div class="tracks-stack">
               <div class="strand-panel">
                 <div class="strand-panel-title-row">
-                  <span class="strand-panel-title">DNA — FITA MOLDE <span data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></span>
+                  <span class="strand-panel-title">DNA — FITA MOLDE <span
+                      data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></span>
                   <span class="orf-frame-badge mono" id="wb-orf-banner" data-visible-layers="advanced" hidden></span>
                 </div>
                 <div class="duplex-box dna-duplex-box">
@@ -258,7 +269,8 @@
               <div class="strand-panel">
                 <div class="strand-panel-title-row">
                   <span class="strand-panel-title" id="wb-rna-title">RNA MENSAGEIRO (5' → 3')</span>
-                  <span class="orf-frame-badge mono" id="wb-tx-dir-badge" data-visible-layers="intermediate advanced">Sentido: 5' → 3' (Direto)</span>
+                  <span class="orf-frame-badge mono" id="wb-tx-dir-badge"
+                    data-visible-layers="intermediate advanced">Sentido: 5' → 3' (Direto)</span>
                 </div>
                 <div class="duplex-box mrna-box">
                   <div class="strand-ends strand-ends-left mono">
@@ -341,21 +353,26 @@
                 <h2>Editor Genômico CRISPR-Cas9</h2>
                 <span class="badge mono">PAM: 5'-NGG-3'</span>
               </div>
-              <p class="muted-text">Analisa a sequência ativa na Bancada Molecular para localizar sítios PAM e simular reparo por NHEJ ou HDR.</p>
+              <p class="muted-text">Analisa a sequência ativa na Bancada Molecular para localizar sítios PAM, avaliar especificidade (GC / Pol III) e simular reparo por NHEJ ou HDR.</p>
               <div class="crispr-controls">
-                <button type="button" class="beta-btn-primary" id="crispr-scan-btn"><i class="fas fa-crosshairs"></i> Buscar Sítios PAM na Sequência</button>
+                <button type="button" class="beta-btn-primary" id="crispr-scan-btn"><i class="fas fa-crosshairs"></i> Buscar Sítios PAM</button>
                 <div class="crispr-repair-mode" data-visible-layers="intermediate advanced">
                   <label><input type="radio" name="crispr-mode" value="nhej" checked> NHEJ (Indel)</label>
                   <label><input type="radio" name="crispr-mode" value="hdr"> HDR (Template)</label>
                 </div>
+                <label class="wt-compare-toggle" data-visible-layers="advanced">
+                  <input type="checkbox" id="crispr-include-nag">
+                  <span>Incluir PAM alternativo (NAG)</span>
+                </label>
               </div>
               <div class="crispr-donor-row" data-visible-layers="intermediate advanced">
+                <input type="text" id="crispr-grna-filter" class="wb-dna-input mono" placeholder="Filtrar por sub-sequência do gRNA (opcional)..." data-visible-layers="advanced">
                 <input type="text" id="crispr-donor-input" class="wb-dna-input mono" placeholder="Template doador HDR (ex.: GACTCCTCTG)...">
               </div>
               <div id="crispr-targets-list" class="orf-list"></div>
               <div id="crispr-result-box" class="crispr-result-box" hidden>
-                <div class="strand-panel-title">PRÉVIA DA EDIÇÃO</div>
-                <div id="crispr-diff-preview" class="mono"></div>
+                <div class="strand-panel-title">PRÉVIA DA EDIÇÃO (DIFF)</div>
+                <div id="crispr-diff-preview" class="mono crispr-diff-lines"></div>
                 <button type="button" class="beta-btn-primary" id="crispr-apply-btn">Aplicar Edição na Bancada Molecular</button>
               </div>
             </div>
@@ -366,56 +383,148 @@
             <div class="beta-card">
               <div class="wb-section-head">
                 <h2>Laboratório de Genética Mendeliana</h2>
-                <span class="badge">Quadro de Punnett</span>
+                <div class="mendel-mode-tabs" id="mendel-mode-tabs">
+                  <button type="button" class="beta-btn-mini active" data-mendel-tab="mono">Monoíbrido (2×2)</button>
+                  <button type="button" class="beta-btn-mini" data-mendel-tab="di" data-visible-layers="intermediate advanced">Diíbrido (4×4)</button>
+                  <button type="button" class="beta-btn-mini" data-mendel-tab="abo" data-visible-layers="intermediate advanced">Sistema ABO</button>
+                  <button type="button" class="beta-btn-mini" data-mendel-tab="epistasis" data-visible-layers="advanced">Epistasia</button>
+                </div>
               </div>
-              <div class="mendel-controls">
-                <label>Parental 1:
-                  <select id="mendel-p1">
-                    <option value="AA">AA (Homozigoto Dom.)</option>
-                    <option value="Aa" selected>Aa (Heterozigoto)</option>
-                    <option value="aa">aa (Homozigoto Rec.)</option>
-                  </select>
-                </label>
-                <label>Parental 2:
-                  <select id="mendel-p2">
-                    <option value="AA">AA (Homozigoto Dom.)</option>
-                    <option value="Aa" selected>Aa (Heterozigoto)</option>
-                    <option value="aa">aa (Homozigoto Rec.)</option>
-                  </select>
-                </label>
-                <label data-visible-layers="intermediate advanced">Dominância:
-                  <select id="mendel-dom">
-                    <option value="complete">Completa</option>
-                    <option value="incomplete">Incompleta</option>
-                    <option value="codominance">Codominância</option>
-                  </select>
-                </label>
+
+              <!-- Monoíbrido -->
+              <div id="mendel-sub-mono" class="mendel-subpanel">
+                <div class="mendel-controls">
+                  <label>Parental 1:
+                    <select id="mendel-p1">
+                      <option value="AA">AA (Homozigoto Dom.)</option>
+                      <option value="Aa" selected>Aa (Heterozigoto)</option>
+                      <option value="aa">aa (Homozigoto Rec.)</option>
+                    </select>
+                  </label>
+                  <label>Parental 2:
+                    <select id="mendel-p2">
+                      <option value="AA">AA (Homozigoto Dom.)</option>
+                      <option value="Aa" selected>Aa (Heterozigoto)</option>
+                      <option value="aa">aa (Homozigoto Rec.)</option>
+                    </select>
+                  </label>
+                  <label data-visible-layers="intermediate advanced">Dominância:
+                    <select id="mendel-dom">
+                      <option value="complete">Completa</option>
+                      <option value="incomplete">Incompleta</option>
+                      <option value="codominance">Codominância</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="mendel-punnett-grid" class="punnett-grid"></div>
+                <div id="mendel-summary" class="mendel-summary mono"></div>
               </div>
-              <div id="mendel-punnett-grid" class="punnett-grid"></div>
-              <div id="mendel-summary" class="mendel-summary mono"></div>
+
+              <!-- Diíbrido 4x4 -->
+              <div id="mendel-sub-di" class="mendel-subpanel" hidden>
+                <div class="mendel-controls">
+                  <label>Parental 1:
+                    <select id="mendel-di-p1">
+                      <option value="AaBb" selected>AaBb (Duplo Heterozigoto)</option>
+                      <option value="AABB">AABB</option>
+                      <option value="Aabb">Aabb</option>
+                      <option value="aaBb">aaBb</option>
+                      <option value="aabb">aabb</option>
+                    </select>
+                  </label>
+                  <label>Parental 2:
+                    <select id="mendel-di-p2">
+                      <option value="AaBb" selected>AaBb (Duplo Heterozigoto)</option>
+                      <option value="AABB">AABB</option>
+                      <option value="Aabb">Aabb</option>
+                      <option value="aaBb">aaBb</option>
+                      <option value="aabb">aabb</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="mendel-di-grid" class="punnett-grid-5"></div>
+                <div id="mendel-di-summary" class="mendel-summary mono"></div>
+              </div>
+
+              <!-- Sistema ABO -->
+              <div id="mendel-sub-abo" class="mendel-subpanel" hidden>
+                <div class="mendel-controls">
+                  <label>Parental 1:
+                    <select id="abo-p1">
+                      <option value="IAi" selected>Tipo A (Iᴬi)</option>
+                      <option value="IAIA">Tipo A (IᴬIᴬ)</option>
+                      <option value="IBi">Tipo B (Iᴮi)</option>
+                      <option value="IBIB">Tipo B (IᴮIᴮ)</option>
+                      <option value="IAIB">Tipo AB (IᴬIᴮ)</option>
+                      <option value="ii">Tipo O (ii)</option>
+                    </select>
+                  </label>
+                  <label>Parental 2:
+                    <select id="abo-p2">
+                      <option value="IAi">Tipo A (Iᴬi)</option>
+                      <option value="IAIA">Tipo A (IᴬIᴬ)</option>
+                      <option value="IBi" selected>Tipo B (Iᴮi)</option>
+                      <option value="IBIB">Tipo B (IᴮIᴮ)</option>
+                      <option value="IAIB">Tipo AB (IᴬIᴮ)</option>
+                      <option value="ii">Tipo O (ii)</option>
+                    </select>
+                  </label>
+                </div>
+                <div id="abo-grid" class="punnett-grid"></div>
+                <div id="abo-summary" class="mendel-summary mono"></div>
+              </div>
+
+              <!-- Epistasia -->
+              <div id="mendel-sub-epistasis" class="mendel-subpanel" hidden>
+                <div class="mendel-controls">
+                  <label>Cenário de Epistasia (AaBb × AaBb):
+                    <select id="epistasis-select">
+                      <option value="recessive">Epistasia Recessiva (9:3:4)</option>
+                      <option value="dominant">Epistasia Dominante (12:3:1)</option>
+                      <option value="dup_recessive">Dupla Recessiva (9:7)</option>
+                      <option value="dup_dominant">Dupla Dominante (15:1)</option>
+                    </select>
+                  </label>
+                </div>
+                <p id="epistasis-desc" class="muted-text"></p>
+                <div id="epistasis-grid" class="punnett-grid-5"></div>
+                <div id="epistasis-summary" class="mendel-summary mono"></div>
+              </div>
             </div>
           </div>
 
-          <!-- SUB-MÓDULO: GENÉTICA POPULACIONAL (HARDY-WEINBERG + DERIVA) -->
+          <!-- SUB-MÓDULO: GENÉTICA POPULACIONAL (HARDY-WEINBERG + DERIVA + SELEÇÃO) -->
           <div id="lab-panel-popgen" class="lab-panel" hidden>
             <div class="beta-card">
               <div class="wb-section-head">
-                <h2>Equilíbrio de Hardy-Weinberg &amp; Deriva Genética</h2>
+                <h2>Equilíbrio de Hardy-Weinberg, Seleção &amp; Deriva</h2>
                 <span class="badge mono">p + q = 1</span>
               </div>
               <div class="popgen-controls">
-                <label>Frequência p(A): <input type="number" id="hw-p" min="0" max="1" step="0.05" value="0.6"></label>
+                <label>Modo de cálculo:
+                  <select id="hw-input-mode">
+                    <option value="p">A partir da frequência p(A)</option>
+                    <option value="q2">A partir de afetados (aa / q²)</option>
+                  </select>
+                </label>
+                <label id="hw-p-wrap">p(A): <input type="number" id="hw-p" min="0" max="1" step="0.05" value="0.6"></label>
                 <label data-visible-layers="intermediate advanced">N total: <input type="number" id="hw-n" min="20" max="5000" value="200"></label>
                 <label data-visible-layers="intermediate advanced">Obs AA: <input type="number" id="hw-aa-dom" min="0" value="70"></label>
                 <label data-visible-layers="intermediate advanced">Obs Aa: <input type="number" id="hw-aa-het" min="0" value="95"></label>
-                <label data-visible-layers="intermediate advanced">Obs aa: <input type="number" id="hw-aa-rec" min="0" value="35"></label>
+                <label>Obs aa: <input type="number" id="hw-aa-rec" min="0" value="35"></label>
                 <button type="button" class="beta-btn-primary" id="hw-calc-btn">Calcular</button>
               </div>
               <div id="hw-results" class="biochem-metrics"></div>
+              <div id="hw-bar-chart" class="hw-bar-chart" data-visible-layers="intermediate advanced"></div>
               <div class="hydropathy-box" data-visible-layers="advanced">
                 <div class="wb-section-head">
-                  <div class="strand-panel-title">SIMULAÇÃO DE DERIVA GENÉTICA (50 GERAÇÕES)</div>
-                  <button type="button" class="beta-btn-secondary" id="hw-drift-btn">Nova Simulação Monte Carlo</button>
+                  <div class="strand-panel-title">DERIVA &amp; SELEÇÃO NATURAL (50 GERAÇÕES · 5 RÉPLICAS MONTE CARLO)</div>
+                  <button type="button" class="beta-btn-secondary" id="hw-drift-btn">Simular</button>
+                </div>
+                <div class="popgen-controls">
+                  <label>w(AA): <input type="number" id="hw-w-aa" min="0" max="2" step="0.05" value="1.0"></label>
+                  <label>w(Aa): <input type="number" id="hw-w-ab" min="0" max="2" step="0.05" value="1.15"></label>
+                  <label>w(aa): <input type="number" id="hw-w-bb" min="0" max="2" step="0.05" value="0.6"></label>
                 </div>
                 <div id="hw-drift-chart"></div>
               </div>
@@ -474,12 +583,16 @@
           <div class="card-kicker">Modo Investigação Clínica</div>
           <h2>Caso Diagnóstico Interativo</h2>
           <p class="muted-text" id="eval-case-prompt">
-            Um paciente apresenta anemia hemolítica. O sequenciamento do éxon 1 do gene HBB revelou o códon mutante GTG no lugar de GAG.
+            Um paciente apresenta anemia hemolítica. O sequenciamento do éxon 1 do gene HBB revelou o códon mutante GTG
+            no lugar de GAG.
           </p>
           <div class="eval-options" id="eval-options">
-            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Silenciosa (mesmo aminoácido)</button>
-            <button type="button" class="eval-opt-btn" data-correct="true">Mutação Missense Não-Conservativa (Glu → Val)</button>
-            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Nonsense (códon de parada prematuro)</button>
+            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Silenciosa (mesmo
+              aminoácido)</button>
+            <button type="button" class="eval-opt-btn" data-correct="true">Mutação Missense Não-Conservativa (Glu →
+              Val)</button>
+            <button type="button" class="eval-opt-btn" data-correct="false">Mutação Nonsense (códon de parada
+              prematuro)</button>
           </div>
           <div id="eval-feedback" class="eval-feedback" hidden></div>
         </div>
