@@ -186,11 +186,14 @@
         <!-- Painel Central: Editor de Sequência, Fitas e Tradução -->
         <div class="wb-center">
           <div class="beta-card">
-            <div class="wb-toolbar">
+            <div class="wb-header-row">
               <div class="wb-title-group">
                 <h1 id="wb-seq-header" class="wb-title" title="Clique duas vezes para renomear">Nenhuma sequência inserida</h1>
                 <span class="mono wb-stats" id="wb-seq-stats">0 nt · 0 aa · GC 0%</span>
               </div>
+            </div>
+
+            <div class="wb-actions-bar">
               <div class="wb-actions">
                 <button type="button" class="base-insert-btn base-a" data-base="A">+ A</button>
                 <button type="button" class="base-insert-btn base-t" data-base="T">+ T</button>
@@ -203,6 +206,10 @@
                   <i class="fas fa-camera"></i> Snapshot
                 </button>
               </div>
+              <label class="wt-compare-toggle" data-visible-layers="intermediate advanced">
+                <input type="checkbox" id="wb-compare-wt" checked>
+                <span>Comparar com Wild-Type</span>
+              </label>
             </div>
 
             <div class="wb-input-row">
@@ -210,10 +217,6 @@
               <input type="text" id="wb-dna-input" class="mono wb-dna-input"
                 value=""
                 placeholder="Digite ou cole bases A, T, C, G (ou selecione uma referência ao lado)...">
-              <label class="wt-compare-toggle" data-visible-layers="intermediate advanced">
-                <input type="checkbox" id="wb-compare-wt" checked>
-                <span>Comparar com Wild-Type</span>
-              </label>
             </div>
 
             <!-- Trilha Visual Unificada das Fitas (Tabulação + Scroll Sincronizado) -->
@@ -223,7 +226,7 @@
                   <span class="strand-panel-title">DNA — FITA MOLDE <span data-visible-layers="intermediate advanced">&amp; COMPLEMENTAR (PONTES DE H)</span></span>
                   <span class="orf-frame-badge mono" id="wb-orf-banner" data-visible-layers="advanced" hidden></span>
                 </div>
-                <div class="duplex-box">
+                <div class="duplex-box dna-duplex-box">
                   <div class="strand-ends strand-ends-left mono">
                     <span class="end-badge end-3">3'</span>
                     <span class="end-badge end-5" data-visible-layers="intermediate advanced">5'</span>

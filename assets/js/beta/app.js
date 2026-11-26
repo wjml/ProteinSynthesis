@@ -17,7 +17,7 @@ const state = {
   activeRef: null,
   customTitle: '',
   wildDna: '',
-  selectedOrfFrame: '+1',
+  selectedOrfFrame: null,
   currentAnalysis: null,
   wildAnalysis: null
 };
@@ -71,10 +71,8 @@ function makeBaseShape(base, posClass, isMut = false) {
 }
 
 function getActiveOrfMeta(analysis, frame) {
-  if (!analysis || !analysis.orfs) return null;
-  const orf = analysis.orfs.find(o => o.frame === frame) || analysis.orfs[0];
-  if (!orf) return null;
-  return orf;
+  if (!analysis || !analysis.orfs || !frame) return null;
+  return analysis.orfs.find(o => o.frame === frame) || null;
 }
 
 function isCodonBoundary(i, len, orfMeta) {
@@ -194,9 +192,10 @@ function renderHydropathyChart(profile, wildProfile = null) {
   poly.setAttribute('points', pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
   svg.appendChild(poly);
 
-  // Linha tracejada + marcadores Wild-Type para TODOS os aminoácidos (com leve deslocamento para não ficar oculta sob a linha Atual)
+  // Linha tracejada + marcadores Wild-Type limitados à extensão comparável (ou proteína WT completa)
   if (wildProfile && wildProfile.length) {
-    const wPts = toPts(wildProfile).map(p => ({ ...p, y: p.y + 1.5 }));
+    const wSlice = wildProfile.slice(0, Math.max(profile.length, wildProfile.length));
+    const wPts = toPts(wSlice).map(p => ({ ...p, y: p.y + 1.5 }));
     const wPoly = document.createElementNS(svgNS, 'polyline');
     wPoly.setAttribute('fill', 'none');
     wPoly.setAttribute('stroke', 'var(--base-t)');
@@ -205,7 +204,7 @@ function renderHydropathyChart(profile, wildProfile = null) {
     wPoly.setAttribute('points', wPts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
     svg.appendChild(wPoly);
 
-    wPts.forEach((p) => {
+    wPts.forEach((p, idx) => {
       const m = document.createElementNS(svgNS, 'polygon');
       const s = 3.5;
       m.setAttribute('points', `${p.x},${p.y - s} ${p.x + s},${p.y} ${p.x},${p.y + s} ${p.x - s},${p.y}`);
@@ -216,6 +215,19 @@ function renderHydropathyChart(profile, wildProfile = null) {
       title.textContent = `WT ${p.pos} · ${p.abbr}: ${p.kd}`;
       m.appendChild(title);
       svg.appendChild(m);
+
+      // Se a proteína atual terminou antes (stop prematuro / deleção), rotular valor WT excedente
+      if (idx >= profile.length) {
+        const wLbl = document.createElementNS(svgNS, 'text');
+        wLbl.setAttribute('x', p.x.toFixed(1));
+        wLbl.setAttribute('y', (p.kd >= 0 ? p.y - 8 : p.y + 14).toFixed(1));
+        wLbl.setAttribute('text-anchor', 'middle');
+        wLbl.setAttribute('font-size', '9.5');
+        wLbl.setAttribute('font-family', 'IBM Plex Mono, monospace');
+        wLbl.setAttribute('fill', 'var(--base-t)');
+        wLbl.textContent = `WT ${(p.kd > 0 ? '+' : '') + p.kd.toFixed(1)}`;
+        svg.appendChild(wLbl);
+      }
     });
   }
 
@@ -344,32 +356,42 @@ async function refreshWorkbench() {
 
   const pGrid = $('wb-protein-grid');
   pGrid.textContent = '';
-  const leadPx = orfMeta && !orfMeta.isReverse && orfMeta.offset ? orfMeta.offset * 29 : 0;
+  const activeProtein = (orfMeta && orfMeta.hasOrf) ? orfMeta.protein : (orfMeta && !orfMeta.hasOrf ? [] : cur.protein);
+  const leadPx = (orfMeta && orfMeta.hasOrf) ? orfMeta.fwdStart * 29 : 0;
   pGrid.style.paddingLeft = `${leadPx}px`;
-  cur.protein.forEach((aa, idx) => {
-    const wAa = wild && wild.protein[idx];
-    const changed = compareWt && wAa && wAa.abbr !== aa.abbr;
-    const card = document.createElement('div');
-    card.className = `aa-card${changed ? ' aa-mut' : ''}`;
-    const abbr = document.createElement('div');
-    abbr.className = 'aa-card-abbr mono';
-    abbr.textContent = `${aa.position} · ${aa.abbr}`;
-    const name = document.createElement('div');
-    name.className = 'aa-card-name';
-    name.textContent = aa.name;
-    card.append(abbr, name);
-    if (changed) {
-      const detail = document.createElement('div');
-      detail.className = 'aa-mut-detail';
-      detail.textContent = `Era ${wAa.abbr} (${wAa.type})`;
-      card.appendChild(detail);
-    }
-    const type = document.createElement('span');
-    type.className = 'aa-card-type';
-    type.textContent = aa.type;
-    card.appendChild(type);
-    pGrid.appendChild(card);
-  });
+  pGrid.style.flexDirection = (orfMeta && orfMeta.isReverse) ? 'row-reverse' : 'row';
+
+  if (orfMeta && !orfMeta.hasOrf) {
+    const msg = document.createElement('span');
+    msg.className = 'empty-track-msg';
+    msg.textContent = `Nenhum códon de iniciação (AUG) encontrado no quadro ${orfMeta.frame}.`;
+    pGrid.appendChild(msg);
+  } else {
+    activeProtein.forEach((aa, idx) => {
+      const wAa = wild && wild.protein[idx];
+      const changed = compareWt && !orfMeta && wAa && wAa.abbr !== aa.abbr;
+      const card = document.createElement('div');
+      card.className = `aa-card${changed ? ' aa-mut' : ''}`;
+      const abbr = document.createElement('div');
+      abbr.className = 'aa-card-abbr mono';
+      abbr.textContent = `${aa.position} · ${aa.abbr}`;
+      const name = document.createElement('div');
+      name.className = 'aa-card-name';
+      name.textContent = aa.name;
+      card.append(abbr, name);
+      if (changed) {
+        const detail = document.createElement('div');
+        detail.className = 'aa-mut-detail';
+        detail.textContent = `Antes: ${wAa.abbr}`;
+        card.appendChild(detail);
+      }
+      const type = document.createElement('span');
+      type.className = 'aa-card-type';
+      type.textContent = aa.type;
+      card.appendChild(type);
+      pGrid.appendChild(card);
+    });
+  }
 
   $('ins-length').textContent = `${cur.biochemistry.lengthAa} aa`;
   $('ins-gc').textContent = `${cur.gcPercent}%`;
@@ -379,19 +401,32 @@ async function refreshWorkbench() {
   $('ins-gravy').textContent = String(cur.biochemistry.gravy);
   $('wb-gravy-badge').textContent = `GRAVY: ${cur.biochemistry.gravy}`;
 
+  const activeHydro = (orfMeta && orfMeta.hasOrf)
+    ? activeProtein.map(p => ({ pos: p.position, abbr: p.abbr, kd: p.kd }))
+    : cur.biochemistry.hydropathyProfile;
   renderHydropathyChart(
-    cur.biochemistry.hydropathyProfile,
-    compareWt && wild ? wild.biochemistry.hydropathyProfile : null
+    activeHydro,
+    compareWt && !orfMeta && wild ? wild.biochemistry.hydropathyProfile : null
   );
 
   const orfList = $('wb-orf-list');
   const orfPrev = $('wb-orf-preview');
   orfList.textContent = '';
-  if (orfPrev) orfPrev.hidden = true;
-  (cur.orfs || []).forEach((orf, idx) => {
+  const selectedOrfObj = (cur.orfs || []).find(o => o.frame === state.selectedOrfFrame);
+  if (orfPrev) {
+    if (selectedOrfObj) {
+      orfPrev.hidden = false;
+      orfPrev.textContent = selectedOrfObj.hasOrf
+        ? `Quadro ${selectedOrfObj.frame} (${selectedOrfObj.isReverse ? 'Reverso ←' : 'Direto →'}): início nt ${selectedOrfObj.startNt} | ${selectedOrfObj.lengthAa} aa | ${selectedOrfObj.hasStop ? 'Stop encontrado' : 'ORF aberto'} | Peptídeo: ${selectedOrfObj.preview}`
+        : `Quadro ${selectedOrfObj.frame}: nenhum códon de iniciação (AUG) encontrado nesta leitura.`;
+    } else {
+      orfPrev.hidden = true;
+    }
+  }
+  (cur.orfs || []).forEach((orf) => {
     const row = document.createElement('button');
     row.type = 'button';
-    row.className = `orf-item${orf.hasOrf && idx === 0 ? ' active' : ''}`;
+    row.className = `orf-item${state.selectedOrfFrame === orf.frame ? ' active' : ''}`;
     const left = document.createElement('span');
     left.textContent = `${orf.frame} · ${orf.strand}`;
     const right = document.createElement('span');
@@ -399,16 +434,8 @@ async function refreshWorkbench() {
     right.textContent = orf.hasOrf ? `${orf.lengthAa} aa (nt ${orf.startNt})` : 'Sem AUG';
     row.append(left, right);
     row.addEventListener('click', () => {
-      state.selectedOrfFrame = orf.frame;
-      orfList.querySelectorAll('.orf-item').forEach(el => el.classList.remove('active'));
-      row.classList.add('active');
+      state.selectedOrfFrame = (state.selectedOrfFrame === orf.frame) ? null : orf.frame;
       refreshWorkbench();
-      if (orfPrev) {
-        orfPrev.hidden = false;
-        orfPrev.textContent = orf.hasOrf
-          ? `Quadro ${orf.frame} (${orf.isReverse ? 'Reverso ←' : 'Direto →'}): início nt ${orf.startNt} | ${orf.lengthAa} aa | ${orf.hasStop ? 'Stop encontrado' : 'ORF aberto'} | Peptídeo: ${orf.preview}`
-          : `Quadro ${orf.frame}: nenhum códon de iniciação (AUG) encontrado nesta leitura.`;
-      }
     });
     orfList.appendChild(row);
   });
