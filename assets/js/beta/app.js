@@ -128,26 +128,33 @@ function renderDuplexDna(container, dna, compDna, compareSeq = '', orfMeta = nul
   }
 }
 
-function renderMrnaTrack(container, mrna, orfMeta = null) {
+function renderMrnaTrack(container, mrna, orfMeta = null, stopCodons = new Set(['UAA', 'UAG', 'UGA'])) {
   container.textContent = '';
   const hasOrf = orfMeta && orfMeta.hasOrf;
+  const offset = orfMeta ? (orfMeta.offset || 0) : 0;
   for (let i = 0; i < mrna.length; i++) {
     const col = document.createElement('div');
     const isCodonEnd = isCodonBoundary(i, mrna.length, orfMeta);
     const outOfOrf = hasOrf && (i < orfMeta.fwdStart || i >= orfMeta.fwdEnd);
-    col.className = `bp-col has-phosphate-bottom${isCodonEnd ? ' codon-end' : ''}${outOfOrf ? ' out-of-orf' : ''}`;
+    const framePos = (i - offset);
+    const codonStart = framePos >= 0 ? i - (framePos % 3) : -1;
+    const triplet = codonStart >= 0 && codonStart + 2 < mrna.length ? mrna.slice(codonStart, codonStart + 3) : '';
+    const isStop = (!orfMeta || !orfMeta.isReverse) && stopCodons.has(triplet) && !outOfOrf;
+    col.className = `bp-col has-phosphate-bottom${isCodonEnd ? ' codon-end' : ''}${outOfOrf ? ' out-of-orf' : ''}${isStop ? ' is-stop-col' : ''}`;
     col.appendChild(makeBaseShape(mrna[i], 'nt-bottom', false));
     container.appendChild(col);
   }
 }
 
 function renderHydropathyChart(profile, wildProfile = null, options = {}) {
-  const { leadPx = 0, isReverse = false, isSameAsWt = false } = options;
+  const { leadPx = 0, isReverse = false, isSameAsWt = false, hasStop = false } = options;
   const host = $('wb-hydropathy-chart');
   const wtLegend = $('wb-hydro-legend-wt');
   if (wtLegend) {
     wtLegend.hidden = !(wildProfile && wildProfile.length);
-    wtLegend.textContent = isSameAsWt ? '┄◇┄ Wild-Type (idêntico)' : '┄◇┄ Wild-Type';
+    wtLegend.textContent = isSameAsWt
+      ? '┄◇┄ Wild-Type (idêntico)'
+      : `┄◇┄ Wild-Type (${wildProfile ? wildProfile.length : 0} aa)`;
   }
   if (!host) return;
   host.textContent = '';
@@ -159,7 +166,8 @@ function renderHydropathyChart(profile, wildProfile = null, options = {}) {
   const orderedWild = wildProfile ? (isReverse ? [...wildProfile].reverse() : wildProfile) : null;
   const colW = 84;
   const gap = 11;
-  const maxLen = Math.max(orderedProfile.length, orderedWild ? orderedWild.length : 0);
+  const stopExtra = hasStop ? 1 : 0;
+  const maxLen = Math.max(orderedProfile.length + stopExtra, orderedWild ? orderedWild.length : 0);
   const totalW = leadPx + maxLen * colW + Math.max(0, maxLen - 1) * gap;
   const H = 130;
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -263,6 +271,31 @@ function renderHydropathyChart(profile, wildProfile = null, options = {}) {
     lbl.textContent = (p.kd > 0 ? '+' : '') + p.kd.toFixed(1);
     svg.appendChild(lbl);
   });
+
+  // Marcador vertical STOP quando a tradução termina em códon de parada
+  if (hasStop && !isReverse) {
+    const stopX = leadPx + orderedProfile.length * (colW + gap) + colW / 2;
+    const sLine = document.createElementNS(svgNS, 'line');
+    sLine.setAttribute('x1', stopX.toFixed(1));
+    sLine.setAttribute('x2', stopX.toFixed(1));
+    sLine.setAttribute('y1', 16);
+    sLine.setAttribute('y2', H - 10);
+    sLine.setAttribute('stroke', 'var(--base-u)');
+    sLine.setAttribute('stroke-width', '1.8');
+    sLine.setAttribute('stroke-dasharray', '3 3');
+    svg.appendChild(sLine);
+
+    const sLbl = document.createElementNS(svgNS, 'text');
+    sLbl.setAttribute('x', stopX.toFixed(1));
+    sLbl.setAttribute('y', '12');
+    sLbl.setAttribute('text-anchor', 'middle');
+    sLbl.setAttribute('font-size', '9.5');
+    sLbl.setAttribute('font-weight', '700');
+    sLbl.setAttribute('font-family', 'IBM Plex Mono, monospace');
+    sLbl.setAttribute('fill', 'var(--base-u)');
+    sLbl.textContent = 'STOP';
+    svg.appendChild(sLbl);
+  }
 
   host.appendChild(svg);
 }
@@ -404,6 +437,26 @@ async function refreshWorkbench() {
       card.appendChild(type);
       pGrid.appendChild(card);
     });
+
+    // Cartão explícito de Códon de Parada (STOP)
+    const stopCodon = (!orfMeta || orfMeta.frame === '+1')
+      ? (cur.codons || []).find(c => c.abbr === 'STOP')
+      : (orfMeta && orfMeta.hasStop ? { name: 'Parada (STOP)', codon: 'STOP' } : null);
+    if (stopCodon) {
+      const stopCard = document.createElement('div');
+      stopCard.className = 'aa-card aa-stop';
+      const sAbbr = document.createElement('div');
+      sAbbr.className = 'aa-card-abbr mono';
+      sAbbr.textContent = '■ STOP';
+      const sName = document.createElement('div');
+      sName.className = 'aa-card-name';
+      sName.textContent = stopCodon.name || 'Códon de Parada';
+      const sType = document.createElement('span');
+      sType.className = 'aa-card-type mono';
+      sType.textContent = stopCodon.codon || 'Término';
+      stopCard.append(sAbbr, sName, sType);
+      pGrid.appendChild(stopCard);
+    }
   }
 
   $('ins-length').textContent = `${cur.biochemistry.lengthAa} aa`;
@@ -417,10 +470,13 @@ async function refreshWorkbench() {
   const activeHydro = (orfMeta && orfMeta.hasOrf)
     ? activeProtein.map(p => ({ pos: p.position, abbr: p.abbr, kd: p.kd }))
     : cur.biochemistry.hydropathyProfile;
+  const hasStopInActive = (!orfMeta || orfMeta.frame === '+1')
+    ? Boolean((cur.codons || []).some(c => c.abbr === 'STOP'))
+    : Boolean(orfMeta && orfMeta.hasStop);
   renderHydropathyChart(
     activeHydro,
     compareWt && (!orfMeta || orfMeta.frame === '+1') && wild ? wild.biochemistry.hydropathyProfile : null,
-    { leadPx, isReverse: Boolean(orfMeta && orfMeta.isReverse), isSameAsWt: Boolean(wild && wild.dna === cur.dna) }
+    { leadPx, isReverse: Boolean(orfMeta && orfMeta.isReverse), isSameAsWt: Boolean(wild && wild.dna === cur.dna), hasStop: hasStopInActive }
   );
 
   const orfList = $('wb-orf-list');
@@ -609,6 +665,15 @@ async function init() {
 
   $('wb-dna-input').addEventListener('input', refreshWorkbench);
   $('wb-compare-wt').addEventListener('change', refreshWorkbench);
+  if ($('wb-set-wt-btn')) {
+    $('wb-set-wt-btn').addEventListener('click', () => {
+      const val = $('wb-dna-input').value.toUpperCase().replace(/U/g, 'T').replace(/[^ATCG]/g, '');
+      if (!val) return;
+      state.wildDna = val;
+      if ($('wb-compare-wt')) $('wb-compare-wt').checked = true;
+      refreshWorkbench();
+    });
+  }
 
   // Scroll horizontal sincronizado com barra visível apenas no último campo rolado/em foco
   const scrollEls = [$('wb-scroll-dna'), $('wb-scroll-rna'), $('wb-scroll-diff'), $('wb-scroll-protein'), $('wb-scroll-hydro')].filter(Boolean);
